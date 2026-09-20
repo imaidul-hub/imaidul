@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- WhatsApp & Social Media Preview Meta Tags -->
+    <title>পে স্কেল ২০২৬ হিসাব</title>
+    <meta name="description" content="By Maidul Islam">
+
+    <!-- Open Graph / WhatsApp Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="পে স্কেল ২০২৬ হিসাব">
+    <meta property="og:description" content="By Maidul Islam">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 680px;
+            width: 100%;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #1b5e20;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #333;
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #1b5e20;
+        }
+        .result-box {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-left: 5px solid #2e7d32;
+            border-radius: 4px;
+            display: none;
+        }
+        .result-box h3 {
+            margin-top: 0;
+            color: #1b5e20;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #c8e6c9;
+        }
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background-color: #a5d6a7;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #0d5302;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>জাতীয় বেতন স্কেল ২০২৬ ক্যালকুলেটর</h2>
+    
+    <div class="form-group">
+        <label for="empTypeSelect">চাকরির ধরন নির্বাচন করুন:</label>
+        <select id="empTypeSelect">
+            <option value="mpo">MPO (এমপিওভুক্ত শিক্ষক/কর্মচারী)</option>
+            <option value="govt">Govt Employee (সরকারি কর্মচারী - গেজেট অনুযায়ী)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="gradeSelect">গ্রেড নির্বাচন করুন:</label>
+        <select id="gradeSelect" onchange="updatePaySteps()">
+            <option value="">-- গ্রেড নির্বাচন করুন --</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="stepSelect">বর্তমান মূল বেতন (৩০ জুন ২০২৬ অনুযায়ী):</label>
+        <select id="stepSelect" disabled>
+            <option value="">-- প্রথমে গ্রেড নির্বাচন করুন --</option>
+        </select>
+    </div>
+
+    <button onclick="calculateSalary()">বেতন হিসাব করুন</button>
+
+    <div id="result" class="result-box">
+        <h3>বেতন নির্ধারণ বিবরণী</h3>
+        <p><strong>নতুন স্কেলে নির্ধারিত মূল বেতন:</strong> <span id="newFixedSalary" class="highlight"></span> টাকা</p>
+        
+        <h4>ধাপ অনুযায়ী প্রাপ্য বেতন ও ভাতা:</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>বিবরণ</th>
+                    <th>১ম ধাপ<br><small>(১ জুলাই ২৬ - ৩১ ডিসেম্বর ২৬)</small></th>
+                    <th>২য় ধাপ<br><small>(১ জানুয়ারি ২৭ - ৩০ জুন ২৭)</small></th>
+                    <th>৩য় ধাপ<br><small>(১ জুলাই ২৭ থেকে)</small></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>প্রাপ্য মূল বেতন</td>
+                    <td id="m1"></td>
+                    <td id="m2"></td>
+                    <td id="m3"></td>
+                </tr>
+                <tr>
+                    <td>বাড়ি ভাড়া</td>
+                    <td id="h1"></td>
+                    <td id="h2"></td>
+                    <td id="h3"></td>
+                </tr>
+                <tr>
+                    <td>চিকিৎসা ভাতা</td>
+                    <td id="med1"></td>
+                    <td id="med2"></td>
+                    <td id="med3"></td>
+                </tr>
+                <tr class="highlight">
+                    <td>সর্বমোট (কর্তন ছাড়া)</td>
+                    <td id="t1"></td>
+                    <td id="t2"></td>
+                    <td id="t3"></td>
+                </tr>
+                <tr>
+                    <td>কর্তন (১০% GPF/অবসর)</td>
+                    <td id="d1"></td>
+                    <td id="d2"></td>
+                    <td id="d3"></td>
+                </tr>
+                <tr class="highlight">
+                    <td>নিট প্রাপ্য বেতন</td>
+                    <td id="n1"></td>
+                    <td id="n2"></td>
+                    <td id="n3"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const payData = {
+        1: { oldStart: 78000, newStart: 156000, oldSteps: [78000], newSteps: [156000] },
+        2: { oldStart: 66000, newStart: 132000, oldSteps: [66000, 68480, 71050, 73720, 76490], newSteps: [132000, 135700, 139400, 143200, 147200, 151200, 153000] },
+        3: { oldStart: 56500, newStart: 113000, oldSteps: [56500, 58760, 61120, 63570, 66120, 68770, 71530, 74400], newSteps: [113000, 117000, 121100, 125300, 129700, 134300, 139000, 143800, 148800] },
+        4: { oldStart: 50000, newStart: 100000, oldSteps: [50000, 52000, 54080, 56250, 58500, 60840, 63280, 65820, 68460, 71200], newSteps: [100000, 103500, 107200, 110900, 114800, 118800, 123000, 127300, 131700, 136300, 142400] },
+        5: { oldStart: 43000, newStart: 86000, oldSteps: [43000, 44940, 46970, 49090, 51300, 53610, 56030, 58560, 61200, 63960, 66840, 69850], newSteps: [86000, 89500, 93100, 96800, 100700, 104700, 108900, 113200, 117700, 122500, 127400, 132400, 139700] },
+        6: { oldStart: 35500, newStart: 71000, oldSteps: [35500, 37280, 39150, 41110, 43170, 45330, 47600, 49980, 52480, 55110, 57870, 60770, 63810, 67010], newSteps: [71000, 74600, 78300, 82200, 86400, 90700, 95200, 100000, 104900, 110200, 115700, 121500, 127600, 134000] },
+        7: { oldStart: 29000, newStart: 58000, oldSteps: [29000, 30450, 31980, 33580, 35260, 37030, 38890, 40840, 42890, 45040, 47300, 49670, 52160, 54770, 57510, 60390, 63410], newSteps: [58000, 60900, 64000, 67200, 70500, 74100, 77800, 81700, 85700, 90000, 94500, 99200, 104200, 109400, 114900, 120600, 126800] },
+        8: { oldStart: 23000, newStart: 46000, oldSteps: [23000, 24150, 25360, 26630, 27970, 29370, 30840, 32390, 34010, 35720, 37510, 39390, 41360, 43430, 45610, 47900, 50300, 52820, 55470], newSteps: [46000, 48300, 50800, 53300, 56000, 58800, 61700, 64800, 68000, 71400, 75000, 78700, 82700, 86800, 91100, 95700, 100500, 105500, 110800] },
+        9: { oldStart: 22000, newStart: 44000, oldSteps: [22000, 23100, 24260, 25480, 26760, 28100, 29510, 30990, 32540, 34170, 35880, 37680, 39570, 41550, 43630, 45820, 48120, 50530, 53060], newSteps: [44000, 46200, 48600, 51000, 53500, 56200, 59000, 62000, 65100, 68300, 71700, 75300, 79100, 83000, 87200, 91500, 96100, 100900, 105900] },
+        10: { oldStart: 16000, newStart: 32000, oldSteps: [16000, 16800, 17640, 18530, 19460, 20440, 21470, 22550, 23680, 24870, 26120, 27430, 28810, 30260, 31780, 33370, 35040, 36800, 38640], newSteps: [32000, 33600, 35300, 37100, 38900, 40900, 42900, 45100, 47300, 49700, 52200, 54800, 57500, 60400, 63400, 66600, 69900, 73400, 77300] },
+        11: { oldStart: 12500, newStart: 25000, oldSteps: [12500, 13130, 13790, 14480, 15210, 15980, 16780, 17620, 18510, 19440, 20420, 21450, 22530, 23660, 24850, 26100, 27410, 28790, 30230], newSteps: [25000, 26300, 27600, 29000, 30400, 32000, 33600, 35200, 37000, 38800, 40800, 42800, 44900, 47200, 49500, 52000, 54600, 57300, 60500] },
+        12: { oldStart: 11300, newStart: 24300, oldSteps: [11300, 11870, 12470, 13100, 13760, 14450, 15180, 15940, 16740, 17580, 18460, 19390, 20360, 21380, 22450, 23580, 24760, 26000, 27300], newSteps: [24300, 25600, 26800, 28200, 29600, 31100, 32600, 34200, 36000, 37700, 39600, 41600, 43700, 45900, 48200, 50600, 53100, 55700, 58700] },
+        13: { oldStart: 11000, newStart: 24000, oldSteps: [11000, 11550, 12130, 12740, 13380, 14050, 14760, 15500, 16280, 17100, 17960, 18860, 19810, 20810, 21860, 22960, 24110, 25320, 26590], newSteps: [24000, 25200, 26500, 27800, 29200, 30700, 32200, 33800, 35500, 37300, 39100, 41100, 43200, 45300, 47600, 49900, 52400, 55100, 58000] },
+        14: { oldStart: 10200, newStart: 23500, oldSteps: [10200, 10710, 11250, 11820, 12420, 13050, 13710, 14400, 15120, 15880, 16680, 17520, 18400, 19320, 20290, 21310, 22380, 23500, 24680], newSteps: [23500, 24700, 26000, 27300, 28600, 30000, 31500, 33100, 34800, 36500, 38300, 40200, 42300, 44400, 46600, 48900, 51300, 53900, 56800] },
+        15: { oldStart: 9700, newStart: 22800, oldSteps: [9700, 10190, 10700, 11240, 11810, 12410, 13040, 13700, 14390, 15110, 15870, 16670, 17510, 18390, 19310, 20280, 21300, 22370, 23490], newSteps: [22800, 24000, 25200, 26400, 27800, 29100, 30600, 32100, 33700, 35400, 37200, 39000, 41000, 43000, 45200, 47400, 49800, 52300, 55200] },
+        16: { oldStart: 9300, newStart: 21900, oldSteps: [9300, 9770, 10260, 10780, 11320, 11890, 12490, 13120, 13780, 14470, 15200, 15960, 16760, 17600, 18480, 19410, 20390, 21410, 22490], newSteps: [21900, 23000, 24200, 25400, 26700, 28000, 29400, 30900, 32400, 34000, 35700, 37500, 39400, 41300, 43400, 45600, 47900, 50200, 52900] },
+        17: { oldStart: 9000, newStart: 21400, oldSteps: [9000, 9450, 9930, 10430, 10960, 11510, 12090, 12700, 13340, 14010, 14720, 15460, 16240, 17060, 17920, 18820, 19770, 20760, 21800], newSteps: [21400, 22500, 23600, 24800, 26100, 27400, 28700, 30200, 31700, 33200, 34900, 36700, 38500, 40400, 42400, 44500, 46800, 49100, 51900] },
+        18: { oldStart: 8800, newStart: 21000, oldSteps: [8800, 9240, 9710, 10200, 10710, 11250, 11820, 12420, 13050, 13710, 14400, 15120, 15880, 16680, 17520, 18400, 19320, 20290, 21310], newSteps: [21000, 22100, 23200, 24400, 25600, 26900, 28200, 29600, 31100, 32600, 34300, 36000, 37800, 39600, 41600, 43700, 45900, 48200, 50900] },
+        19: { oldStart: 8500, newStart: 20500, oldSteps: [8500, 8930, 9380, 9850, 10350, 10870, 11420, 12000, 12600, 13230, 13900, 14600, 15330, 16100, 16910, 17760, 18650, 19590, 20570], newSteps: [20500, 21600, 22700, 23800, 25000, 26200, 27500, 28900, 30300, 31900, 33400, 35100, 36900, 38700, 40600, 42700, 44800, 47000, 49600] },
+        20: { oldStart: 8250, newStart: 20000, oldSteps: [8250, 8670, 9110, 9570, 10050, 10560, 11090, 11650, 12240, 12860, 13510, 14190, 14900, 15650, 16440, 17270, 18140, 19050, 20010], newSteps: [20000, 21000, 22100, 23200, 24400, 25600, 26900, 28200, 29600, 31100, 32600, 34300, 36000, 37800, 39600, 41600, 43700, 45900, 48400] }
+    };
+
+    window.onload = function() {
+        const gradeSelect = document.getElementById('gradeSelect');
+        for (let i = 1; i <= 20; i++) {
+            let option = document.createElement('option');
+            option.value = i;
+            option.text = `গ্রেড ${i}`;
+            gradeSelect.appendChild(option);
+        }
+    };
+
+    function updatePaySteps() {
+        const grade = document.getElementById('gradeSelect').value;
+        const stepSelect = document.getElementById('stepSelect');
+        stepSelect.innerHTML = '<option value="">-- মূল বেতন নির্বাচন করুন --</option>';
+
+        if (grade && payData[grade]) {
+            stepSelect.disabled = false;
+            payData[grade].oldSteps.forEach(step => {
+                let option = document.createElement('option');
+                option.value = step;
+                option.text = `${step} টাকা`;
+                stepSelect.appendChild(option);
+            });
+        } else {
+            stepSelect.disabled = true;
+        }
+    }
+
+    // সরকারি গেজেট অনুযায়ী বাড়ি ভাড়া শতকরা হার হিসাব
+    function getGovtHouseRentRate(basicSalary) {
+        if (basicSalary <= 9700) return 0.65;
+        if (basicSalary <= 16000) return 0.60;
+        if (basicSalary <= 35500) return 0.55;
+        if (basicSalary <= 66000) return 0.50;
+        return 0.45;
+    }
+
+    function calculateSalary() {
+        const grade = parseInt(document.getElementById('gradeSelect').value);
+        const currentSalary = parseFloat(document.getElementById('stepSelect').value);
+        const empType = document.getElementById('empTypeSelect').value;
+
+        if (!grade || !currentSalary) {
+            alert('দয়া করে গ্রেড এবং বর্তমান মূল বেতন নির্বাচন করুন।');
+            return;
+        }
+
+        const data = payData[grade];
+        const diff = currentSalary - data.oldStart;
+        const targetValue = data.newStart + diff;
+
+        let newFixedSalary = data.newSteps.find(step => step >= targetValue);
+        if (!newFixedSalary) {
+            newFixedSalary = data.newSteps[data.newSteps.length - 1];
+        }
+
+        const totalIncrease = newFixedSalary - currentSalary;
+
+        const p1Rate = (grade <= 9) ? 0.40 : 0.50;
+        const p2Rate = (grade <= 9) ? 0.70 : 0.75;
+
+        const m1 = Math.round(currentSalary + (totalIncrease * p1Rate));
+        const m2 = Math.round(currentSalary + (totalIncrease * p2Rate));
+        const m3 = Math.round(newFixedSalary);
+
+        let h1, h2, h3, med1, med2, med3;
+
+        if (empType === 'mpo') {
+            h1 = Math.round(m1 * 0.15);
+            h2 = Math.round(m2 * 0.15);
+            h3 = Math.round(m3 * 0.15);
+            med1 = med2 = med3 = 500;
+        } else if (empType === 'govt') {
+            h1 = Math.round(m1 * getGovtHouseRentRate(m1));
+            h2 = Math.round(m2 * getGovtHouseRentRate(m2));
+            h3 = Math.round(m3 * getGovtHouseRentRate(m3));
+            med1 = med2 = med3 = 3000;
+        }
+
+        const t1 = m1 + h1 + med1;
+        const t2 = m2 + h2 + med2;
+        const t3 = m3 + h3 + med3;
+
+        const d1 = Math.round(m1 * 0.10);
+        const d2 = Math.round(m2 * 0.10);
+        const d3 = Math.round(m3 * 0.10);
+
+        const n1 = t1 - d1;
+        const n2 = t2 - d2;
+        const n3 = t3 - d3;
+
+        document.getElementById('newFixedSalary').innerText = newFixedSalary.toLocaleString('bn-BD');
+
+        document.getElementById('m1').innerText = m1.toLocaleString('bn-BD');
+        document.getElementById('m2').innerText = m2.toLocaleString('bn-BD');
+        document.getElementById('m3').innerText = m3.toLocaleString('bn-BD');
+
+        document.getElementById('h1').innerText = h1.toLocaleString('bn-BD');
+        document.getElementById('h2').innerText = h2.toLocaleString('bn-BD');
+        document.getElementById('h3').innerText = h3.toLocaleString('bn-BD');
+
+        document.getElementById('med1').innerText = med1.toLocaleString('bn-BD');
+        document.getElementById('med2').innerText = med2.toLocaleString('bn-BD');
+        document.getElementById('med3').innerText = med3.toLocaleString('bn-BD');
+
+        document.getElementById('t1').innerText = t1.toLocaleString('bn-BD');
+        document.getElementById('t2').innerText = t2.toLocaleString('bn-BD');
+        document.getElementById('t3').innerText = t3.toLocaleString('bn-BD');
+
+        document.getElementById('d1').innerText = d1.toLocaleString('bn-BD');
+        document.getElementById('d2').innerText = d2.toLocaleString('bn-BD');
+        document.getElementById('d3').innerText = d3.toLocaleString('bn-BD');
+
+        document.getElementById('n1').innerText = n1.toLocaleString('bn-BD');
+        document.getElementById('n2').innerText = n2.toLocaleString('bn-BD');
+        document.getElementById('n3').innerText = n3.toLocaleString('bn-BD');
+
+        document.getElementById('result').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
