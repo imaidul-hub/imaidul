@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- WhatsApp & Social Media Preview Meta Tags -->
+    <!-- Meta Tags -->
     <title>পে স্কেল ২০২৬ হিসাব</title>
     <meta name="description" content="By Maidul Islam">
 
-    <!-- Open Graph / WhatsApp Preview -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="পে স্কেল ২০২৬ হিসাব">
     <meta property="og:description" content="By Maidul Islam">
@@ -47,7 +47,7 @@
             font-weight: bold;
             color: #333;
         }
-        select, input[type="number"] {
+        select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -113,7 +113,7 @@
         <label for="empTypeSelect">চাকরির ধরন নির্বাচন করুন:</label>
         <select id="empTypeSelect">
             <option value="mpo">MPO (এমপিওভুক্ত শিক্ষক/কর্মচারী)</option>
-            <option value="govt">Govt Employee (সরকারি কর্মচারী - গেজেট অনুযায়ী)</option>
+            <option value="govt">Govt Employee (সরকারি কর্মচারী)</option>
         </select>
     </div>
 
@@ -144,7 +144,7 @@
                     <th>বিবরণ</th>
                     <th>১ম ধাপ<br><small>(১ জুলাই ২৬ - ৩১ ডিসেম্বর ২৬)</small></th>
                     <th>২য় ধাপ<br><small>(১ জানুয়ারি ২৭ - ৩০ জুন ২৭)</small></th>
-                    <th>৩য় ধাপ<br><small>(১ জুলাই ২৭ থেকে)</small></th>
+                    <th>৩য় ধাপ (ইনক্রিমেন্ট সহ)<br><small>(১ জুলাই ২৭ থেকে)</small></th>
                 </tr>
             </thead>
             <tbody>
@@ -155,7 +155,7 @@
                     <td id="m3"></td>
                 </tr>
                 <tr>
-                    <td>বাড়ি ভাড়া</td>
+                    <td>বাড়ি ভাড়া (পুরাতন বেসিকের উপর)</td>
                     <td id="h1"></td>
                     <td id="h2"></td>
                     <td id="h3"></td>
@@ -173,7 +173,7 @@
                     <td id="t3"></td>
                 </tr>
                 <tr>
-                    <td>কর্তন (১০% GPF/অবসর)</td>
+                    <td>কর্তন (পুরাতন বেসিকের ১০%)</td>
                     <td id="d1"></td>
                     <td id="d2"></td>
                     <td id="d3"></td>
@@ -241,7 +241,6 @@
         }
     }
 
-    // সরকারি গেজেট অনুযায়ী বাড়ি ভাড়া শতকরা হার হিসাব
     function getGovtHouseRentRate(basicSalary) {
         if (basicSalary <= 9700) return 0.65;
         if (basicSalary <= 16000) return 0.60;
@@ -276,19 +275,25 @@
 
         const m1 = Math.round(currentSalary + (totalIncrease * p1Rate));
         const m2 = Math.round(currentSalary + (totalIncrease * p2Rate));
-        const m3 = Math.round(newFixedSalary);
+
+        // ৩য় ধাপে পরবর্তী ইনক্রিমেন্ট যোগ করার লজিক:
+        let m3;
+        const fixedIndex = data.newSteps.indexOf(newFixedSalary);
+        if (fixedIndex !== -1 && fixedIndex + 1 < data.newSteps.length) {
+            m3 = data.newSteps[fixedIndex + 1];
+        } else {
+            m3 = newFixedSalary;
+        }
 
         let h1, h2, h3, med1, med2, med3;
 
         if (empType === 'mpo') {
-            h1 = Math.round(m1 * 0.15);
-            h2 = Math.round(m2 * 0.15);
-            h3 = Math.round(m3 * 0.15);
+            const fixedHouseRent = 1000;
+            h1 = h2 = h3 = fixedHouseRent;
             med1 = med2 = med3 = 500;
         } else if (empType === 'govt') {
-            h1 = Math.round(m1 * getGovtHouseRentRate(m1));
-            h2 = Math.round(m2 * getGovtHouseRentRate(m2));
-            h3 = Math.round(m3 * getGovtHouseRentRate(m3));
+            const fixedHouseRent = Math.round(currentSalary * getGovtHouseRentRate(currentSalary));
+            h1 = h2 = h3 = fixedHouseRent;
             med1 = med2 = med3 = 3000;
         }
 
@@ -296,9 +301,9 @@
         const t2 = m2 + h2 + med2;
         const t3 = m3 + h3 + med3;
 
-        const d1 = Math.round(m1 * 0.10);
-        const d2 = Math.round(m2 * 0.10);
-        const d3 = Math.round(m3 * 0.10);
+        const d1 = Math.round(currentSalary * 0.10);
+        const d2 = Math.round(currentSalary * 0.10);
+        const d3 = Math.round(currentSalary * 0.10);
 
         const n1 = t1 - d1;
         const n2 = t2 - d2;
