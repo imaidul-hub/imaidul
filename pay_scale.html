@@ -27,7 +27,7 @@
         }
         .container {
             background-color: #ffffff;
-            max-width: 680px;
+            max-width: 800px;
             width: 100%;
             padding: 25px;
             border-radius: 12px;
@@ -77,6 +77,7 @@
             border-left: 5px solid #2e7d32;
             border-radius: 4px;
             display: none;
+            overflow-x: auto;
         }
         .result-box h3 {
             margin-top: 0;
@@ -86,17 +87,21 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
+            min-width: 600px;
         }
         table, th, td {
             border: 1px solid #c8e6c9;
         }
         th, td {
             padding: 8px 10px;
-            text-align: left;
-            font-size: 14px;
+            text-align: center;
+            font-size: 13px;
         }
         th {
             background-color: #a5d6a7;
+        }
+        td:first-child, th:first-child {
+            text-align: left;
         }
         .highlight {
             font-weight: bold;
@@ -142,9 +147,10 @@
             <thead>
                 <tr>
                     <th>বিবরণ</th>
-                    <th>১ম ধাপ<br><small>(১ জুলাই ২৬ - ৩১ ডিসেম্বর ২৬)</small></th>
-                    <th>২য় ধাপ<br><small>(১ জানুয়ারি ২৭ - ৩০ জুন ২৭)</small></th>
-                    <th>৩য় ধাপ (ইনক্রিমেন্ট সহ)<br><small>(১ জুলাই ২৭ থেকে)</small></th>
+                    <th>১ম ধাপ<br><small>(১ জুলাই ২৬ - ৩১ ডিসে ২৬)</small></th>
+                    <th>২য় ধাপ<br><small>(১ জানু ২৭ - ৩০ জুন ২৭)</small></th>
+                    <th>৩য় ধাপ (ইনক্রিমেন্ট সহ)<br><small>(১ জুলাই ২৭ - ৩১ ডিসে ২৭)</small></th>
+                    <th>৪র্থ ধাপ (নতুন বেসিক)<br><small>(১ জানুয়ারি ২৮ থেকে)</small></th>
                 </tr>
             </thead>
             <tbody>
@@ -153,36 +159,42 @@
                     <td id="m1"></td>
                     <td id="m2"></td>
                     <td id="m3"></td>
+                    <td id="m4"></td>
                 </tr>
                 <tr>
-                    <td>বাড়ি ভাড়া (পুরাতন বেসিকের উপর)</td>
+                    <td>বাড়ি ভাড়া</td>
                     <td id="h1"></td>
                     <td id="h2"></td>
                     <td id="h3"></td>
+                    <td id="h4"></td>
                 </tr>
                 <tr>
                     <td>চিকিৎসা ভাতা</td>
                     <td id="med1"></td>
                     <td id="med2"></td>
                     <td id="med3"></td>
+                    <td id="med4"></td>
                 </tr>
                 <tr class="highlight">
                     <td>সর্বমোট (কর্তন ছাড়া)</td>
                     <td id="t1"></td>
                     <td id="t2"></td>
                     <td id="t3"></td>
+                    <td id="t4"></td>
                 </tr>
                 <tr>
-                    <td>কর্তন (পুরাতন বেসিকের ১০%)</td>
+                    <td>কর্তন</td>
                     <td id="d1"></td>
                     <td id="d2"></td>
                     <td id="d3"></td>
+                    <td id="d4"></td>
                 </tr>
                 <tr class="highlight">
                     <td>নিট প্রাপ্য বেতন</td>
                     <td id="n1"></td>
                     <td id="n2"></td>
                     <td id="n3"></td>
+                    <td id="n4"></td>
                 </tr>
             </tbody>
         </table>
@@ -241,14 +253,6 @@
         }
     }
 
-    function getGovtHouseRentRate(basicSalary) {
-        if (basicSalary <= 9700) return 0.65;
-        if (basicSalary <= 16000) return 0.60;
-        if (basicSalary <= 35500) return 0.55;
-        if (basicSalary <= 66000) return 0.50;
-        return 0.45;
-    }
-
     function calculateSalary() {
         const grade = parseInt(document.getElementById('gradeSelect').value);
         const currentSalary = parseFloat(document.getElementById('stepSelect').value);
@@ -273,10 +277,10 @@
         const p1Rate = (grade <= 9) ? 0.40 : 0.50;
         const p2Rate = (grade <= 9) ? 0.70 : 0.75;
 
+        // মূল বেতন হিসাব (১ম, ২য়, ৩য় ও ৪র্থ ধাপ)
         const m1 = Math.round(currentSalary + (totalIncrease * p1Rate));
         const m2 = Math.round(currentSalary + (totalIncrease * p2Rate));
 
-        // ৩য় ধাপে পরবর্তী ইনক্রিমেন্ট যোগ করার লজিক:
         let m3;
         const fixedIndex = data.newSteps.indexOf(newFixedSalary);
         if (fixedIndex !== -1 && fixedIndex + 1 < data.newSteps.length) {
@@ -285,55 +289,72 @@
             m3 = newFixedSalary;
         }
 
-        let h1, h2, h3, med1, med2, med3;
+        const m4 = m3; // ৪র্থ ধাপে ৩য় ধাপের বেসিক বহাল থাকছে
 
+        // বাড়ি ভাড়া (১ম, ২য় ও ৩য় ধাপে পুরাতন বেসিকের ১৫%, ৪র্থ ধাপে নতুন বেসিকের ১৫%)
+        const oldHouseRent = Math.round(currentSalary * 0.15);
+        const h1 = oldHouseRent;
+        const h2 = oldHouseRent;
+        const h3 = oldHouseRent;
+        const h4 = Math.round(m4 * 0.15); // নতুন বেসিকের ১৫%
+
+        // চিকিৎসা ভাতা
+        let med1, med2, med3, med4;
         if (empType === 'mpo') {
-            const fixedHouseRent = 1000;
-            h1 = h2 = h3 = fixedHouseRent;
-            med1 = med2 = med3 = 500;
+            med1 = med2 = med3 = med4 = 500;
         } else if (empType === 'govt') {
-            const fixedHouseRent = Math.round(currentSalary * getGovtHouseRentRate(currentSalary));
-            h1 = h2 = h3 = fixedHouseRent;
-            med1 = med2 = med3 = 3000;
+            med1 = med2 = med3 = med4 = 3000;
         }
 
+        // সর্বমোট (কর্তন ছাড়া)
         const t1 = m1 + h1 + med1;
         const t2 = m2 + h2 + med2;
         const t3 = m3 + h3 + med3;
+        const t4 = m4 + h4 + med4;
 
+        // কর্তন (১ম, ২য় ও ৩য় ধাপে পুরাতন বেসিকের ১০%, ৪র্থ ধাপে নতুন বেসিকের ১০%)
         const d1 = Math.round(currentSalary * 0.10);
         const d2 = Math.round(currentSalary * 0.10);
         const d3 = Math.round(currentSalary * 0.10);
+        const d4 = Math.round(m4 * 0.10); // নতুন বেসিকের ১০%
 
+        // নিট প্রাপ্য বেতন
         const n1 = t1 - d1;
         const n2 = t2 - d2;
         const n3 = t3 - d3;
+        const n4 = t4 - d4;
 
         document.getElementById('newFixedSalary').innerText = newFixedSalary.toLocaleString('bn-BD');
 
         document.getElementById('m1').innerText = m1.toLocaleString('bn-BD');
         document.getElementById('m2').innerText = m2.toLocaleString('bn-BD');
         document.getElementById('m3').innerText = m3.toLocaleString('bn-BD');
+        document.getElementById('m4').innerText = m4.toLocaleString('bn-BD');
 
         document.getElementById('h1').innerText = h1.toLocaleString('bn-BD');
         document.getElementById('h2').innerText = h2.toLocaleString('bn-BD');
         document.getElementById('h3').innerText = h3.toLocaleString('bn-BD');
+        document.getElementById('h4').innerText = h4.toLocaleString('bn-BD');
 
         document.getElementById('med1').innerText = med1.toLocaleString('bn-BD');
         document.getElementById('med2').innerText = med2.toLocaleString('bn-BD');
         document.getElementById('med3').innerText = med3.toLocaleString('bn-BD');
+        document.getElementById('med4').innerText = med4.toLocaleString('bn-BD');
 
         document.getElementById('t1').innerText = t1.toLocaleString('bn-BD');
         document.getElementById('t2').innerText = t2.toLocaleString('bn-BD');
         document.getElementById('t3').innerText = t3.toLocaleString('bn-BD');
+        document.getElementById('t4').innerText = t4.toLocaleString('bn-BD');
 
         document.getElementById('d1').innerText = d1.toLocaleString('bn-BD');
         document.getElementById('d2').innerText = d2.toLocaleString('bn-BD');
         document.getElementById('d3').innerText = d3.toLocaleString('bn-BD');
+        document.getElementById('d4').innerText = d4.toLocaleString('bn-BD');
 
         document.getElementById('n1').innerText = n1.toLocaleString('bn-BD');
         document.getElementById('n2').innerText = n2.toLocaleString('bn-BD');
         document.getElementById('n3').innerText = n3.toLocaleString('bn-BD');
+        document.getElementById('n4').innerText = n4.toLocaleString('bn-BD');
 
         document.getElementById('result').style.display = 'block';
     }
