@@ -27,7 +27,7 @@
         }
         .container {
             background-color: #ffffff;
-            max-width: 800px;
+            max-width: 850px;
             width: 100%;
             padding: 25px;
             border-radius: 12px;
@@ -54,21 +54,34 @@
             border-radius: 6px;
             font-size: 15px;
         }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
         button {
-            width: 100%;
+            flex: 1;
             padding: 12px;
-            background-color: #2e7d32;
-            color: white;
             border: none;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.3s;
-            margin-top: 10px;
         }
-        button:hover {
+        .btn-calc {
+            background-color: #2e7d32;
+            color: white;
+        }
+        .btn-calc:hover {
             background-color: #1b5e20;
+        }
+        .btn-reset {
+            background-color: #d32f2f;
+            color: white;
+        }
+        .btn-reset:hover {
+            background-color: #b71c1c;
         }
         .result-box {
             margin-top: 25px;
@@ -116,9 +129,19 @@
     
     <div class="form-group">
         <label for="empTypeSelect">চাকরির ধরন নির্বাচন করুন:</label>
-        <select id="empTypeSelect">
+        <select id="empTypeSelect" onchange="toggleLocationOption()">
             <option value="mpo">MPO (এমপিওভুক্ত শিক্ষক/কর্মচারী)</option>
             <option value="govt">Govt Employee (সরকারি কর্মচারী)</option>
+        </select>
+    </div>
+
+    <!-- সরকারি কর্মচারীদের জন্য স্থান নির্বাচন -->
+    <div class="form-group" id="locationGroup" style="display: none;">
+        <label for="locationSelect">কর্মস্থলের এলাকা নির্বাচন করুন:</label>
+        <select id="locationSelect">
+            <option value="dhaka">ঢাকা উত্তর ও দক্ষিণ সিটি কর্পোরেশন এলাকা</option>
+            <option value="div_city">খুলনা, রাজশাহী, চট্টগ্রাম, সিলেট, বরিশাল, নারায়ণগঞ্জ, কুমিল্লা, রংপুর, গাজীপুর, ময়মনসিংহ ও বগুড়া সিটি কর্পোরেশন এবং সাভার ও কক্সবাজার পৌর এলাকা</option>
+            <option value="other">অন্যান্য স্থানের জন্য</option>
         </select>
     </div>
 
@@ -136,7 +159,10 @@
         </select>
     </div>
 
-    <button onclick="calculateSalary()">বেতন হিসাব করুন</button>
+    <div class="btn-group">
+        <button class="btn-calc" onclick="calculateSalary()">বেতন হিসাব করুন</button>
+        <button class="btn-reset" onclick="resetCalculator()">ক্লিয়ার / রিসেট</button>
+    </div>
 
     <div id="result" class="result-box">
         <h3>বেতন নির্ধারণ বিবরণী</h3>
@@ -162,7 +188,7 @@
                     <td id="m4"></td>
                 </tr>
                 <tr>
-                    <td>বাড়ি ভাড়া</td>
+                    <td>বাড়ি ভাড়া <span id="rentRateLabel"></span></td>
                     <td id="h1"></td>
                     <td id="h2"></td>
                     <td id="h3"></td>
@@ -235,6 +261,16 @@
         }
     };
 
+    function toggleLocationOption() {
+        const empType = document.getElementById('empTypeSelect').value;
+        const locationGroup = document.getElementById('locationGroup');
+        if (empType === 'govt') {
+            locationGroup.style.display = 'block';
+        } else {
+            locationGroup.style.display = 'none';
+        }
+    }
+
     function updatePaySteps() {
         const grade = document.getElementById('gradeSelect').value;
         const stepSelect = document.getElementById('stepSelect');
@@ -251,6 +287,28 @@
         } else {
             stepSelect.disabled = true;
         }
+    }
+
+    // গেজেট অনুযায়ী বাড়ি ভাড়ার শতকরা হার নির্ধারণ
+    function getGazetteHouseRentRate(grade, locationKey) {
+        if (grade >= 16 && grade <= 20) {
+            if (locationKey === 'dhaka') return 60;
+            if (locationKey === 'div_city') return 50;
+            return 45;
+        } else if (grade >= 10 && grade <= 15) {
+            if (locationKey === 'dhaka') return 50;
+            if (locationKey === 'div_city') return 40;
+            return 35;
+        } else if (grade >= 5 && grade <= 9) {
+            if (locationKey === 'dhaka') return 45;
+            if (locationKey === 'div_city') return 35;
+            return 30;
+        } else if (grade >= 1 && grade <= 4) {
+            if (locationKey === 'dhaka') return 40;
+            if (locationKey === 'div_city') return 30;
+            return 25;
+        }
+        return 15;
     }
 
     function calculateSalary() {
@@ -277,7 +335,7 @@
         const p1Rate = (grade <= 9) ? 0.40 : 0.50;
         const p2Rate = (grade <= 9) ? 0.70 : 0.75;
 
-        // মূল বেতন হিসাব (১ম, ২য়, ৩য় ও ৪র্থ ধাপ)
+        // মূল বেতন
         const m1 = Math.round(currentSalary + (totalIncrease * p1Rate));
         const m2 = Math.round(currentSalary + (totalIncrease * p2Rate));
 
@@ -289,14 +347,23 @@
             m3 = newFixedSalary;
         }
 
-        const m4 = m3; // ৪র্থ ধাপে ৩য় ধাপের বেসিক বহাল থাকছে
+        const m4 = m3;
 
-        // বাড়ি ভাড়া (১ম, ২য় ও ৩য় ধাপে পুরাতন বেসিকের ১৫%, ৪র্থ ধাপে নতুন বেসিকের ১৫%)
-        const oldHouseRent = Math.round(currentSalary * 0.15);
+        // বাড়ি ভাড়ার হার নির্ধারণ (MPO হলে ১৫%, Govt হলে গেজেটের সারণি অনুযায়ী)
+        let rentPercent = 15;
+        if (empType === 'govt') {
+            const locKey = document.getElementById('locationSelect').value;
+            rentPercent = getGazetteHouseRentRate(grade, locKey);
+        }
+
+        document.getElementById('rentRateLabel').innerText = `(${rentPercent}%)`;
+
+        // বাড়ি ভাড়া
+        const oldHouseRent = Math.round(currentSalary * (rentPercent / 100));
         const h1 = oldHouseRent;
         const h2 = oldHouseRent;
         const h3 = oldHouseRent;
-        const h4 = Math.round(m4 * 0.15); // নতুন বেসিকের ১৫%
+        const h4 = Math.round(m4 * (rentPercent / 100));
 
         // চিকিৎসা ভাতা
         let med1, med2, med3, med4;
@@ -312,11 +379,11 @@
         const t3 = m3 + h3 + med3;
         const t4 = m4 + h4 + med4;
 
-        // কর্তন (১ম, ২য় ও ৩য় ধাপে পুরাতন বেসিকের ১০%, ৪র্থ ধাপে নতুন বেসিকের ১০%)
+        // কর্তন
         const d1 = Math.round(currentSalary * 0.10);
         const d2 = Math.round(currentSalary * 0.10);
         const d3 = Math.round(currentSalary * 0.10);
-        const d4 = Math.round(m4 * 0.10); // নতুন বেসিকের ১০%
+        const d4 = Math.round(m4 * 0.10);
 
         // নিট প্রাপ্য বেতন
         const n1 = t1 - d1;
@@ -357,6 +424,21 @@
         document.getElementById('n4').innerText = n4.toLocaleString('bn-BD');
 
         document.getElementById('result').style.display = 'block';
+    }
+
+    function resetCalculator() {
+        document.getElementById('empTypeSelect').selectedIndex = 0;
+        toggleLocationOption();
+        document.getElementById('gradeSelect').selectedIndex = 0;
+        
+        const stepSelect = document.getElementById('stepSelect');
+        stepSelect.innerHTML = '<option value="">-- প্রথমে গ্রেড নির্বাচন করুন --</option>';
+        stepSelect.disabled = true;
+
+        document.getElementById('result').style.display = 'none';
+
+        if (window.localStorage) localStorage.clear();
+        if (window.sessionStorage) sessionStorage.clear();
     }
 </script>
 
