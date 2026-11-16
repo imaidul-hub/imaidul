@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>অ্যাডমিন প্যানেল</title>
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.bar b{font-size:17px}
+.bar button,.bar a{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;margin-right:6px}
+.wrap{max-width:900px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px}
+input,textarea,button.act{font:inherit;padding:10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin:4px 0}
+button.act{background:var(--pr);color:#fff;border:0;cursor:pointer;font-weight:700}
+.sec{background:var(--mu)!important}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.st{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center}
+.st b{display:block;font-size:24px;color:var(--pr)}
+.st span{font-size:12px;color:var(--mu)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(4,1fr)}}
+.m{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 6px;text-align:center}
+.m i{font-style:normal;font-size:28px;display:block}
+.m:active{transform:scale(.97)}
+h2{font-size:17px;margin:18px 0 8px;color:var(--pr);border-right:4px solid var(--gd);padding-right:8px}
+.mu{color:var(--mu);font-size:13px}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.del{background:none;border:0;color:var(--er);cursor:pointer;font:inherit}
+select{font:inherit;padding:10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin:4px 0}
+.tabs{display:flex;gap:6px;margin:8px 0 10px}
+.tabs button{flex:1;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:9px 4px;border-radius:10px;font:inherit;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--pr);color:#fff;border-color:var(--pr)}
+.ed{background:none;border:0;color:var(--pr);cursor:pointer;font:inherit;margin-right:6px}
+.row2{display:flex;gap:8px}.row2>*{flex:1;min-width:0}
+#toast{position:fixed;left:10px;right:10px;top:58px;z-index:99;max-width:640px;margin:0 auto;padding:12px 40px 12px 14px;border-radius:12px;color:#fff;font-size:14px;white-space:pre-wrap;word-break:break-word;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#toast.err{background:#b42318}#toast.ok{background:#0f7a4a}
+#toast button{position:absolute;right:8px;top:6px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
+.hide{display:none}
+.login{max-width:380px;margin:40px auto}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b>🕌 অ্যাডমিন প্যানেল</b>
+  <div><a href="index.html">হোম</a><button id="out" class="hide" onclick="auth.signOut()">লগআউট</button></div>
+</div>
+
+<div id="toast" class="hide"><span id="tmsg"></span><button onclick="$('toast').classList.add('hide')">×</button></div>
+
+<div class="wrap">
+  <!-- লগইন -->
+  <div id="login" class="card login">
+    <h3 style="margin-top:0">🔐 অ্যাডমিন লগইন</h3>
+    <input id="em" type="email" placeholder="ইমেইল" autocomplete="username">
+    <input id="pw" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+    <button class="act" onclick="login()">লগইন</button>
+    <button class="act sec" onclick="reset()">পাসওয়ার্ড ভুলে গেছেন?</button>
+    <div id="msg" class="mu"></div>
+  </div>
+
+  <!-- ড্যাশবোর্ড -->
+  <div id="dash" class="hide">
+    <div class="mu" id="who"></div>
+    <div class="tabs">
+      <button id="b1" class="on" onclick="tab(1)">🏠 ড্যাশবোর্ড</button>
+      <button id="b2" onclick="tab(2)">👨‍🏫 শিক্ষক</button>
+      <button id="b3" onclick="tab(3)">🗓️ রুটিন</button>
+      <button id="b4" onclick="tab(4)">🔁 প্রক্সি</button>
+    </div>
+    <div id="p1">
+    <div class="stats">
+      <div class="st"><b id="nT">–</b><span>শিক্ষক</span></div>
+      <div class="st"><b id="nS">–</b><span>ছাত্র/ছাত্রী</span></div>
+      <div class="st"><b id="nN">–</b><span>নোটিশ</span></div>
+    </div>
+
+    <h2>ম্যানেজমেন্ট</h2>
+    <div class="grid">
+      <a class="m" href="students.html"><i>🎓</i>ছাত্র/ছাত্রী</a>
+      <a class="m" href="#" onclick="tab(2);return false"><i>👨‍🏫</i>শিক্ষক</a>
+      <a class="m" href="#" onclick="tab(3);return false"><i>🗓️</i>রুটিন</a>
+      <a class="m" href="#" onclick="tab(4);return false"><i>🔁</i>প্রক্সি</a>
+      <a class="m" href="attendance.html"><i>✅</i>হাজিরা</a>
+      <a class="m" href="fees.html"><i>💰</i>ফি ও বেতন</a>
+      <a class="m" href="results.html"><i>📝</i>ফলাফল</a>
+      <a class="m" href="notices.html"><i>📢</i>নোটিশ</a>
+      <a class="m" href="contact.html"><i>📞</i>যোগাযোগ</a>
+    </div>
+
+    <h2>নতুন নোটিশ দিন</h2>
+    <div class="card">
+      <input id="nt" placeholder="নোটিশের শিরোনাম">
+      <textarea id="nb" rows="3" placeholder="বিস্তারিত"></textarea>
+      <input id="nd" type="date">
+      <button class="act" onclick="addNotice()">নোটিশ প্রকাশ করুন</button>
+    </div>
+
+    <h2>সাম্প্রতিক নোটিশ</h2>
+    <div class="card" id="nlist"></div>
+    </div>
+
+    <!-- শিক্ষক -->
+    <div id="p2" class="hide">
+      <div class="card">
+        <h3 id="th" style="margin-top:0">নতুন শিক্ষক যোগ করুন</h3>
+        <input id="tn" placeholder="শিক্ষকের নাম">
+        <div class="row2"><input id="ts" placeholder="বিষয়"><input id="tp" placeholder="মোবাইল"></div>
+        <button id="tbtn" class="act" onclick="saveTeacher()">শিক্ষক সংরক্ষণ</button>
+        <button id="tcan" class="act sec hide" onclick="cancelT()">বাতিল</button>
+      </div>
+      <h2>শিক্ষক তালিকা <span id="tcount" class="mu"></span></h2>
+      <div class="card" id="tlist"></div>
+    </div>
+
+    <!-- রুটিন -->
+    <div id="p3" class="hide">
+      <div class="card">
+        <h3 id="rh" style="margin-top:0">রুটিন যোগ করুন</h3>
+        <select id="rt"></select>
+        <div class="row2"><select id="rd"></select><input id="rp" type="number" min="1" placeholder="পিরিয়ড নং"></div>
+        <div class="row2"><input id="rs" type="time"><input id="re" type="time"></div>
+        <div class="row2"><input id="rc" placeholder="শ্রেণি"><input id="rj" placeholder="বিষয়"></div>
+        <input id="rr" placeholder="রুম (ঐচ্ছিক)">
+        <button id="rbtn" class="act" onclick="saveRoutine()">রুটিন সংরক্ষণ</button>
+        <button id="rcan" class="act sec hide" onclick="cancelR()">বাতিল</button>
+      </div>
+      <h2>শিক্ষকের রুটিন (এডিট/মুছুন)</h2>
+      <select id="lt"></select>
+      <div class="card" id="rlist"></div>
+    </div>
+
+    <!-- প্রক্সি -->
+    <div id="p4" class="hide">
+      <div class="card">
+        <h3 id="ph" style="margin-top:0">প্রক্সি যোগ করুন</h3>
+        <input id="pd" type="date">
+        <select id="pa"></select>
+        <div class="mu">↑ অনুপস্থিত শিক্ষক (ঐচ্ছিক)</div>
+        <select id="ps"></select>
+        <div class="mu">↑ যিনি প্রক্সি নিবেন</div>
+        <div class="row2"><input id="pp" type="number" min="1" placeholder="পিরিয়ড নং"><input id="pr" placeholder="রুম (ঐচ্ছিক)"></div>
+        <div class="row2"><input id="pc" placeholder="শ্রেণি"><input id="pj" placeholder="বিষয়"></div>
+        <button id="pbtn" class="act" onclick="saveProxy()">প্রক্সি সংরক্ষণ</button>
+        <button id="pcan" class="act sec hide" onclick="cancelP()">বাতিল</button>
+      </div>
+      <h2>এই তারিখের প্রক্সি</h2>
+      <div class="card" id="plist"></div>
+      <div class="mu" style="text-align:center"><a href="proxy.html" style="color:var(--pr)">📄 সপ্তাহের প্রক্সি রিপোর্ট (পাবলিক পেজ)</a></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyAtWJQB6ipoan9B4BbLW3bBXTRWI52sxxQ",
+    authDomain: "chfm-71bce.firebaseapp.com",
+    databaseURL: "https://chfm-71bce-default-rtdb.firebaseio.com",
+    projectId: "chfm-71bce",
+    storageBucket: "chfm-71bce.firebasestorage.app",
+    messagingSenderId: "312826990460",
+    appId: "1:312826990460:web:7ffdf5523849ad6039def9",
+    measurementId: "G-2HBJDF5S45"
+});
+const auth = firebase.auth(), db = firebase.firestore();
+// ফিক্স: মোবাইল নেটওয়ার্কে WebChannel ব্লক হলে long-polling ব্যবহার করবে (অবশ্যই অন্য কোনো db কলের আগে)
+db.settings({ experimentalForceLongPolling: true });
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+let unsubN = null;
+// ===== মেসেজ/এরর দেখানো =====
+var toastT = null;
+function showMsg(text, type){
+  const t = $('toast'); $('tmsg').textContent = text;
+  t.className = type === 'ok' ? 'ok' : 'err';
+  clearTimeout(toastT);
+  if (type === 'ok') toastT = setTimeout(() => t.classList.add('hide'), 3000);
+}
+const ERR = {
+  'permission-denied': 'অনুমতি নেই। (১) লগইন করা আছে কিনা দেখুন (২) Firestore Rules Publish করা আছে কিনা দেখুন।',
+  'unauthenticated': 'লগইন করা নেই। আবার লগইন করুন।',
+  'unavailable': 'সার্ভারের সাথে সংযোগ হচ্ছে না। ইন্টারনেট দেখুন, অথবা Firestore Database তৈরি হয়েছে কিনা দেখুন।',
+  'not-found': 'Firestore Database তৈরি করা হয়নি।',
+  'failed-precondition': 'এই কুয়েরির জন্য ইনডেক্স বা ডাটাবেস সেটআপ দরকার।',
+  'resource-exhausted': 'আজকের ফ্রি কোটা শেষ। কাল আবার চেষ্টা করুন।',
+  'auth/invalid-credential': 'ইমেইল বা পাসওয়ার্ড ভুল।',
+  'auth/wrong-password': 'পাসওয়ার্ড ভুল।',
+  'auth/user-not-found': 'এই ইমেইলে কোনো ইউজার নেই। Authentication → Users এ যোগ করুন।',
+  'auth/invalid-email': 'ইমেইলের ফরমেট ঠিক নেই।',
+  'auth/operation-not-allowed': 'Authentication এ Email/Password চালু করা নেই।',
+  'auth/unauthorized-domain': 'এই ডোমেইন Firebase এ অনুমোদিত নয়। Authentication → Settings → Authorized domains এ যোগ করুন।',
+  'auth/network-request-failed': 'ইন্টারনেট সংযোগে সমস্যা।',
+  'auth/too-many-requests': 'অনেকবার ভুল চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।',
+  'auth/invalid-api-key': 'Firebase API key ভুল। config আবার দেখুন।'
+};
+function fail(e){
+  const c = (e && e.code) || 'error', m = (e && e.message) || String(e);
+  console.error(e);
+  showMsg('❌ ' + (ERR[c] || 'সমস্যা হয়েছে।') + '\n[' + c + '] ' + m, 'err');
+}
+
+// সেভ ৮ সেকেন্ডে সার্ভার নিশ্চিত না করলে সতর্কবার্তা
+function guard(p){
+  const t = setTimeout(() => showMsg('⚠️ সার্ভার থেকে নিশ্চিতকরণ আসেনি, ডাটা Firebase এ সেভ হয়নি।\nসম্ভাব্য কারণ: (১) Firestore ডাটাবেসের ID "(default)" নয় (২) ইন্টারনেট/ব্লক (৩) Rules Publish হয়নি।', 'err'), 8000);
+  Promise.resolve(p).then(() => clearTimeout(t), () => clearTimeout(t));
+  return p;
+}
+window.addEventListener('unhandledrejection', ev => fail(ev.reason));
+window.addEventListener('error', ev => showMsg('❌ স্ক্রিপ্ট এরর: ' + ev.message, 'err'));
+
+
+function login(){
+  $('msg').textContent = 'অপেক্ষা করুন...';
+  auth.signInWithEmailAndPassword($('em').value.trim(), $('pw').value)
+    .catch(e => { $('msg').textContent = ''; fail(e); });
+}
+function reset(){
+  const e = $('em').value.trim();
+  if (!e) return showMsg('আগে ইমেইল লিখুন');
+  auth.sendPasswordResetEmail(e).then(() => showMsg('✅ রিসেট লিংক ইমেইলে পাঠানো হয়েছে', 'ok'))
+    .catch(fail);
+}
+
+// কাউন্ট: আগে aggregate count, না হলে সাধারণ get
+async function count(col){
+  try { return (await db.collection(col).count().get()).data().count; }
+  catch(e){ return (await db.collection(col).get()).size; }
+}
+async function loadStats(){
+  for (const [col, id] of [['teachers','nT'],['students','nS'],['notices','nN']])
+    count(col).then(n => $(id).textContent = bn(n)).catch(e => { $(id).textContent = '০'; fail(e); });
+}
+
+auth.onAuthStateChanged(u => {
+  $('login').classList.toggle('hide', !!u);
+  $('dash').classList.toggle('hide', !u);
+  $('out').classList.toggle('hide', !u);
+  if (unsubN) { unsubN(); unsubN = null; }
+  stopData();
+  if (!u) return;
+  $('who').textContent = '👤 ' + u.email;
+  $('nd').value = today();
+  loadStats();
+  startData();
+  unsubN = db.collection('notices').orderBy('date','desc').limit(10).onSnapshot(s => {
+    $('nlist').innerHTML = s.empty ? '<div class="mu">কোনো নোটিশ নেই</div>' : s.docs.map(d => { const n = d.data(); return `<div class="row">
+      <div><b>${esc(n.title)}</b><div class="mu">${bn(esc(n.date))}</div><div>${esc(n.body)}</div></div>
+      <button class="del" onclick="delNotice('${d.id}')">মুছুন</button></div>`; }).join('');
+  }, fail);
+});
+
+function addNotice(){
+  const n = {title:$('nt').value.trim(), body:$('nb').value.trim(), date:$('nd').value};
+  if (!n.title || !n.date) return showMsg('শিরোনাম ও তারিখ দিন');
+  guard(db.collection('notices').add(n)).then(() => { $('nt').value = $('nb').value = ''; loadStats(); showMsg('✅ নোটিশ প্রকাশ হয়েছে', 'ok'); }).catch(fail);
+}
+function delNotice(id){ if (confirm('নোটিশটি মুছবেন?')) db.collection('notices').doc(id).delete().then(loadStats).catch(fail); }
+
+// ===== শিক্ষক ও রুটিন =====
+var teachers = [], rts = [], unsubT = null, unsubR = null, editT = null, editR = null;
+const DAYS = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const ORDER = [6,0,1,2,3,4,5];
+$('rd').innerHTML = ORDER.map(i => `<option value="${i}">${DAYS[i]}</option>`).join('');
+$('lt').onchange = loadRoutines;
+const fmt = t => { if (!t) return ''; let [h,m] = t.split(':').map(Number); const ap = h>=12?'PM':'AM'; h = h%12||12; return bn(h+':'+String(m).padStart(2,'0'))+' '+ap; };
+
+function tab(n){ [1,2,3,4].forEach(i => { $('p'+i).classList.toggle('hide', i!==n); $('b'+i).classList.toggle('on', i===n); }); }
+
+function stopData(){
+  if (unsubT) { unsubT(); unsubT = null; }
+  if (unsubR) { unsubR(); unsubR = null; }
+  if (unsubP) { unsubP(); unsubP = null; }
+  tab(1);
+}
+function startData(){
+  unsubT = db.collection('teachers').orderBy('name').onSnapshot(s => {
+    teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
+    const opts = teachers.map(t => `<option value="${t.id}">${esc(t.name)}${t.subject?' ('+esc(t.subject)+')':''}</option>`).join('');
+    const kr = $('rt').value, kl = $('lt').value;
+    const ka = $('pa').value, ks = $('ps').value;
+    $('rt').innerHTML = opts; $('lt').innerHTML = opts; $('ps').innerHTML = opts;
+    $('pa').innerHTML = '<option value="">-- অনুপস্থিত শিক্ষক (ঐচ্ছিক) --</option>' + opts;
+    if (kr) $('rt').value = kr; if (kl) $('lt').value = kl;
+    $('pa').value = ka; if (ks) $('ps').value = ks;
+    loadProxies();
+    $('tcount').textContent = '(মোট ' + bn(teachers.length) + ' জন)';
+    $('tlist').innerHTML = teachers.map(t => `<div class="row">
+      <div><b>${esc(t.name)}</b><div class="mu">${esc(t.subject||'')} ${esc(t.phone||'')}</div></div>
+      <div style="white-space:nowrap"><button class="ed" onclick="editTeacher('${t.id}')">✏️ এডিট</button><button class="del" onclick="delTeacher('${t.id}')">মুছুন</button></div></div>`).join('')
+      || '<div class="mu">কোনো শিক্ষক নেই</div>';
+    loadRoutines();
+  }, fail);
+}
+
+// --- শিক্ষক ---
+function saveTeacher(){
+  const d = {name:$('tn').value.trim(), subject:$('ts').value.trim(), phone:$('tp').value.trim()};
+  if (!d.name) return showMsg('শিক্ষকের নাম দিন');
+  const p = editT ? db.collection('teachers').doc(editT).update(d) : db.collection('teachers').add(d);
+  guard(p).then(() => { cancelT(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
+}
+function editTeacher(id){
+  const t = teachers.find(x => x.id === id); if (!t) return;
+  editT = id; $('tn').value = t.name||''; $('ts').value = t.subject||''; $('tp').value = t.phone||'';
+  $('th').textContent = '✏️ শিক্ষকের তথ্য এডিট'; $('tbtn').textContent = '✅ আপডেট করুন'; $('tcan').classList.remove('hide');
+  $('tn').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelT(){
+  editT = null; $('tn').value = $('ts').value = $('tp').value = '';
+  $('th').textContent = 'নতুন শিক্ষক যোগ করুন'; $('tbtn').textContent = 'শিক্ষক সংরক্ষণ'; $('tcan').classList.add('hide');
+}
+function delTeacher(id){
+  if (!confirm('এই শিক্ষক ও তাঁর সব রুটিন মুছবেন?')) return;
+  db.collection('routines').where('teacherId','==',id).get()
+    .then(s => Promise.all(s.docs.map(d => d.ref.delete())))
+    .then(() => db.collection('teachers').doc(id).delete())
+    .then(() => { if (editT === id) cancelT(); loadStats(); }).catch(fail);
+}
+
+// --- রুটিন ---
+function saveRoutine(){
+  const d = {teacherId:$('rt').value, day:+$('rd').value, period:+$('rp').value, start:$('rs').value, end:$('re').value,
+    class:$('rc').value.trim(), subject:$('rj').value.trim(), room:$('rr').value.trim()};
+  if (!d.teacherId || !d.period || !d.class || !d.subject) return showMsg('শিক্ষক, পিরিয়ড, শ্রেণি ও বিষয় দিন');
+  const wasEdit = !!editR;
+  const p = editR ? db.collection('routines').doc(editR).update(d) : db.collection('routines').add(d);
+  guard(p).then(() => {
+    $('lt').value = d.teacherId; loadRoutines();
+    cancelR(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok');
+    if (!wasEdit) { $('rt').value = d.teacherId; $('rd').value = d.day; $('rp').value = d.period + 1; }
+  }).catch(fail);
+}
+function editRoutine(id){
+  const r = rts.find(x => x.id === id); if (!r) return;
+  editR = id; $('rt').value = r.teacherId; $('rd').value = r.day; $('rp').value = r.period;
+  $('rs').value = r.start||''; $('re').value = r.end||''; $('rc').value = r.class||''; $('rj').value = r.subject||''; $('rr').value = r.room||'';
+  $('rh').textContent = '✏️ রুটিন এডিট'; $('rbtn').textContent = '✅ আপডেট করুন'; $('rcan').classList.remove('hide');
+  $('rt').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelR(){
+  editR = null; $('rp').value = $('rs').value = $('re').value = $('rc').value = $('rj').value = $('rr').value = '';
+  $('rh').textContent = 'রুটিন যোগ করুন'; $('rbtn').textContent = 'রুটিন সংরক্ষণ'; $('rcan').classList.add('hide');
+}
+function delRoutine(id){ if (confirm('রুটিনটি মুছবেন?')) db.collection('routines').doc(id).delete().catch(fail); }
+
+function loadRoutines(){
+  if (unsubR) { unsubR(); unsubR = null; }
+  const id = $('lt').value;
+  if (!id) { $('rlist').innerHTML = '<div class="mu">আগে শিক্ষক যোগ করুন</div>'; return; }
+  unsubR = db.collection('routines').where('teacherId','==',id).onSnapshot(s => {
+    rts = s.docs.map(d => ({id:d.id, ...d.data()}));
+    $('rlist').innerHTML = ORDER.map(day => {
+      const it = rts.filter(r => r.day === day).sort((a,b) => a.period - b.period);
+      if (!it.length) return '';
+      return `<div style="font-weight:700;color:var(--pr);margin-top:8px">${DAYS[day]}</div>` + it.map(r => `<div class="row">
+        <div><b>${bn(r.period)}ম পিরিয়ড</b> — ${esc(r.class)} (${esc(r.subject)})
+        <div class="mu">${fmt(r.start)}${r.end?' – '+fmt(r.end):''}${r.room?' • রুম '+esc(r.room):''}</div></div>
+        <div style="white-space:nowrap"><button class="ed" onclick="editRoutine('${r.id}')">✏️</button><button class="del" onclick="delRoutine('${r.id}')">✕</button></div></div>`).join('');
+    }).join('') || '<div class="mu">এই শিক্ষকের কোনো রুটিন নেই</div>';
+  }, fail);
+}
+
+// --- প্রক্সি ---
+var pxs = [], unsubP = null, editP = null;
+const tn = id => (teachers.find(t => t.id === id) || {}).name || '—';
+$('pd').value = today();
+$('pd').onchange = loadProxies;
+
+function loadProxies(){
+  if (unsubP) { unsubP(); unsubP = null; }
+  const d = $('pd').value; if (!d) return;
+  unsubP = db.collection('proxies').where('date','==',d).onSnapshot(s => {
+    pxs = s.docs.map(x => ({id:x.id, ...x.data()})).sort((a,b) => a.period - b.period);
+    $('plist').innerHTML = pxs.length ? pxs.map(p => `<div class="row">
+      <div><b>${bn(p.period)}ম পিরিয়ড</b> — ${esc(tn(p.subId))} → ${esc(p.class)} (${esc(p.subject)})
+      <div class="mu">${p.absentId ? esc(tn(p.absentId))+'-এর পরিবর্তে' : ''}${p.room ? ' • রুম '+esc(p.room) : ''}</div></div>
+      <div style="white-space:nowrap"><button class="ed" onclick="editProxy('${p.id}')">✏️</button><button class="del" onclick="delProxy('${p.id}')">✕</button></div></div>`).join('')
+      : '<div class="mu">এই তারিখে কোনো প্রক্সি নেই</div>';
+  }, fail);
+}
+function saveProxy(){
+  const p = {date:$('pd').value, period:+$('pp').value, absentId:$('pa').value, subId:$('ps').value,
+    class:$('pc').value.trim(), subject:$('pj').value.trim(), room:$('pr').value.trim()};
+  if (!p.date || !p.period || !p.subId || !p.class || !p.subject) return showMsg('তারিখ, পিরিয়ড, প্রক্সি শিক্ষক, শ্রেণি ও বিষয় দিন');
+  if (p.absentId === p.subId) return showMsg('অনুপস্থিত ও প্রক্সি শিক্ষক একই হতে পারে না');
+  const wasEdit = !!editP;
+  const q = editP ? db.collection('proxies').doc(editP).update(p) : db.collection('proxies').add(p);
+  guard(q).then(() => { cancelP(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); $('pd').value = p.date; if (!wasEdit) $('pp').value = p.period + 1; loadProxies(); })
+    .catch(fail);
+}
+function editProxy(id){
+  const p = pxs.find(x => x.id === id); if (!p) return;
+  editP = id; $('pd').value = p.date; $('pa').value = p.absentId||''; $('ps').value = p.subId; $('pp').value = p.period;
+  $('pc').value = p.class||''; $('pj').value = p.subject||''; $('pr').value = p.room||'';
+  $('ph').textContent = '✏️ প্রক্সি এডিট'; $('pbtn').textContent = '✅ আপডেট করুন'; $('pcan').classList.remove('hide');
+  $('pd').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelP(){
+  editP = null; $('pa').value = ''; $('pp').value = $('pc').value = $('pj').value = $('pr').value = '';
+  $('ph').textContent = 'প্রক্সি যোগ করুন'; $('pbtn').textContent = 'প্রক্সি সংরক্ষণ'; $('pcan').classList.add('hide');
+}
+function delProxy(id){ if (confirm('প্রক্সিটি মুছবেন?')) db.collection('proxies').doc(id).delete().catch(fail); }
+</script>
+</body>
+</html>
