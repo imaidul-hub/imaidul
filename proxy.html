@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>প্রক্সি তালিকা</title>
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.bar a{background:rgba(255,255,255,.2);border-radius:8px;padding:6px 12px;font-size:13px}
+.wrap{max-width:820px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+input,select,button.act{font:inherit;padding:10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin:4px 0}
+button.act{background:var(--pr);color:#fff;border:0;cursor:pointer;font-weight:700}
+.nav{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.nav button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
+.nav .rg{flex:1;text-align:center;font-weight:700}
+.sum{display:flex;gap:8px;margin-bottom:10px}
+.sum div{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center}
+.sum b{display:block;font-size:24px;color:var(--pr)}
+.sum span{font-size:12px;color:var(--mu)}
+h2{font-size:17px;margin:16px 0 8px;color:var(--pr);border-right:4px solid var(--gd);padding-right:8px}
+.t{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.cnt{background:var(--pr);color:#fff;border-radius:10px;min-width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.mu{color:var(--mu);font-size:13px}
+.chip{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:0 8px;font-size:12px;margin:2px 2px 0 0}
+.day{font-weight:700;color:var(--pr);margin:10px 0 2px}
+.it{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--bd);justify-content:space-between}
+.del{background:none;border:0;color:var(--er);cursor:pointer;font:inherit}
+.row2{display:flex;gap:8px}.row2>*{flex:1;min-width:0}
+.hide{display:none}
+footer{text-align:center;padding:14px;font-size:13px;color:var(--mu)}
+</style>
+</head>
+<body>
+<div class="bar"><b>🔁 প্রক্সি তালিকা</b><a href="index.html">হোম</a></div>
+
+<div class="wrap">
+  <div class="nav">
+    <button onclick="shift(-1)">◀</button>
+    <div class="rg" id="range"></div>
+    <button onclick="shift(1)">▶</button>
+  </div>
+  <button class="nav" style="border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:6px 12px;font:inherit;cursor:pointer;margin-bottom:8px" onclick="thisWeek()">এই সপ্তাহ</button>
+
+  <select id="ft" onchange="render()"></select>
+
+  <div class="sum">
+    <div><b id="nTotal">০</b><span>মোট প্রক্সি</span></div>
+    <div><b id="nTeach">০</b><span>শিক্ষক প্রক্সি নিয়েছেন</span></div>
+  </div>
+
+  <h2>সপ্তাহে কে কয়টি প্রক্সি নিয়েছেন</h2>
+  <div class="card" id="summary"></div>
+
+  <h2>দিন অনুযায়ী বিস্তারিত</h2>
+  <div class="card" id="detail"></div>
+
+</div>
+<footer><a href="admin.html">🔐 অ্যাডমিন</a></footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DAYS = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const ds = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+// সপ্তাহ শুরু: শনিবার
+const weekStart = d => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); return addDays(x, -((x.getDay()+1)%7)); };
+
+var start = weekStart(new Date()), items = [], teachers = [], unsub = null;
+const tName = id => (teachers.find(t => t.id === id) || {}).name || '—';
+
+function shift(n){ start = addDays(start, 7*n); load(); }
+function thisWeek(){ start = weekStart(new Date()); load(); }
+
+function load(){
+  if (unsub) unsub();
+  const s = ds(start), e = ds(addDays(start,6));
+  $('range').textContent = bn(s) + ' → ' + bn(e);
+  unsub = db.collection('proxies').where('date','>=',s).where('date','<=',e).onSnapshot(q => {
+    items = q.docs.map(d => ({id:d.id, ...d.data()}));
+    render();
+  }, err => $('summary').innerHTML = '<div class="mu">লোড করা যায়নি: ' + esc(err.message) + '</div>');
+}
+
+function render(){
+  const f = $('ft').value;
+  const list = items.filter(p => !f || p.subId === f);
+
+  // শিক্ষক অনুযায়ী সারাংশ
+  const g = {};
+  list.forEach(p => { (g[p.subId] = g[p.subId] || {n:0, cls:{}}); g[p.subId].n++; g[p.subId].cls[p.class] = (g[p.subId].cls[p.class]||0) + 1; });
+  const rows = Object.entries(g).sort((a,b) => b[1].n - a[1].n);
+  $('nTotal').textContent = bn(list.length);
+  $('nTeach').textContent = bn(rows.length);
+  $('summary').innerHTML = rows.length ? rows.map(([id,v]) => `<div class="t"><div class="cnt">${bn(v.n)}</div>
+    <div><b>${esc(tName(id))}</b><div>${Object.entries(v.cls).map(([c,n]) => `<span class="chip">${esc(c)} × ${bn(n)}</span>`).join('')}</div></div></div>`).join('')
+    : '<div class="mu">এই সপ্তাহে কোনো প্রক্সি নেই</div>';
+
+  // দিন অনুযায়ী বিস্তারিত
+  const days = {};
+  list.forEach(p => (days[p.date] = days[p.date] || []).push(p));
+  $('detail').innerHTML = Object.keys(days).sort().map(d => {
+    const wd = DAYS[new Date(d + 'T00:00:00').getDay()];
+    return `<div class="day">${wd} • ${bn(d)}</div>` + days[d].sort((a,b) => a.period - b.period).map(p => `<div class="it">
+      <div><b>${bn(p.period)}ম পিরিয়ড</b> — ${esc(p.class)} (${esc(p.subject)})
+      <div class="mu">${esc(tName(p.subId))}${p.absentId ? ' ← '+esc(tName(p.absentId))+'-এর পরিবর্তে' : ''}${p.room ? ' • রুম '+esc(p.room) : ''}</div></div>
+      </div>`).join('');
+  }).join('') || '<div class="mu">কোনো তথ্য নেই</div>';
+}
+
+// শিক্ষক লিস্ট
+db.collection('teachers').orderBy('name').onSnapshot(s => {
+  teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
+  const opts = teachers.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  const k = $('ft').value;
+  $('ft').innerHTML = '<option value="">সব শিক্ষক</option>' + opts;
+  $('ft').value = k;
+  render();
+});
+
+load();
+</script>
+</body>
+</html>

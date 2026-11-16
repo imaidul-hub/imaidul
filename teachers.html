@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>শিক্ষকবৃন্দ</title>
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.bar a{background:rgba(255,255,255,.2);border-radius:8px;padding:6px 12px;font-size:13px}
+.wrap{max-width:720px;margin:0 auto;padding:12px}
+input{font:inherit;padding:12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+.cnt{margin:8px 2px;color:var(--mu);font-size:13px}
+.t{flex-wrap:wrap;display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:8px}
+.av{width:46px;height:46px;border-radius:50%;background:var(--pr);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex:none}
+.in{flex:1;min-width:0}
+.in b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mu{color:var(--mu);font-size:13px}
+.acts{display:flex;gap:6px;flex:none}
+.acts a{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff}
+.call{background:var(--pr)}.wa{background:#25d366}.off{background:var(--mu);opacity:.5;pointer-events:none}
+.ab{display:inline-block;margin-top:2px;padding:0 8px;border-radius:999px;font-size:12px;background:rgba(220,38,38,.12);color:#dc2626;border:1px solid rgba(220,38,38,.35)}
+.ab.z{background:rgba(15,122,74,.12);color:var(--pr);border-color:rgba(15,122,74,.35)}
+.yr{display:flex;align-items:center;gap:8px;margin:10px 0}
+.yr b{flex:1;text-align:center}
+.yr button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
+.ab{cursor:pointer}
+.mg{flex-basis:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border-top:1px dashed var(--bd);padding-top:10px}
+.mg div{text-align:center;border:1px solid var(--bd);border-radius:10px;padding:4px 2px;font-size:12px;color:var(--mu)}
+.mg div b{display:block;font-size:17px;color:var(--mu)}
+.mg div.on{border-color:#dc2626;background:rgba(220,38,38,.1)}
+.mg div.on b{color:#dc2626}
+.empty{text-align:center;color:var(--mu);padding:30px}
+</style>
+</head>
+<body>
+<div class="bar"><b>👨‍🏫 শিক্ষকবৃন্দ</b><a href="index.html">হোম</a></div>
+
+<div class="wrap">
+  <div class="yr"><button onclick="shiftY(-1)">◀</button><b id="yl"></b><button onclick="shiftY(1)">▶</button></div>
+  <input id="q" type="search" placeholder="🔍 নাম, বিষয় বা মোবাইল দিয়ে খুঁজুন" oninput="render()">
+  <div class="cnt" id="cnt"></div>
+  <div id="list"><div class="empty">লোড হচ্ছে...</div></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const normPhone = p => { let d = String(p||'').replace(/\D/g,''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };
+var teachers = [], absent = {}, openId = {}, Y = new Date().getFullYear();
+const MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+
+function absTag(id){
+  const a = absent[id];
+  const days = a ? a.m.reduce((n, x) => n + x.size, 0) : 0;
+  const cls = a ? a.classes : 0;
+  const arrow = openId[id] ? '▴' : '▾';
+  return days
+    ? `<span class="ab" onclick="tg('${id}')">অনুপস্থিত: ${bn(days)} দিন • ${bn(cls)}টি ক্লাস মিস ${arrow}</span>`
+    : `<span class="ab z" onclick="tg('${id}')">অনুপস্থিত: ০ দিন ${arrow}</span>`;
+}
+function months(id){
+  const a = absent[id];
+  return '<div class="mg">' + MONTHS.map((m, i) => { const n = a ? a.m[i].size : 0; return `<div class="${n ? 'on' : ''}">${m}<b>${bn(n)}</b></div>`; }).join('') + '</div>';
+}
+function tg(id){ openId[id] = !openId[id]; render(); }
+function shiftY(n){ Y += n; loadAbsent(); }
+function render(){
+  const q = $('q').value.trim().toLowerCase();
+  const list = teachers.filter(t => !q || (t.name||'').toLowerCase().includes(q) || (t.subject||'').toLowerCase().includes(q) || normPhone(t.phone).includes(q.replace(/\D/g,'') || '§'));
+  $('cnt').textContent = 'মোট ' + bn(list.length) + ' জন শিক্ষক';
+  $('list').innerHTML = list.length ? list.map(t => {
+    const ph = normPhone(t.phone), ok = /^01\d{9}$/.test(ph);
+    return `<div class="t">
+      <div class="av">${esc((t.name||'?').trim().charAt(0))}</div>
+      <div class="in"><b>${esc(t.name)}</b><div class="mu">${esc(t.subject||'—')}</div><div class="mu">${ok ? bn(ph) : 'নম্বর নেই'}</div>${absTag(t.id)}</div>
+      <div class="acts">
+        <a class="call ${ok?'':'off'}" href="${ok ? 'tel:+88' + ph : '#'}" title="কল">📞</a>
+        <a class="wa ${ok?'':'off'}" href="${ok ? 'https://wa.me/88' + ph : '#'}" target="_blank" rel="noopener" title="WhatsApp">💬</a>
+      </div>${openId[t.id] ? months(t.id) : ''}</div>`;
+  }).join('') : '<div class="empty">কোনো শিক্ষক পাওয়া যায়নি</div>';
+}
+
+function loadAbsent(){
+  $('yl').textContent = bn(Y) + ' সাল (জানুয়ারি – ডিসেম্বর)';
+  db.collection('proxies').where('date', '>=', Y + '-01-01').where('date', '<=', Y + '-12-31').get().then(q => {
+    absent = {};
+    q.docs.forEach(d => { const p = d.data(); if (!p.absentId) return;
+      const a = absent[p.absentId] = absent[p.absentId] || {m: Array.from({length:12}, () => new Set()), classes: 0};
+      const mi = parseInt(String(p.date).slice(5, 7), 10) - 1;
+      if (mi >= 0 && mi < 12) { a.m[mi].add(p.date); a.classes++; } });
+    render();
+  }).catch(e => console.error(e));
+}
+loadAbsent();
+
+db.collection('teachers').orderBy('name').onSnapshot(s => {
+  teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
+  render();
+}, e => $('list').innerHTML = '<div class="empty">লোড করা যায়নি<br><span class="mu">' + esc(e.code || '') + ' ' + esc(e.message) + '</span></div>');
+</script>
+</body>
+</html>
