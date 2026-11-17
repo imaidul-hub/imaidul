@@ -1029,9 +1029,10 @@ $('trBox').addEventListener('input', e => {
   if (e.target.id === 'tlogo' && e.target.files[0]) { const fr = new FileReader(); fr.onload = () => { LOGO = fr.result; render(); }; fr.readAsDataURL(e.target.files[0]); return; }
   GRID && render();
 });
+function doPrint(){ if (window.AndroidPrint && typeof AndroidPrint.print === 'function') AndroidPrint.print(); else window.print(); }
 $('print').addEventListener('click', () => {
   if (GRID) renderAdmit();
-  if (GRID) render(); if (GRID) renderStudents(window.__results, [...window.__results.reg, ...window.__results.opt]); window.print(); });
+  if (GRID) render(); if (GRID) renderStudents(window.__results, [...window.__results.reg, ...window.__results.opt]); doPrint(); });
 /* ---------- PDF ডাউনলোড ---------- */
 const CDN = { h2c:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', pdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js' };
 const loadJs = src => new Promise((ok, no) => { const t = document.createElement('script'); t.src = src; t.onload = ok; t.onerror = () => no(new Error('PDF লাইব্রেরি লোড হয়নি — ইন্টারনেট সংযোগ দেখুন')); document.head.appendChild(t); });

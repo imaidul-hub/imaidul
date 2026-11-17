@@ -82,7 +82,7 @@ body{background:#fff;color:#000;font-size:12px;line-height:1.35}
   <div id="main" class="hide">
   <div class="yr"><button onclick="shiftY(-1)">◀</button><b id="yl"></b><button onclick="shiftY(1)">▶</button></div>
   <input id="q" type="search" placeholder="🔍 নাম, বিষয় বা মোবাইল দিয়ে খুঁজুন" oninput="render()">
-  <button class="pbtn" onclick="window.print()">🖨️ সব শিক্ষকের তথ্য প্রিন্ট করুন</button>
+  <button class="pbtn" onclick="doPrint()">🖨️ সব শিক্ষকের তথ্য প্রিন্ট করুন</button>
   <div class="cnt" id="cnt"></div>
   <div id="ptbl"></div>
   <div id="list"><div class="empty">লোড হচ্ছে...</div></div>
@@ -93,6 +93,7 @@ body{background:#fff;color:#000;font-size:12px;line-height:1.35}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
+function doPrint(){ if (window.AndroidPrint && typeof AndroidPrint.print === 'function') AndroidPrint.print(); else window.print(); }
 firebase.initializeApp({
   apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
   authDomain: "mmmmg-d02b8.firebaseapp.com",
