@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ফলাফল আপলোড (অ্যাডমিন)</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f7a4a">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center}
+.bar b{font-size:17px}
+.bar a{background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;margin-left:6px}
+.wrap{max-width:900px;margin:0 auto;padding:12px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px}
+input,select,button{font:inherit}
+input,select{padding:10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin:4px 0}
+button.act{padding:10px;border-radius:8px;border:0;background:var(--pr);color:#fff;width:100%;margin:4px 0;cursor:pointer;font-weight:700}
+button.act:disabled{opacity:.5}
+.sec{background:var(--mu)!important}
+h2{font-size:17px;margin:18px 0 8px;color:var(--pr);border-right:4px solid var(--gd);padding-right:8px}
+.mu{color:var(--mu);font-size:13px}
+.hide{display:none}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.row:last-child{border-bottom:0}
+.del{background:none;border:0;color:var(--er);cursor:pointer}
+.warn{color:#b7791f;font-size:13px}
+.ok{color:var(--pr)}
+#toast{position:fixed;left:10px;right:10px;top:calc(58px + env(safe-area-inset-top,0px));z-index:99;max-width:640px;margin:0 auto;padding:12px 40px 12px 14px;border-radius:12px;color:#fff;font-size:14px;white-space:pre-wrap;word-break:break-word;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#toast.err{background:#b42318}#toast.okk{background:#0f7a4a}
+#toast button{position:absolute;right:8px;top:6px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="bar"><b>📤 ফলাফল আপলোড</b><div><a href="results.html">ফলাফল</a><a href="index.html">হোম</a></div></div>
+<div id="toast" class="hide"><span id="tmsg"></span><button onclick="$('toast').classList.add('hide')">×</button></div>
+
+<div class="wrap">
+  <div id="need" class="card hide" style="text-align:center">
+    <b>🔐 শুধু অ্যাডমিন আপলোড করতে পারবেন</b>
+    <div style="margin-top:10px"><a href="admin.html" style="display:inline-block;background:var(--pr);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">🔐 অ্যাডমিন লগইন</a></div>
+  </div>
+
+  <div id="main" class="hide">
+    <h2>এক্সেল ফাইল আপলোড</h2>
+    <div class="card">
+      <input id="exam" placeholder="পরীক্ষার নাম (যেমন: অর্ধবার্ষিক পরীক্ষা ২০২৬)">
+      <select id="cl"></select>
+      <div class="mu">এক্সেলে "শ্রেণি" কলাম থাকলে উপরের শ্রেণি বাছাই লাগবে না। না থাকলে সব সারি এই শ্রেণির ধরা হবে।</div>
+      <input id="file" type="file" accept=".xlsx,.xls,.csv">
+      <button class="act" id="prev" onclick="parseFile()">📄 ফাইল পড়ুন ও যাচাই করুন</button>
+      <button class="act sec" onclick="template()">⬇️ নমুনা এক্সেল ডাউনলোড</button>
+    </div>
+
+    <div id="pv" class="card hide"></div>
+    <button id="sv" class="act hide" onclick="save()">💾 ফলাফল সংরক্ষণ করুন</button>
+
+    <h2>সংরক্ষিত ফলাফল</h2>
+    <div class="card" id="saved"><div class="mu">লোড হচ্ছে...</div></div>
+
+    <div class="card mu">
+      <b>এক্সেলের নিয়ম:</b> প্রতিটি সারিতে একজন ছাত্র/ছাত্রীর একটি বিষয়। কলাম: <b>শ্রেণি, রোল, নাম, বিষয়, পূর্ণমান, MCQ, CQ, ব্যবহারিক, ঐচ্ছিক</b>।<br>
+      শ্রেণি, ব্যবহারিক ও ঐচ্ছিক কলাম বাদ দেওয়া যায়। পূর্ণমান না দিলে ১০০ ধরা হবে। ৪র্থ/ঐচ্ছিক বিষয়ের ঘরে <b>১</b> বা <b>হ্যাঁ</b> লিখুন। একই পরীক্ষা ও শ্রেণি আবার আপলোড করলে আগেরটি বদলে যাবে।
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const auth = firebase.auth(), db = firebase.firestore();
+const ADMIN_EMAIL = 'cfm@gmail.com';
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const GROUPS = [
+  {g:'ইবতেদায়ী', items:['ইবতেদায়ী ১ম শ্রেণি','ইবতেদায়ী ২য় শ্রেণি','ইবতেদায়ী ৩য় শ্রেণি','ইবতেদায়ী ৪র্থ শ্রেণি','ইবতেদায়ী ৫ম শ্রেণি']},
+  {g:'দাখিল', items:['দাখিল ৬ষ্ঠ শ্রেণি','দাখিল ৭ম শ্রেণি','দাখিল ৮ম শ্রেণি','দাখিল ৯ম শ্রেণি','দাখিল ১০ম শ্রেণি']},
+  {g:'আলিম', items:['আলিম ১ম বর্ষ','আলিম ২য় বর্ষ']},
+  {g:'ফাজিল', items:['ফাজিল ১ম বর্ষ','ফাজিল ২য় বর্ষ','ফাজিল ৩য় বর্ষ']}
+];
+const ALL = GROUPS.flatMap(x => x.items);
+$('cl').innerHTML = '<option value="">-- শ্রেণি (এক্সেলে না থাকলে) --</option>' + GROUPS.map(x => `<optgroup label="${x.g}">${x.items.map(c => `<option>${c}</option>`).join('')}</optgroup>`).join('');
+
+var toastT = null;
+function showMsg(text, type){
+  const t = $('toast'); $('tmsg').textContent = text;
+  t.className = type === 'ok' ? 'okk' : 'err';
+  clearTimeout(toastT);
+  if (type === 'ok') toastT = setTimeout(() => t.classList.add('hide'), 3000);
+}
+function fail(e){
+  const c = (e && e.code) || 'error', m = (e && e.message) || String(e);
+  console.error(e);
+  const map = {'permission-denied':'অনুমতি নেই। অ্যাডমিন লগইন ও Firestore Rules দেখুন।','unavailable':'সার্ভারের সাথে সংযোগ হচ্ছে না।'};
+  showMsg('❌ ' + (map[c] || 'সমস্যা হয়েছে।') + '\n[' + c + '] ' + m, 'err');
+}
+
+const hash = s => { let h = 5381; for (const ch of s) h = ((h << 5) + h + ch.codePointAt(0)) >>> 0; return h.toString(36); };
+const docId = (exam, cls) => hash(exam.trim()) + '_' + ALL.indexOf(cls);
+
+// ===== হেডার চেনা =====
+const ALIAS = {
+  cls:['শ্রেণি','শ্রেণী','class'],
+  roll:['রোল','রোলনং','রোলনম্বর','roll','rollno'],
+  name:['নাম','ছাত্রের নাম','নামছাত্রছাত্রী','name','studentname'],
+  sub:['বিষয়','subject'],
+  full:['পূর্ণমান','পূর্ণনম্বর','fullmarks','full','totalmarks'],
+  mcq:['mcq','এমসিকিউ','বহুনির্বাচনি'],
+  cq:['cq','সিকিউ','সৃজনশীল'],
+  pr:['ব্যবহারিক','practical','pr'],
+  opt:['ঐচ্ছিক','৪র্থবিষয়','৪র্থ','4thsubject','4th','optional']
+};
+const nk = k => String(k).toLowerCase().replace(/[\s_.\-()]/g, '');
+function fieldOf(k){ const n = nk(k); for (const f in ALIAS) if (ALIAS[f].some(a => nk(a) === n)) return f; return null; }
+const num = v => { if (v === '' || v == null) return null; const t = String(v).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)).trim(); const n = parseFloat(t); return isNaN(n) ? null : n; };
+const isYes = v => { const t = String(v == null ? '' : v).trim().toLowerCase(); return ['1','১','yes','y','true','হ্যাঁ','হ্যা','ঐচ্ছিক','৪র্থ'].includes(t); };
+
+var parsed = null;
+async function parseFile(){
+  const f = $('file').files[0], exam = $('exam').value.trim(), defCls = $('cl').value;
+  if (!exam) return showMsg('পরীক্ষার নাম লিখুন');
+  if (!f) return showMsg('এক্সেল ফাইল বাছুন');
+  try {
+    const wb = XLSX.read(await f.arrayBuffer(), {type:'array'});
+    const byCls = {}, errs = [];
+    let rowsN = 0;
+    wb.SheetNames.forEach(sn => {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], {defval:''});
+      rows.forEach((r, i) => {
+        const o = {};
+        Object.keys(r).forEach(k => { const f2 = fieldOf(k); if (f2) o[f2] = r[k]; });
+        if (o.roll === undefined && o.sub === undefined) return;
+        const roll = num(o.roll), sub = String(o.sub || '').trim();
+        if (roll == null || !sub) { errs.push(sn + ' সারি ' + (i + 2) + ': রোল বা বিষয় নেই'); return; }
+        const cls = String(o.cls || '').trim() || defCls;
+        if (!ALL.includes(cls)) { errs.push(sn + ' সারি ' + (i + 2) + ': শ্রেণি চেনা যায়নি (' + (cls || 'ফাঁকা') + ')'); return; }
+        const st = byCls[cls] = byCls[cls] || {};
+        const s = st[roll] = st[roll] || {roll, name:'', marks:[]};
+        if (o.name && !s.name) s.name = String(o.name).trim();
+        s.marks.push({s:sub, f:num(o.full) || 100, m:num(o.mcq), c:num(o.cq), p:num(o.pr), o:isYes(o.opt) ? 1 : 0});
+        rowsN++;
+      });
+    });
+    parsed = {exam, byCls};
+    const cls = Object.keys(byCls).sort((a, b) => ALL.indexOf(a) - ALL.indexOf(b));
+    $('pv').classList.remove('hide');
+    $('pv').innerHTML = `<b>যাচাই ফলাফল</b><div class="mu">পরীক্ষা: ${esc(exam)} • মোট ${bn(rowsN)}টি সারি</div>` +
+      cls.map(c => { const st = Object.values(byCls[c]), subs = new Set(); st.forEach(s => s.marks.forEach(m => subs.add(m.s)));
+        return `<div class="row"><div><b>${esc(c)}</b><div class="mu">${bn(st.length)} জন • ${bn(subs.size)}টি বিষয়: ${esc([...subs].join(', '))}</div></div></div>`; }).join('') +
+      (errs.length ? `<div class="warn" style="margin-top:8px">⚠️ ${bn(errs.length)}টি সারি বাদ গেছে:<br>${errs.slice(0, 8).map(esc).join('<br>')}${errs.length > 8 ? '<br>...' : ''}</div>` : '');
+    $('sv').classList.toggle('hide', !cls.length);
+    if (!cls.length) showMsg('কোনো সঠিক সারি পাওয়া যায়নি। নমুনা এক্সেলের সাথে কলামের নাম মিলিয়ে দেখুন।');
+  } catch (e) { fail(e); }
+}
+
+async function save(){
+  if (!parsed) return;
+  const u = auth.currentUser; if (!u) return showMsg('লগইন করুন');
+  $('sv').disabled = true;
+  try {
+    const batch = db.batch(), ts = firebase.firestore.FieldValue.serverTimestamp();
+    Object.keys(parsed.byCls).forEach(c => {
+      const rows = Object.values(parsed.byCls[c]).sort((a, b) => a.roll - b.roll);
+      const id = docId(parsed.exam, c);
+      batch.set(db.collection('results').doc(id), {exam:parsed.exam, class:c, rows, ts, by:u.uid});
+      batch.set(db.collection('resultIndex').doc(id), {exam:parsed.exam, class:c, students:rows.length, ts});
+    });
+    await batch.commit();
+    showMsg('✅ ফলাফল সংরক্ষিত হয়েছে', 'ok');
+    parsed = null; $('pv').classList.add('hide'); $('sv').classList.add('hide'); $('file').value = '';
+  } catch (e) { fail(e); }
+  $('sv').disabled = false;
+}
+
+function template(){
+  const aoa = [['শ্রেণি','রোল','নাম','বিষয়','পূর্ণমান','MCQ','CQ','ব্যবহারিক','ঐচ্ছিক'],
+    ['দাখিল ৯ম শ্রেণি',1,'আব্দুল্লাহ','বাংলা',100,28,52,'',''],
+    ['দাখিল ৯ম শ্রেণি',1,'আব্দুল্লাহ','গণিত',100,30,45,'',''],
+    ['দাখিল ৯ম শ্রেণি',1,'আব্দুল্লাহ','কৃষিশিক্ষা',100,20,40,'','১'],
+    ['ইবতেদায়ী ৩য় শ্রেণি',1,'ফাতেমা','বাংলা',100,25,50,'','']];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'ফলাফল');
+  XLSX.writeFile(wb, 'result-template.xlsx');
+}
+
+async function del(id){
+  if (!confirm('এই ফলাফল মুছে ফেলবেন?')) return;
+  try { const b = db.batch(); b.delete(db.collection('results').doc(id)); b.delete(db.collection('resultIndex').doc(id)); await b.commit(); showMsg('মুছে ফেলা হয়েছে', 'ok'); } catch (e) { fail(e); }
+}
+
+var unsub = null;
+auth.onAuthStateChanged(u => {
+  if (unsub) { unsub(); unsub = null; }
+  const ok = !!u && (u.email || '').toLowerCase() === ADMIN_EMAIL;
+  $('need').classList.toggle('hide', ok); $('main').classList.toggle('hide', !ok);
+  if (!ok) return;
+  unsub = db.collection('resultIndex').onSnapshot(s => {
+    const l = s.docs.map(d => ({id:d.id, ...d.data()})).sort((a, b) => String(a.exam).localeCompare(String(b.exam)) || ALL.indexOf(a.class) - ALL.indexOf(b.class));
+    $('saved').innerHTML = l.length ? l.map(r => `<div class="row"><div><b>${esc(r.exam)}</b><div class="mu">${esc(r.class)} • ${bn(r.students || 0)} জন</div></div><button class="del" onclick="del('${r.id}')">🗑️ মুছুন</button></div>`).join('') : '<div class="mu">এখনো কোনো ফলাফল নেই</div>';
+  }, fail);
+});
+window.addEventListener('unhandledrejection', ev => fail(ev.reason));
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>

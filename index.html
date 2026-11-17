@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f7a4a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="চাটপাড়া মাদ্রাসা">
+<link rel="icon" type="image/jpeg" href="logo.jpg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.top{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:6px 10px 14px;padding-top:calc(6px + env(safe-area-inset-top, 0px))}
+.hd{display:flex;align-items:center;gap:8px;justify-content:center}
+.bis{font-size:12px;opacity:.9;line-height:1.3}
+.logo{flex:none;width:42px;height:42px;border-radius:50%;object-fit:cover;background:#fff;border:2px solid var(--gd)}
+.top h1{margin:0;font-size:16px;line-height:1.3}
+.btns{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.login{display:inline-block;background:var(--gd);color:#2b2200;font-weight:700;font-size:12px;padding:2px 12px;border-radius:999px;line-height:1.5}
+.wrap{max-width:900px;margin:-8px auto 0;padding:0 12px 24px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(4,1fr)}}
+.m{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px 8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.m .i{font-size:30px}
+.m b{display:block;margin-top:4px}
+.m span{font-size:12px;color:var(--mu)}
+.m:active{transform:scale(.97)}
+h2{font-size:18px;margin:22px 0 8px;color:var(--pr);border-right:4px solid var(--gd);padding-right:8px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:8px}
+.mu{color:var(--mu);font-size:13px}
+.tw{overflow-x:auto}
+table.tb{width:100%;border-collapse:collapse;font-size:14px}
+table.tb th{background:var(--pr);color:#fff;padding:8px 6px;text-align:left;white-space:nowrap}
+table.tb td{padding:8px 6px;border-bottom:1px solid var(--bd);vertical-align:top}
+table.tb tr.px td{background:rgba(15,122,74,.12)}
+table.tb tr.gone td{opacity:.55;text-decoration:line-through}
+.tag{display:inline-block;font-size:11px;padding:0 7px;border-radius:999px;background:var(--pr);color:#fff;margin-left:4px;text-decoration:none}
+.tag.o{background:#b42318}
+.myh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.myh a,.myh button{background:none;border:0;color:var(--pr);font:inherit;font-size:13px;cursor:pointer}
+footer{text-align:center;color:var(--mu);font-size:13px;padding:18px 12px;border-top:1px solid var(--bd)}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="hd">
+    <img class="logo" src="logo.jpg" alt="লোগো">
+    <div><div class="bis">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><h1>চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h1></div>
+  </div>
+  <div class="btns"><a class="login" href="teacher.html">👨‍🏫 শিক্ষক লগইন</a><a class="login" href="admin.html" style="background:#fff;color:#0b5c37">🔐 অ্যাডমিন</a></div>
+</div>
+
+<div class="wrap">
+  <div id="my"></div>
+
+  <div class="grid">
+    <a class="m" href="routine.html"><div class="i">🗓️</div><b>ক্লাস রুটিন</b><span>শিক্ষক ও প্রক্সি</span></a>
+    <a class="m" href="students.html"><div class="i">🎓</div><b>ছাত্র/ছাত্রী</b><span>ভর্তি ও তথ্য</span></a>
+    <a class="m" href="teachers.html"><div class="i">👨‍🏫</div><b>শিক্ষকবৃন্দ</b><span>তালিকা ও যোগাযোগ</span></a>
+    <a class="m" href="attendance.html"><div class="i">✅</div><b>হাজিরা</b><span>দৈনিক উপস্থিতি</span></a>
+    <a class="m" href="fees.html"><div class="i">💰</div><b>ফি ও বেতন</b><span>আদায় ও বকেয়া</span></a>
+    <a class="m" href="results.html"><div class="i">📝</div><b>পরীক্ষার ফলাফল</b><span>মার্কশীট</span></a>
+    <a class="m" href="notices.html"><div class="i">📢</div><b>নোটিশ</b><span>ঘোষণা ও ছুটি</span></a>
+    <a class="m" href="contact.html"><div class="i">📞</div><b>যোগাযোগ</b><span>ঠিকানা ও ফোন</span></a>
+  </div>
+
+  <h2>সর্বশেষ নোটিশ</h2>
+  <div id="notices"><div class="card mu">লোড হচ্ছে...</div></div>
+</div>
+
+<footer>© <span id="yr"></span> চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা, চুনারুঘাট, হবিগঞ্জ • সর্বস্বত্ব সংরক্ষিত</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const db = firebase.firestore();
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+document.getElementById('yr').textContent = bn(new Date().getFullYear());
+
+db.collection('notices').orderBy('date','desc').limit(5).onSnapshot(s => {
+  document.getElementById('notices').innerHTML = s.empty
+    ? '<div class="card mu">এখনো কোনো নোটিশ নেই</div>'
+    : s.docs.map(d => { const n = d.data(); return `<div class="card"><b>${esc(n.title)}</b><div class="mu">${bn(esc(n.date))}</div><div>${esc(n.body)}</div></div>`; }).join('');
+}, () => document.getElementById('notices').innerHTML = '<div class="card mu">নোটিশ লোড করা যায়নি</div>');
+
+// ===== অ্যালার্ম ও শিক্ষক রুটিন লজিক =====
+const auth = firebase.auth();
+const DAYS = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const ds = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const normPhone = p => { let d = String(p||'').replace(/\D/g,''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };
+const fmtT = t => { if (!t) return ''; let [h,m] = t.split(':').map(Number); const ap = h>=12?'PM':'AM'; h = h%12||12; return bn(h+':'+String(m).padStart(2,'0'))+' '+ap; };
+const ordBn = n => { const o = {1:'১ম',2:'২য়',3:'৩য়',4:'৪র্থ',6:'৬ষ্ঠ'}; return (o[n] || bn(n) + 'ম') + ' পিরিয়ড'; };
+const todayStr = ds(new Date());
+
+var allT = [], myR = [], todayP = [], curMe = null, uT = null, uR = null, uP = null;
+const MY = () => document.getElementById('my');
+const mErr = e => { MY().innerHTML = '<div class="card mu">ক্লাসের তথ্য লোড করা যায়নি: ' + esc(e.code||'') + ' ' + esc(e.message) + '</div>'; };
+
+// অডিও অবজেক্ট সেটআপ
+const audio = document.createElement('audio');
+audio.src = 'alarm.wav'; // ফোল্ডারে alarm.mp3 থাকতে হবে
+audio.preload = 'auto';
+audio.loop = true;
+
+let alarmPermissionGranted = false;
+let triggeredPeriods = {};
+
+// ব্রাউজারের অটোপ্লে পারমিশন নেওয়ার জন্য পেজে যেকোনো জায়গায় ক্লিক হ্যান্ডেলার
+document.addEventListener('click', () => {
+  if (!alarmPermissionGranted) {
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      alarmPermissionGranted = true;
+    }).catch(() => {});
+  }
+}, { once: true });
+
+function renderMy(){
+  const u = auth.currentUser;
+  if (!u) { MY().innerHTML = '<div class="card" style="text-align:center"><b>📅 আপনার আজকের ক্লাস</b><div class="mu" style="margin:4px 0 10px">টেবিল দেখতে শিক্ষক লগইন করুন</div><a class="login" href="teacher.html" style="background:var(--pr);color:#fff;display:inline-block;padding:8px 20px;border-radius:999px;font-weight:700">👨‍🏫 শিক্ষক লগইন</a></div>'; return; }
+  if (!curMe) { MY().innerHTML = '<div class="card mu">এই অ্যাকাউন্টটি কোনো শিক্ষকের মোবাইল নম্বরের সাথে মেলেনি, তাই ক্লাসের টেবিল দেখানো যাচ্ছে না। <button style="background:none;border:0;color:var(--pr);font:inherit;cursor:pointer" onclick="auth.signOut()">লগআউট</button></div>'; return; }
+  const dow = new Date().getDay();
+  const myPx = todayP.filter(p => p.subId === curMe.id);
+  const absentPeriods = new Set(todayP.filter(p => p.absentId === curMe.id).map(p => p.period));
+  const rows = [
+    ...myR.filter(r => r.day === dow).map(r => ({period:r.period, time: fmtT(r.start) + (r.end ? ' – ' + fmtT(r.end) : ''), cls:r.class, sub:r.subject, room:r.room, startRaw: r.start, kind: absentPeriods.has(r.period) ? 'gone' : ''})),
+    ...myPx.map(p => ({period:p.period, time:'—', cls:p.class, sub:p.subject, room:p.room, startRaw: p.time || '', kind:'px'}))
+  ].sort((a,b) => a.period - b.period);
+
+  const tr = rows.map(r => `<tr class="${r.kind}"><td style="white-space:nowrap"><b>${ordBn(r.period)}</b></td><td>${r.time || '—'}</td>
+    <td><b>${esc(r.cls)}</b> — ${esc(r.sub)}${r.kind==='px' ? '<span class="tag">🔁 প্রক্সি</span>' : ''}${r.kind==='gone' ? '<span class="tag o">অন্য শিক্ষক নিচ্ছেন</span>' : ''}</td></tr>`).join('');
+
+  MY().innerHTML = `<div class="card">
+    <div class="myh"><b>📅 আপনার আজকের ক্লাস</b></div>
+    ${rows.length ? `<div class="tw"><table class="tb"><thead><tr><th>পিরিয়ড</th><th>সময়</th><th>শ্রেণি ও বিষয়</th></tr></thead><tbody>${tr}</tbody></table></div>`
+      : '<div class="mu" style="text-align:center;padding:14px">আজ আপনার কোনো ক্লাস নেই 🎉</div>'}</div>`;
+}
+
+// প্রতি ১ সেকেন্ড পর পর বর্তমান সময় চেক করা এবং অ্যালার্ম বাজানো
+function checkRoutineAlarms() {
+  if (!alarmPermissionGranted || !curMe) return;
+
+  const now = new Date();
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentSeconds = now.getSeconds();
+
+  if (currentSeconds !== 0) return; // প্রতি মিনিটের ঠিক শুরুতে চেক করবে
+
+  const dow = new Date().getDay();
+  const absentPeriods = new Set(todayP.filter(p => p.absentId === curMe.id).map(p => p.period));
+
+  const activeSchedules = [
+    ...myR.filter(r => r.day === dow && !absentPeriods.has(r.period)).map(r => ({ period: r.period, time: r.start, sub: r.subject, cls: r.class })),
+    ...todayP.filter(p => p.subId === curMe.id).map(p => ({ period: p.period, time: p.time || '', sub: p.subject, cls: p.class }))
+  ];
+
+  activeSchedules.forEach(item => {
+    if (!item.time) return;
+    const [tHour, tMin] = item.time.split(':').map(Number);
+
+    if (currentHours === tHour && currentMinutes === tMin) {
+      const alarmKey = `${todayStr}_p_${item.period}`;
+      if (!triggeredPeriods[alarmKey]) {
+        triggeredPeriods[alarmKey] = true;
+        playPeriodAlarm(item.cls, item.period, item.sub);
+      }
+    }
+  });
+}
+
+function playPeriodAlarm(className, periodNum, subjectName) {
+  audio.play().catch(e => console.log("অডিও প্লে ত্রুটি:", e));
+  if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
+
+  const alertBox = document.createElement('div');
+  alertBox.style.cssText = "position:fixed; top:calc(20px + env(safe-area-inset-top, 0px)); left:50%; transform:translateX(-50%); background:#b42318; color:#fff; padding:15px 20px; border-radius:10px; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.3); text-align:center; font-family:inherit;";
+  alertBox.innerHTML = `<b>🔔 পিরিয়ড শুরু হয়েছে!</b><br>শ্রেণি: ${esc(className)} | পিরিয়ড: ${bn(periodNum)}<br>বিষয়: ${esc(subjectName)}<br><button onclick="stopPeriodAlarm(this)" style="margin-top:8px; background:#fff; color:#b42318; border:none; padding:5px 15px; border-radius:5px; font-weight:bold; cursor:pointer;">বন্ধ করুন</button>`;
+  document.body.appendChild(alertBox);
+}
+
+window.stopPeriodAlarm = function(btn) {
+  audio.pause();
+  audio.currentTime = 0;
+  if (btn && btn.parentElement) {
+    btn.parentElement.remove();
+  }
+}
+
+function pickMe(){
+  const u = auth.currentUser; if (!u) return;
+  const ph = normPhone((u.email||'').split('@')[0]);
+  const me = allT.find(t => normPhone(t.phone) === ph) || null;
+  if ((me && me.id) !== (curMe && curMe.id)) {
+    curMe = me; if (uR) { uR(); uR = null; } myR = [];
+    if (me) uR = db.collection('routines').where('teacherId','==',me.id).onSnapshot(s => { myR = s.docs.map(d => d.data()); renderMy(); }, mErr);
+  }
+  renderMy();
+}
+
+auth.onAuthStateChanged(u => {
+  [uT, uP].forEach(f => f && f()); uT = uP = null; if (uR) { uR(); uR = null; } curMe = null; myR = []; todayP = [];
+  renderMy();
+  if (!u) return;
+  uT = db.collection('teachers').onSnapshot(s => { allT = s.docs.map(d => ({id:d.id, ...d.data()})); pickMe(); }, mErr);
+  uP = db.collection('proxies').where('date','==',todayStr).onSnapshot(s => { todayP = s.docs.map(d => d.data()); renderMy(); }, mErr);
+});
+
+// প্রতি ১ সেকেন্ড পরপর সময় ও অ্যালার্ম চেক করা
+setInterval(checkRoutineAlarms, 1000);
+
+// তারিখ বদলালে পেজ রিফ্রেশ
+setInterval(() => { if (ds(new Date()) !== todayStr) location.reload(); }, 60000);
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>

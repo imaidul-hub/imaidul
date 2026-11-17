@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>শিক্ষক পোর্টাল</title>
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.bar a,.bar button{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;margin-left:6px}
+.wrap{max-width:640px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px}
+input,button.act{font:inherit;padding:11px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin:4px 0}
+button.act{background:var(--pr);color:#fff;border:0;cursor:pointer;font-weight:700}
+button.sec{background:var(--mu)!important}
+.hello{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;border-radius:14px;padding:16px;margin-bottom:10px}
+.hello b{font-size:19px}
+.hello div{opacity:.9;font-size:14px}
+h2{font-size:17px;margin:16px 0 8px;color:var(--pr);border-right:4px solid var(--gd);padding-right:8px}
+.it{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);align-items:center}
+.it:last-child{border:0}
+.pn{background:var(--pr);color:#fff;border-radius:10px;min-width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.mine{border:2px solid var(--pr)}
+.mu{color:var(--mu);font-size:13px}
+.empty{text-align:center;color:var(--mu);padding:14px}
+#toast{position:fixed;left:10px;right:10px;top:58px;z-index:99;max-width:600px;margin:0 auto;padding:12px 40px 12px 14px;border-radius:12px;color:#fff;font-size:14px;white-space:pre-wrap;word-break:break-word;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#toast.err{background:#b42318}#toast.ok{background:#0f7a4a}
+#toast button{position:absolute;right:8px;top:6px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="bar"><b>👨‍🏫 শিক্ষক পোর্টাল</b><div><a href="index.html">হোম</a><button id="out" class="hide" onclick="auth.signOut()">লগআউট</button></div></div>
+<div id="toast" class="hide"><span id="tmsg"></span><button onclick="$('toast').classList.add('hide')">×</button></div>
+
+<div class="wrap">
+  <!-- লগইন -->
+  <div id="login" class="card" style="margin-top:30px">
+    <h3 style="margin-top:0">🔐 শিক্ষক লগইন</h3>
+    <input id="ph" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর (01XXXXXXXXX)" autocomplete="username">
+    <input id="pw" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+    <button class="act" onclick="login()">লগইন</button>
+    <div class="mu">পাসওয়ার্ড না জানলে মাদ্রাসা অফিসে যোগাযোগ করুন।</div>
+  </div>
+
+  <!-- হোম -->
+  <div id="home" class="hide">
+    <div class="hello"><b id="hi">স্বাগতম</b><div id="dt"></div></div>
+
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <div><b>🔔 পুশ নোটিফিকেশন</b><div class="mu" id="pushSt"></div></div>
+      <button class="act" style="width:auto;padding:9px 14px" onclick="enablePush()">চালু করুন</button>
+    </div>
+
+    <h2>🔁 আপনার আজকের প্রক্সি</h2>
+    <div class="card mine" id="mine"></div>
+
+    <h2>আজকের সব প্রক্সি তালিকা</h2>
+    <div class="card" id="all"></div>
+
+    <div class="card">
+      <a href="proxy.html" style="color:var(--pr)">📄 সপ্তাহের প্রক্সি রিপোর্ট দেখুন</a>
+    </div>
+
+    <h2>পাসওয়ার্ড পরিবর্তন</h2>
+    <div class="card">
+      <input id="np" type="password" placeholder="নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" autocomplete="new-password">
+      <button class="act sec" onclick="changePw()">পরিবর্তন করুন</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const auth = firebase.auth(), db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DAYS = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const ds = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const normPhone = p => { let d = String(p||'').replace(/\D/g,''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };
+const phoneEmail = p => normPhone(p) + '@madrasa-teacher.app';
+
+// ---- মেসেজ ----
+var toastT = null;
+function showMsg(text, type){
+  const t = $('toast'); $('tmsg').textContent = text; t.className = type === 'ok' ? 'ok' : 'err';
+  clearTimeout(toastT); if (type === 'ok') toastT = setTimeout(() => t.classList.add('hide'), 3000);
+}
+const ERR = {
+  'auth/invalid-credential': 'মোবাইল নম্বর বা পাসওয়ার্ড ভুল।',
+  'auth/wrong-password': 'পাসওয়ার্ড ভুল।',
+  'auth/user-not-found': 'এই নম্বরে লগইন তৈরি করা হয়নি। অফিসে যোগাযোগ করুন।',
+  'auth/too-many-requests': 'অনেকবার ভুল চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।',
+  'auth/network-request-failed': 'ইন্টারনেট সংযোগে সমস্যা।',
+  'auth/weak-password': 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।',
+  'auth/requires-recent-login': 'লগআউট করে আবার লগইন করে চেষ্টা করুন।',
+  'auth/unauthorized-domain': 'এই ডোমেইন Firebase এ অনুমোদিত নয়।',
+  'permission-denied': 'অনুমতি নেই। Firestore Rules দেখুন।',
+  'unavailable': 'সার্ভারের সাথে সংযোগ হচ্ছে না।'
+};
+function fail(e){
+  const c = (e && e.code) || 'error', m = (e && e.message) || String(e);
+  console.error(e); showMsg('❌ ' + (ERR[c] || 'সমস্যা হয়েছে।') + '\n[' + c + '] ' + m, 'err');
+}
+
+// ---- লগইন ----
+function login(){
+  const p = normPhone($('ph').value);
+  if (!/^01\d{9}$/.test(p)) return showMsg('সঠিক মোবাইল নম্বর দিন (১১ সংখ্যা, 01 দিয়ে শুরু)');
+  if (!$('pw').value) return showMsg('পাসওয়ার্ড দিন');
+  auth.signInWithEmailAndPassword(phoneEmail(p), $('pw').value).catch(fail);
+}
+function changePw(){
+  const v = $('np').value;
+  if (v.length < 6) return showMsg('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে');
+  auth.currentUser.updatePassword(v).then(() => { $('np').value = ''; showMsg('✅ পাসওয়ার্ড বদলানো হয়েছে', 'ok'); }).catch(fail);
+}
+
+// ---- ডাটা ----
+var teachers = [], proxies = [], me = null, unsubP = null, unsubT = null, day = ds(new Date());
+const tName = id => (teachers.find(t => t.id === id) || {}).name || '—';
+
+function myPhone(){ const u = auth.currentUser; return u && u.email ? normPhone(u.email.split('@')[0]) : ''; }
+function findMe(){ const p = myPhone(); me = teachers.find(t => normPhone(t.phone) === p) || null; }
+
+function item(p, mine){
+  return `<div class="it"><div class="pn">${bn(p.period)}</div>
+    <div><b>${esc(p.class)}</b> — ${esc(p.subject)}
+    <div class="mu">${mine ? '' : esc(tName(p.subId)) + ' • '}${p.absentId ? esc(tName(p.absentId)) + '-এর পরিবর্তে' : 'প্রক্সি'}${p.room ? ' • রুম ' + esc(p.room) : ''}</div></div></div>`;
+}
+function render(){
+  findMe(); updPushUi();
+  const d = new Date();
+  $('dt').textContent = DAYS[d.getDay()] + ', ' + bn(ds(d));
+  $('hi').textContent = me ? 'আসসালামু আলাইকুম, ' + me.name : 'আসসালামু আলাইকুম';
+  const list = proxies.slice().sort((a,b) => a.period - b.period);
+  const mine = me ? list.filter(p => p.subId === me.id) : [];
+  $('mine').innerHTML = !me ? '<div class="empty">এই নম্বর শিক্ষক তালিকায় পাওয়া যায়নি</div>'
+    : mine.length ? mine.map(p => item(p, true)).join('') : '<div class="empty">আজ আপনার কোনো প্রক্সি নেই 🎉</div>';
+  $('all').innerHTML = list.length ? list.map(p => item(p, false)).join('') : '<div class="empty">আজ কোনো প্রক্সি নেই</div>';
+}
+function startData(){
+  stopData();
+  day = ds(new Date());
+  unsubT = db.collection('teachers').onSnapshot(s => { teachers = s.docs.map(d => ({id:d.id, ...d.data()})); render(); }, fail);
+  unsubP = db.collection('proxies').where('date','==',day).onSnapshot(s => { proxies = s.docs.map(d => ({id:d.id, ...d.data()})); render(); }, fail);
+}
+function stopData(){ if (unsubT) { unsubT(); unsubT = null; } if (unsubP) { unsubP(); unsubP = null; } }
+
+// ---- পুশ নোটিফিকেশন (FCM) ----
+const VAPID_KEY = 'YOUR_VAPID_KEY';   // Firebase Console > Project settings > Cloud Messaging > Web Push certificates
+function updPushUi(){
+  const on = window.Notification && Notification.permission === 'granted' && localStorage.getItem('push') === '1';
+  $('pushSt').textContent = on ? '✅ এই ফোনে চালু আছে' : 'এই ফোনে চালু নেই';
+}
+async function enablePush(){
+  try {
+    if (!('Notification' in window) || !('serviceWorker' in navigator) || !(await firebase.messaging.isSupported()))
+      return showMsg('এই ব্রাউজারে নোটিফিকেশন সমর্থিত নয়।\nআইফোনে আগে Share → "Add to Home Screen" করে সেখান থেকে খুলুন।');
+    if (!me) return showMsg('আপনার নম্বর শিক্ষক তালিকায় পাওয়া যায়নি');
+    if (VAPID_KEY.startsWith('YOUR')) return showMsg('VAPID key বসানো হয়নি (teacher.html এ VAPID_KEY দেখুন)');
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return showMsg('অনুমতি দেওয়া হয়নি। ব্রাউজার সেটিংস থেকে এই সাইটের Notification "Allow" করুন।');
+    const reg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+    const token = await firebase.messaging().getToken({vapidKey: VAPID_KEY, serviceWorkerRegistration: reg});
+    if (!token) throw new Error('টোকেন পাওয়া যায়নি');
+    await db.collection('tokens').doc(token).set({uid: auth.currentUser.uid, teacherId: me.id, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+    localStorage.setItem('push', '1'); updPushUi();
+    showMsg('✅ নোটিফিকেশন চালু হয়েছে', 'ok');
+  } catch(e){ fail(e); }
+}
+// পেজ খোলা অবস্থায় নোটিফিকেশন এলে
+(async () => { try { if (await firebase.messaging.isSupported()) firebase.messaging().onMessage(p => {
+  const n = p.notification || {}; showMsg('🔔 ' + (n.title || '') + '\n' + (n.body || ''), 'ok'); }); } catch(e){} })();
+
+auth.onAuthStateChanged(u => {
+  $('login').classList.toggle('hide', !!u); $('home').classList.toggle('hide', !u); $('out').classList.toggle('hide', !u);
+  if (u) startData(); else { stopData(); proxies = []; me = null; }
+});
+// তারিখ বদলালে (রাত ১২টার পর) নতুন দিনের তালিকা
+setInterval(() => { if (auth.currentUser && ds(new Date()) !== day) startData(); }, 60000);
+</script>
+</body>
+</html>

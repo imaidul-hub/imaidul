@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>পরীক্ষার ফলাফল</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f7a4a">
+<link rel="icon" type="image/jpeg" href="logo.jpg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root { --bd:#555; --hd:#e6ebf4; --red:#b00020; --accent:#2a5bd7; }
+  * { box-sizing:border-box; }
+  body:not(.is-admin) .adm-only { display:none !important; }
+  #pubSel { font:inherit; padding:8px 10px; border-radius:8px; border:1px solid #9aa3b5; flex:1; min-width:200px; max-width:100%; }
+  #pubTitle { font:inherit; padding:8px 10px; border-radius:8px; border:1px solid #9aa3b5; flex:1; min-width:200px; }
+  .okmsg { color:#0a7a34; font-weight:600; }
+  .bar { background:linear-gradient(135deg,#0b5c37,#0f7a4a); color:#fff; padding:8px 12px; padding-top:calc(8px + env(safe-area-inset-top,0px)); display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .bar b { font-size:16px; display:flex; align-items:center; gap:8px; }
+  .bar img { width:30px; height:30px; border-radius:50%; background:#fff; object-fit:cover; }
+  .bar a { background:rgba(255,255,255,.2); color:#fff; border-radius:8px; padding:4px 12px; font-size:13px; text-decoration:none; }
+  body { margin:0; background:#f3f4f7; color:#111;
+         font-family:'Noto Sans Bengali','Kalpurush','SolaimanLipi','Nirmala UI','Vrinda',system-ui,sans-serif; }
+  .wrap { padding:12px; }
+  .panel { background:#fff; border:1px solid #d3d7de; border-radius:10px; padding:14px; margin-bottom:12px; }
+  h3 { margin:0 0 8px; font-size:16px; }
+  .drop { border:2px dashed #8a94a6; border-radius:10px; padding:26px 12px; text-align:center; cursor:pointer; }
+  .drop.on { background:#eef3ff; border-color:var(--accent); }
+  .drop b { color:var(--accent); }
+  .drop small { display:block; color:#667; margin-top:6px; }
+  .row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:12px; }
+  label.chk { display:flex; gap:8px; align-items:center; font-size:15px; cursor:pointer; }
+  select, button { font:inherit; padding:7px 12px; border-radius:8px; border:1px solid #9aa3b5; background:#fff; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); cursor:pointer; }
+  .hint { color:#556; font-size:13px; margin-top:8px; line-height:1.5; }
+  .err { color:var(--red); font-weight:600; margin-top:10px; }
+
+  #report { display:none; }
+  .titles { text-align:center; margin:4px 0 10px; }
+  .titles h1 { margin:0; font-size:22px; }
+  .titles h2 { margin:4px 0 0; font-size:16px; font-weight:600; }
+  [contenteditable]:focus { outline:2px solid #9bb5ff; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px; margin:10px 0 12px; }
+  .stat { border:1px solid var(--bd); border-radius:8px; text-align:center; padding:6px 4px; background:#fff; }
+  .stat .n { font-size:22px; font-weight:700; line-height:1.2; }
+  .stat .l { font-size:12px; color:#333; }
+  .stat.ok .n { color:#0a7a34; } .stat.bad .n { color:var(--red); }
+
+  .scroll { overflow:auto; background:#fff; border:1px solid var(--bd); }
+  table { border-collapse:collapse; font-size:15px; font-weight:500; text-align:center; white-space:nowrap; }
+  th, td { border:1px solid var(--bd); padding:1px 2px; line-height:1.25; }
+  thead th { background:var(--hd); font-weight:600; }
+  tbody tr { background:#fff; }
+  tbody tr.fail { background:#fff7f7; }
+  tbody tr.absent { background:#f4f4f4; color:#777; }
+  .s1 { position:sticky; left:0; min-width:34px; background:inherit; z-index:2; }
+  .s2 { position:sticky; left:34px; min-width:90px; text-align:left; background:inherit; z-index:2; }
+  thead .s1, thead .s2 { background:var(--hd); }
+  td.gp { font-weight:600; }
+  td.z { color:var(--red); font-weight:700; }
+  td.tot { font-weight:600; }
+  td.res-fail { color:var(--red); font-weight:700; }
+  td.res-pass { color:#0a7a34; font-weight:700; }
+  .note { font-size:12px; color:#444; margin-top:8px; line-height:1.6; }
+
+  @page { size:A3 landscape; margin:8mm; }
+  @page stu { size:A4 portrait; margin:8mm; }
+  @page tab { size:A3 landscape; margin:8mm; }
+  @media print {
+    body { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .no-print { display:none !important; }
+    .wrap { padding:0; }
+    .scroll { overflow:visible; border:none; }
+    table { font-size:10.5px; width:100%; }
+    th, td { padding:0.5px 1px; }
+    thead { display:table-header-group; }
+    tr { break-inside:avoid; }
+    .s1, .s2 { position:static; }
+    .stats { grid-template-columns:repeat(7,1fr); }
+    #report { page:tab; }
+    #students { page:stu; }
+    .stu { max-width:none; height:136mm; margin:0 0 4mm; overflow:hidden; break-inside:avoid; padding:5mm 6mm; font-size:12px; }
+    .stu:nth-child(2n) { break-after:page; margin-bottom:0; }
+    .stu.big { display:flex; flex-direction:column; height:281mm; max-width:none; margin:0; padding:7mm 8mm; font-size:14px; break-after:page; }
+    .stu.big:last-child { break-after:auto; }
+    .stu.big table { font-size:14px; }
+    .stu.big .tw { flex:1 1 auto; display:flex; flex-direction:column; }
+    .stu.big .tw table { flex:1 1 auto; }
+    .stu.big th, .stu.big td { padding:4px 4px; }
+    .stu.big .scale th, .stu.big .scale td { padding:3px 4px; }
+    .stu.big .remark { min-height:85px; margin-top:12px; }
+    .stu.big .sign { margin-top:40px; }
+    .stu.big .info { margin-bottom:10px; } .stu.big .info b { font-size:16px; }
+    .stu.big .scale { margin-top:14px; }
+    #admit { page:stu; }
+    #trans { page:stu; }
+    .tr { max-width:none; margin:0; height:281mm; break-after:page; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .tr:last-child { break-after:auto; }
+    .adm { max-width:none; margin:0 0 4mm; height:136mm; break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    #admit.p2 .adm:nth-child(2n) { break-after:page; margin-bottom:0; }
+    #admit.p1 .adm { height:281mm; margin:0; break-after:page; font-size:16px; }
+    #admit.p1 .adm:last-child { break-after:auto; }
+    #admit.p1 .adm table { font-size:15px; } #admit.p1 .adm td { padding:7px 6px; }
+    #admit.p1 .adm-inst { font-size:14px; } #admit.p1 .adm-photo { width:36mm; height:44mm; }
+    .stu { font-size:14px; }
+    .stu h4 { font-size:19px; } .stu h5 { font-size:14px; }
+    .stu table { font-size:13.5px; }
+    .stu th, .stu td { padding:4px 5px; }
+    .stu td.d { font-size:12.5px; }
+    .stu .sum { font-size:13px; } .stu .sum b { font-size:16px; }
+    .stu .sign { margin-top:34px; font-size:12px; }
+  }
+  #students { display:none; }
+  .stu { background:#fff; border:1.5px solid #333; border-radius:4px; padding:10px 12px; margin:0 auto 14px; max-width:760px; font-size:13px; }
+  .stu h4 { margin:0; text-align:center; font-size:16px; }
+  .stu h5 { margin:2px 0 6px; text-align:center; font-size:12.5px; font-weight:600; }
+  .stu .who { display:flex; justify-content:space-between; gap:8px; font-weight:700; font-size:14px; border-top:1px solid #333; border-bottom:1px solid #333; padding:3px 2px; margin-bottom:5px; }
+  .stu table { width:100%; font-size:12px; white-space:normal; }
+  .stu th, .stu td { padding:2px 4px; }
+  .stu td.l { text-align:left; font-weight:600; }
+  .stu td.d { text-align:left; font-size:11px; }
+  .stu .sum { display:grid; grid-template-columns:repeat(5,1fr); gap:0; border:1px solid #333; border-top:none; text-align:center; }
+  .stu .sum div { padding:3px 2px; border-right:1px solid #333; } .stu .sum div:last-child { border-right:none; }
+  .stu .sum b { display:block; font-size:14px; }
+  .stu .sign { display:flex; justify-content:space-between; margin-top:26px; font-size:11px; }
+  .stu .sign span { border-top:1px solid #333; padding-top:2px; min-width:110px; text-align:center; }
+  .stu .fl { color:var(--red); font-weight:700; }
+  .stu.big { max-width:800px; font-size:14px; padding:14px 16px; }
+  .stu.big table { font-size:13px; }
+  .stu.big th, .stu.big td { padding:4px 4px; }
+  .stu .info { display:grid; grid-template-columns:2fr 1fr 1fr 1.3fr; border:1px solid #333; margin-bottom:6px; }
+  .stu .info div { padding:4px 6px; border-right:1px solid #333; } .stu .info div:last-child { border-right:none; }
+  .stu .info small, .stu .sum2 small { display:block; color:#555; font-size:11px; }
+  .stu .info b { font-size:15px; }
+  .stu .sum2 { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid #333; border-top:none; text-align:center; }
+  .stu .sum2 div { padding:5px 2px; border-right:1px solid #333; } .stu .sum2 div:last-child { border-right:none; }
+  .stu .sum2 b { display:block; font-size:16px; }
+  .stu .bar { width:92px; margin:auto; } .stu .bar span { display:block; height:5px; margin:1px 0; }
+  .stu .bar .b1 { background:#2a5bd7; } .stu .bar .b2 { background:#b5bcc9; }
+  .stu .legend { font-size:11px; color:#444; margin:4px 0 0; }
+  .stu .legend i { display:inline-block; width:10px; height:7px; margin:0 3px 0 8px; }
+  .stu .scale { margin-top:10px; font-size:11px; }
+  .stu .scale table { font-size:11px; } .stu .scale th, .stu .scale td { padding:2px 4px; }
+  .stu .remark { margin-top:10px; border:1px solid #333; min-height:62px; padding:4px 6px; font-size:12px; }
+  .stu tr.tr-total td { background:#eef1f7; font-weight:700; }
+  #admit { display:none; }
+  .adm { background:#fff; border:2px solid #1f3a8a; border-radius:6px; margin:0 auto 16px; max-width:780px; overflow:hidden; font-size:13px; display:flex; flex-direction:column; }
+  .adm-head { display:flex; align-items:center; gap:12px; background:#1f3a8a; color:#fff; padding:6px 12px; }
+  .adm-logo { width:46px; height:46px; border-radius:50%; background:#fff; color:#1f3a8a; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:800; flex:none; overflow:hidden; }
+  .adm-logo img { width:100%; height:100%; object-fit:contain; }
+  .adm-title { flex:1; text-align:center; }
+  .adm-title .ins { font-size:20px; font-weight:800; line-height:1.2; }
+  .adm-title .ex { font-size:13px; opacity:.95; margin-top:2px; }
+  .adm-badge { flex:none; border:2px solid #f2c94c; color:#f2c94c; border-radius:6px; padding:3px 10px; text-align:center; font-weight:800; font-size:16px; line-height:1.15; }
+  .adm-badge small { display:block; font-size:9.5px; letter-spacing:1.5px; }
+  .adm-body { display:flex; gap:10px; padding:7px 12px 2px; align-items:stretch; }
+  .adm-info { flex:1; display:grid; grid-template-columns:1.6fr 1fr; gap:6px 12px; align-content:start; }
+  .adm-info div { border-bottom:1px dotted #667; padding:0 2px 1px; min-height:27px; }
+  .adm-info small { display:block; color:#556; font-size:10.5px; }
+  .adm-info b { font-size:14px; }
+  .adm-photo { flex:none; width:25mm; height:30mm; border:1.5px dashed #667; display:flex; align-items:center; justify-content:center; text-align:center; color:#889; font-size:11px; }
+  .adm table { border-collapse:collapse; width:calc(100% - 24px); margin:4px 12px; font-size:12px; white-space:normal; }
+  .adm th { background:#e8edfa; border:1px solid #1f3a8a; padding:2px 5px; }
+  .adm td { border:1px solid #6b7aa8; padding:1px 6px; text-align:center; line-height:1.3; }
+  .adm td.l { text-align:left; font-weight:600; }
+  .adm-inst { margin:2px 12px 0; font-size:10.5px; line-height:1.35; }
+  .adm-inst ol { margin:1px 0 0; padding-left:16px; column-count:2; column-gap:18px; }
+  .adm-inst li { break-inside:avoid; }
+  .adm-sign { display:flex; justify-content:space-between; margin:auto 12px 6px; padding-top:16px; font-size:11px; }
+  .adm-sign span { border-top:1px solid #333; padding-top:2px; min-width:120px; text-align:center; }
+  #admitBox textarea { width:100%; font:inherit; border:1px solid #9aa3b5; border-radius:8px; padding:6px; }
+  #admitBox input[type=text], #admitBox input[type=date] { font:inherit; padding:4px 6px; border:1px solid #9aa3b5; border-radius:6px; }
+  #routine { font-size:13px; margin-top:8px; white-space:nowrap; } #routine th, #routine td { padding:3px 6px; }
+  #trans { display:none; }
+  .tr { max-width:780px; margin:0 auto 18px; padding:14px; background-color:#efe1e7;
+        background-image:repeating-linear-gradient(45deg,#b8a5af 0 1.2px,transparent 1.2px 4px),repeating-linear-gradient(-45deg,#b8a5af 0 1.2px,transparent 1.2px 4px);
+        display:flex; }
+  .tr-in { flex:1; background:#fcf3f6; border:1px solid #555; padding:14px 18px 12px; display:flex; flex-direction:column; font-family:Arial,'Noto Sans Bengali','Kalpurush','Nirmala UI',sans-serif; color:#111; font-size:13px; }
+  .tr-board { margin:0; text-align:center; font-size:21px; font-weight:800; letter-spacing:.3px; line-height:1.25; }
+  .tr-exam { margin:3px 0 8px; text-align:center; font-size:16px; font-weight:700; }
+  .tr-top { display:grid; grid-template-columns:1fr auto 1fr; align-items:start; gap:8px; margin-bottom:6px; }
+  .tr-mid { text-align:center; }
+  .tr-logo { width:62px; height:62px; border-radius:50%; border:3px solid #2e7d4f; background:#fff; margin:0 auto; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:800; color:#2e7d4f; overflow:hidden; }
+  .tr-logo img { width:100%; height:100%; object-fit:contain; }
+  .tr-title { margin-top:6px; color:#2e7d4f; font-size:17px; letter-spacing:1px; border-bottom:1.5px solid #2e7d4f; display:inline-block; padding:0 6px 1px; }
+  .tr-scale { justify-self:end; border-collapse:collapse; font-size:9.5px; text-align:center; }
+  .tr-scale th, .tr-scale td { border:1px solid #333; padding:1px 6px; line-height:1.25; }
+  .tr-info { margin:8px 0 6px; font-size:14px; }
+  .tr-info .r { display:flex; gap:10px; padding:2px 0; align-items:baseline; }
+  .tr-info .k { width:128px; flex:none; } .tr-info .k2 { width:112px; flex:none; }
+  .tr-info .c { width:10px; flex:none; }
+  .tr-info .v { flex:1; font-style:italic; font-weight:700; color:#1c2370; font-family:'Georgia','Noto Serif Bengali','Kalpurush',serif; min-height:1.2em; }
+  .tr-info .half { display:flex; flex:1; gap:10px; align-items:baseline; }
+  .tr-wrap { flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
+  .tr-tbl { border-collapse:collapse; width:100%; flex:1 1 auto; font-size:14px; white-space:normal; }
+  .tr-tbl th, .tr-tbl td { border:1.5px solid #222; padding:3px 6px; text-align:center; }
+  .tr-tbl th { font-size:12px; line-height:1.2; background:transparent; }
+  .tr-tbl th small { display:block; font-size:8px; font-weight:400; }
+  .tr-tbl td.l { text-align:left; font-weight:600; }
+  .tr-tbl td.mk { font-weight:700; white-space:nowrap; }
+  .tr-tbl td.gpa { font-size:20px; font-weight:800; }
+  .tr-tbl td.addl { text-align:left; font-style:italic; font-weight:700; border-right:none; font-size:13px; }
+  .tr-tbl td.sm { font-size:12px; font-style:italic; font-weight:700; }
+  .tr-tbl td.fl { color:#b00020; font-weight:800; }
+  .tr-res { margin-top:8px; font-size:14px; font-weight:700; }
+  .tr-foot { display:flex; justify-content:space-between; align-items:flex-end; margin-top:auto; padding-top:26px; font-size:13px; }
+  .tr-foot .sg { text-align:center; min-width:170px; border-top:1.5px solid #222; padding-top:3px; font-style:italic; font-size:14px; }
+  #trBox input[type=text], #trBox input[type=date] { font:inherit; padding:6px 8px; border:1px solid #9aa3b5; border-radius:8px; }
+  .titles { display:flex; align-items:center; justify-content:center; gap:14px; }
+  .titles .tt { text-align:center; }
+  .rlogo, .stu-head img { object-fit:contain; flex:none; }
+  .rlogo { width:64px; height:64px; }
+  .stu-head { display:flex; align-items:center; justify-content:center; gap:10px; }
+  .stu-head img { width:48px; height:48px; }
+  .stu-head > div { text-align:center; }
+  .tr-logo.img { border:none; background:none; width:80px; height:80px; border-radius:0; }
+  .tr-logo.img img { object-fit:contain; }
+  .adm-logo { width:54px; height:54px; }
+  details.panel summary { cursor:pointer; font-weight:700; font-size:15px; }
+  #cfg { font-size:13px; text-align:center; margin-top:8px; white-space:nowrap; }
+  #cfg th, #cfg td { padding:4px 6px; }
+  #cfg td.l { text-align:left; font-weight:600; }
+  #cfg input[type=number] { width:64px; padding:3px 4px; font:inherit; border:1px solid #9aa3b5; border-radius:6px; }
+  #cfg tr.off td { color:#999; }
+  .cfgscroll { overflow:auto; }
+
+  /* মেধা তালিকা সারণি: সব MCQ/CQ/gp ঘর সমান প্রস্থ, ফন্ট একটু বড় */
+  :is(#tbl,#tblc) { font-size:17px; }
+  :is(#tbl,#tblc) th, :is(#tbl,#tblc) td { padding:2px 4px; }
+  :is(#tbl,#tblc) .sc { width:42px; min-width:42px; max-width:42px; }
+  :is(#tbl,#tblc) thead th[colspan] { white-space:normal; line-height:1.3; }
+  :is(#tbl,#tblc) thead th { font-size:16px; }
+  :is(#tbl,#tblc) thead th.gh { padding:0 4px; line-height:1; font-size:14px; height:auto; }
+  :is(#tbl,#tblc) thead th.sc { padding-top:1px; padding-bottom:1px; line-height:1.1; }
+  @media print {
+    :is(#tbl,#tblc) thead th.gh { padding:0 2px; line-height:1; font-size:11px; }
+    :is(#tbl,#tblc) { font-size:12.5px; }
+    :is(#tbl,#tblc) th, :is(#tbl,#tblc) td { padding:1.5px 2px; }
+    :is(#tbl,#tblc) .sc { width:34px; min-width:34px; max-width:34px; }
+    :is(#tbl,#tblc) thead th { font-size:12px; }
+  }
+  #tblc .s1, #tblc .s2 { position:static; }
+  #tblc { border-collapse:collapse; font-weight:500; text-align:center; white-space:nowrap; }
+  #tblc th, #tblc td { border:1px solid var(--bd); }
+  #tblc thead th { background:var(--hd); font-weight:600; }
+  #tblc td.gp, #tblc td.tot { font-weight:600; }
+  #tblc td.z, #tblc td.res-fail { color:var(--red); font-weight:700; }
+  #tblc td.res-pass { color:#0a7a34; font-weight:700; }
+  #tblc tbody tr.fail { background:#fff7f7; }
+  #tblc tbody tr.absent { background:#f4f4f4; color:#777; }
+  @media screen { #trans .tr { cursor:pointer; } }
+  .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#17241c; color:#fff; padding:8px 16px; border-radius:999px; font-size:14px; z-index:99; display:none; max-width:90vw; text-align:center; }
+</style>
+</head>
+<body>
+<div class="bar no-print"><b><img src="logo.jpg" alt="">📝 পরীক্ষার ফলাফল</b><span><a href="admin.html" id="admLink">🔐 অ্যাডমিন</a> <a href="index.html">হোম</a></span></div>
+<div class="wrap">
+
+  <div class="panel no-print" id="pubBox">
+    <h3>📊 প্রকাশিত ফলাফল</h3>
+    <div class="row" style="margin:0">
+      <select id="pubSel"><option value="">লোড হচ্ছে...</option></select>
+      <button class="adm-only" id="pubDel" style="color:#b00020">🗑️ মুছুন</button>
+    </div>
+    <div class="hint" id="pubMsg"></div>
+  </div>
+
+  <div class="panel no-print adm-only" id="saveBox" style="display:none">
+    <h3>💾 ডাটাবেসে প্রকাশ করুন</h3>
+    <div class="row" style="margin:0">
+      <input id="pubTitle" placeholder="শিরোনাম (যেমন: দাখিল ৯ম শ্রেণি বার্ষিক ২০২৬)">
+      <button class="primary" id="pubSave">💾 সেভ করে প্রকাশ করুন</button>
+    </div>
+    <div class="hint">সেভ করলে এই Excel ও উপরের সেটিং (বিষয়, শ্রেণি, পরীক্ষা, সাল ইত্যাদি) ডাটাবেসে জমা হবে এবং সবাই এই পেজে ফলাফল দেখতে পারবে।</div>
+  </div>
+
+  <div class="panel no-print" id="ctrl">
+    <h3 class="adm-only">ফলাফল শীট তৈরি করুন (যেকোনো Excel থেকে)</h3>
+    <div class="row adm-only" style="margin:0 0 10px">
+      <label class="chk">শ্রেণি:
+        <input id="cls" list="clsList" placeholder="যেমন: দাখিল" style="font:inherit;padding:7px 10px;border:1px solid #9aa3b5;border-radius:8px;width:170px">
+        <datalist id="clsList"><option value="ইবতেদায়ী"><option value="৬ষ্ঠ শ্রেণি"><option value="৭ম শ্রেণি"><option value="৮ম শ্রেণি"><option value="৯ম শ্রেণি"><option value="১০ম শ্রেণি"><option value="দাখিল"><option value="আলিম"><option value="ফাজিল"><option value="কামিল"></datalist>
+      </label>
+      <label class="chk">পরীক্ষা:
+        <select id="etype"><option>নির্বাচনী</option><option>অর্ধ বার্ষিক</option><option>বার্ষিক</option></select>
+      </label>
+      <label class="chk">সাল:
+        <input id="yr" style="font:inherit;padding:7px 10px;border:1px solid #9aa3b5;border-radius:8px;width:90px">
+      </label>
+    </div>
+    <div class="drop adm-only" id="drop">
+      <div><b>Excel (.xlsx) ফাইল</b> এখানে ছেড়ে দিন, অথবা ট্যাপ/ক্লিক করে বেছে নিন</div>
+      <small>ফাইল আপনার ডিভাইসেই প্রসেস হয়, কোথাও আপলোড হয় না।</small>
+      <input type="file" id="file" accept=".xlsx,.xlsm" hidden>
+    </div>
+    <div class="row" id="opts" style="display:none">
+      <label class="chk adm-only"><input type="checkbox" id="mergeqh" checked> কোরআন ও হাদীস একসাথে (একটি বিষয়, গ্রেড ও পাস/ফেল)</label>
+      <label class="chk adm-only"><input type="checkbox" id="opttot"> মোট নম্বরে ঐচ্ছিক বিষয় (কৃষি/মানতিক) যোগ করুন</label>
+      <label class="chk">দেখার ধরন:
+        <select id="view"><option value="table">মেধা তালিকা (এক সারণি)</option><option value="student">স্টুডেন্ট অনুসারে (A4-এ ২ জন)</option><option value="transcript">একাডেমিক ট্রান্সক্রিপ্ট (বোর্ড ডিজাইন)</option><option value="admit">এডমিট কার্ড</option><option value="student1">স্টুডেন্ট অনুসারে (A4-এ ১ জন — বিস্তারিত)</option></select></label>
+      <label class="chk" id="sortBox" style="display:none">মার্কশীটের ক্রম:
+        <select id="sorto"><option value="roll">রোল অনুযায়ী</option><option value="merit">উত্তীর্ণ → Fail-1 → Fail-2 …</option></select></label>
+      <label class="chk" id="skipBox" style="display:none"><input type="checkbox" id="skipabs" checked> অনুপস্থিতদের বাদ দিন</label>
+      <span id="sheetBox" class="adm-only" style="display:none">শিট: <select id="sheet"></select></span>
+      <button class="primary" id="print">🖨️ প্রিন্ট</button>
+      <button class="primary" id="dl">⬇️ ডাউনলোড (PDF)</button>
+    </div>
+    <div class="hint adm-only" id="hint">হেডার সারিতে "নাম" লেখা থাকলে পেজ নিজেই বিষয়, MCQ/CQ/মোট কলাম চিনে নেয়। বিষয় প্রতি ফাইলে আলাদা হলেও চলবে। প্রিন্ট ডায়ালগে "Save as PDF" বাছলে PDF হবে (A3 landscape)।</div>
+    <div class="err" id="err"></div>
+  </div>
+
+  <details class="panel no-print adm-only" id="cfgBox" style="display:none" open>
+    <summary>শনাক্ত হওয়া বিষয় (দরকার হলে ঠিক করুন)</summary>
+    <div class="hint" id="layoutInfo"></div>
+    <div class="cfgscroll"><table id="cfg"></table></div>
+    <div class="hint">ঐচ্ছিক বিষয় শীটে দেখায়, কিন্তু GPA ও পাস/ফেলে ধরা হয় না। "MCQ/CQ ন্যূনতম" ফাঁকা থাকলে শুধু মোট নম্বর দেখা হয়।</div>
+  </details>
+
+  <details class="panel no-print adm-only" id="trBox" style="display:none" open>
+    <summary>ট্রান্সক্রিপ্টের তথ্য</summary>
+    <div class="row">
+      <label class="chk">গ্রুপ: <input type="text" id="tgroup" value="সাধারণ" style="width:110px"></label>
+      <label class="chk">ছাত্রের ধরন: <input type="text" id="ttype" value="নিয়মিত" style="width:110px"></label>
+      <label class="chk">কেন্দ্র: <input type="text" id="tcentre" style="width:170px" placeholder="(ফাঁকা থাকলে লাইন)"></label>
+    </div>
+    <div class="row">
+      <label class="chk">ফলাফল প্রকাশের তারিখ: <input type="date" id="tpub"></label>
+      <label class="chk">স্বাক্ষরকারী: <input type="text" id="tsign" value="অধ্যক্ষ/সুপার" style="width:150px"></label>
+      <label class="chk">লোগো (ঐচ্ছিক): <input type="file" id="tlogo" accept="image/*"></label>
+    </div>
+    <div class="hint">নাম, পিতা/মাতার নাম, রেজি. নং, জন্ম তারিখ, কেন্দ্র — ফাইলে এই নামের কলাম থাকলে নিজে থেকে আসে। অতিরিক্ত বিষয় (কৃষি/মানতিক): দুই ধরনের GPA দেখায় — অতিরিক্ত বিষয় ছাড়া, এবং অতিরিক্তসহ (২-এর উপরের GP যোগ, সর্বোচ্চ ৫.০০)।</div>
+  </details>
+
+  <details class="panel no-print adm-only" id="admitBox" style="display:none" open>
+    <summary>এডমিট কার্ডের তথ্য</summary>
+    <div class="row">
+      <label class="chk">কার্ড প্রতি পেজে:
+        <select id="aper"><option value="2">২টি</option><option value="1">১টি</option></select></label>
+      <label class="chk">লোগো (ঐচ্ছিক): <input type="file" id="alogo" accept="image/*"></label>
+      <label class="chk">সাধারণ সময়: <input type="text" id="atime" value="সকাল ১০:০০" style="width:130px"></label>
+    </div>
+    <div class="cfgscroll"><table id="routine"></table></div>
+    <div class="hint">তারিখ ও সময় ঠিক করলে কার্ডে রুটিন আসবে। তারিখ ফাঁকা রাখলে কার্ডে ঘর ফাঁকা থাকবে (হাতে লেখার জন্য)। বিষয় বাদ দিতে টিক তুলে দিন।</div>
+    <div style="margin-top:8px"><b>নির্দেশাবলি</b> (প্রতি লাইনে একটি):</div>
+    <textarea id="ainst" rows="5"></textarea>
+  </details>
+
+  <div id="report">
+    <div class="titles">
+      <img id="rlogo" class="rlogo" alt="">
+      <div class="tt">
+        <h1 id="inst" contenteditable="true" spellcheck="false"></h1>
+        <h2 id="exam" contenteditable="true" spellcheck="false"></h2>
+        <h2 id="clsline"></h2>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="scroll"><table id="tbl"></table></div>
+    <div class="note" id="note"></div>
+  </div>
+  <div id="students"></div>
+  <div id="admit"></div>
+  <div class="hint no-print" id="trHint" style="display:none">যেকোনো ট্রান্সক্রিপ্টের উপর ক্লিক/ট্যাপ করলে শুধু সেই শিক্ষার্থীর ট্রান্সক্রিপ্ট PDF হিসেবে ডাউনলোড হবে।</div>
+  <div id="trans"></div>
+</div>
+<div class="toast no-print" id="toast"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const BN = '০১২৩৪৫৬৭৮৯';
+const bn = s => String(s).replace(/[0-9]/g, d => BN[d]);
+const fmtGp = g => bn(Number.isInteger(g) ? g : +g.toFixed(2));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num = v => {
+  if (v == null || v === '' || typeof v === 'boolean') return null;
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  const s = String(v).trim().replace(/[০-৯]/g, d => BN.indexOf(d));
+  return /^-?\d+(\.\d+)?$/.test(s) ? parseFloat(s) : null;
+};
+const n0 = v => v == null ? 0 : v;
+const RX = (s, f) => new RegExp(s.normalize('NFC'), f);
+const cl = i => { let s = ''; while (i > 0) { const m = (i-1) % 26; s = String.fromCharCode(65+m) + s; i = Math.floor((i-1)/26); } return s; };
+const ci = s => s.split('').reduce((a,ch) => a*26 + ch.charCodeAt(0) - 64, 0);
+
+/* ---------- grade points (পূর্ণমান অনুযায়ী) ---------- */
+function gpFor(t, F) {
+  if (!F) return 0;
+  for (const [p, g] of [[80,5],[70,4],[60,3.5],[50,3],[40,2]])
+    if (t >= Math.ceil(F*p/100 - 1e-9)) return g;
+  return t >= Math.round(F*33/100) ? 1 : 0;
+}
+const letter = g => g>=5-1e-9?'A+' : g>=4-1e-9?'A' : g>=3.5-1e-9?'A-' : g>=3-1e-9?'B' : g>=2-1e-9?'C' : g>=1-1e-9?'D' : 'F';
+
+/* ---------- হেডার থেকে বিষয় শনাক্ত ---------- */
+function parseName(raw) {
+  let t = raw, full = null;
+  const m = t.match(/[-–]\s*([0-9০-৯]+)$/);
+  if (m) { full = num(m[1]); t = t.slice(0, m.index).trim(); }
+  let ord = '';
+  const o = t.match(RX('\\s*(১ম|২য়|৩য়|প্রথম|দ্বিতীয়)(\\s*পত্র)?$'));
+  if (o) { ord = o[1]; t = t.slice(0, o.index).trim(); }
+  return { base: t, ord, full };
+}
+const kindOf = s => RX('অভি|mcq|বহু|objective','i').test(s) ? 'mcq'
+                  : RX('সৃজ|cq|রচনা|লিখিত|written','i').test(s) ? 'cq'
+                  : RX('ব্যব|prac','i').test(s) ? 'prac' : 'part';
+const KIND_LABEL = { mcq:'MCQ', cq:'CQ', prac:'ব্যবহারিক' };
+
+function buildPlan(s) {
+    const plan = [];
+    s.papers.forEach((p, pi) => {
+      const vis = p.parts.map((x, qi) => ({ x, qi })).filter(o => o.x.has);
+      if (s.papers.length > 1 || vis.length >= 2) {
+        vis.forEach(o => {
+          let lab = (p.ord ? p.ord + ' ' : '') + (KIND_LABEL[o.x.kind] || o.x.label);
+          lab = lab.trim() || 'নম্বর';
+          if (!o.x.label && p.ord) lab = p.ord;
+          plan.push({ t:'part', pi, qi:o.qi, label:lab });
+        });
+        if (s.papers.length > 1 && vis.length >= 2) plan.push({ t:'ptot', pi, label:(p.ord ? p.ord + ' ' : '') + 'মোট' });
+      }
+    });
+    plan.push({ t:'tot', label:'মোট' });
+    return plan;
+}
+
+function parseLayout(grid) {
+  const maxCol = grid.__maxCol;
+  const T = (c, r) => { const v = grid[cl(c) + r]; return v == null ? '' : String(v).normalize('NFC').replace(/\s+/g,' ').trim(); };
+  let H = 0, nameCol = 0;
+  outer: for (let r = 1; r <= 15; r++) for (let c = 1; c <= maxCol; c++)
+    if (RX('^(নাম|name)$','i').test(T(c, r))) { H = r; nameCol = c; break outer; }
+  if (!H) throw new Error('হেডার সারি পাওয়া যায়নি (যে সারিতে "নাম" লেখা আছে)।');
+  let rollCol = 1;
+  for (let c = 1; c <= maxCol; c++) if (RX('ক্রম|রোল|roll|serial|^sl','i').test(T(c, H))) { rollCol = c; break; }
+  let subCount = 0;
+  for (let c = nameCol + 1; c <= maxCol; c++) if (T(c, H + 1)) subCount++;
+  const subRow = (subCount >= 2 && num(grid[cl(rollCol) + (H+1)]) == null) ? H + 1 : 0;
+  const dataStart = (subRow ? H + 2 : H + 1);
+
+  const META = RX('পিতা|মাতা|রেজি|আইডি|জন্ম|লিঙ্গ|শ্রেণি|গ্রুপ|কেন্দ্র|group|centre|center|dob|birth|father|mother|reg|^id$|ক্রম|রোল','i');
+  const subjects = []; let cur = null, curPaper = null;
+  const classify = (sub, c, paper) => {
+    if (RX('^(gp|জিপি)$','i').test(sub)) return;
+    if (RX('^(মোট|total)$','i').test(sub)) { paper.totalCol = c; return; }
+    paper.parts.push({ col:c, label:sub, kind:kindOf(sub) });
+  };
+  const newSubject = (base, flat) => { const s = { name:base, flat, papers:[], totalCol:null, fullHint:null }; subjects.push(s); return s; };
+  for (let c = nameCol + 1; c <= maxCol; c++) {
+    const top = T(c, H), sub = subRow ? T(c, subRow) : '';
+    if (!top && !sub) continue;
+    if (top) {
+      if (RX('^(gp|জিপি)$','i').test(top)) continue;
+      if (RX('^(gpa|জিপিএ|grade|গ্রেড|ফলাফল|result|মন্তব্য|মেধা|position|remarks)','i').test(top)) break;
+      if (RX('^(মোট|সর্বমোট|total|sum)$','i').test(top) && !sub) {
+        if (cur && cur.flat && cur.totalCol == null) { cur.totalCol = c; continue; }
+        break;
+      }
+      if (META.test(top)) continue;
+      const pn = parseName(top);
+      if (sub) {
+        if (!(cur && cur.name === pn.base)) cur = newSubject(pn.base, false);
+        if (pn.full && !cur.fullHint) cur.fullHint = pn.full;
+        curPaper = { ord:pn.ord, parts:[], totalCol:null, flat:false }; cur.papers.push(curPaper);
+        classify(sub, c, curPaper);
+      } else {
+        if (!(cur && cur.flat && cur.name === pn.base)) cur = newSubject(pn.base, true);
+        if (pn.full && !cur.fullHint) cur.fullHint = pn.full;
+        curPaper = { ord:pn.ord, parts:[{ col:c, label:'', kind:'part' }], totalCol:null, flat:true }; cur.papers.push(curPaper);
+      }
+    } else if (curPaper && !curPaper.flat) classify(sub, c, curPaper);
+  }
+  // শিরোনাম (প্রতিষ্ঠান / পরীক্ষা)
+  const titles = [];
+  for (let r = 1; r < H; r++) {
+    let t = '';
+    for (let c = nameCol + 1; c <= maxCol && !t; c++) t = T(c, r);
+    if (!t) for (let c = 1; c <= nameCol && !t; c++) t = T(c, r);
+    if (t) titles.push(t);
+  }
+  // ডাটা সারি
+  const rows = [];
+  for (let r = dataStart; r <= grid.__maxRow; r++) if (num(grid[cl(rollCol) + r]) != null) rows.push(r);
+  // প্রতিটি বিষয়ের ডিফল্ট
+  subjects.forEach(s => {
+    const cols = []; s.papers.forEach(p => { p.parts.forEach(x => cols.push(x.col)); if (p.totalCol) cols.push(p.totalCol); });
+    if (s.totalCol) cols.push(s.totalCol);
+    s.colRange = cols.length ? (cl(Math.min(...cols)) + (cols.length > 1 ? '–' + cl(Math.max(...cols)) : '')) : '';
+    s.hasData = rows.some(r => cols.some(c => num(grid[cl(c) + r]) != null && (num(grid[cl(c) + r]) !== 0)));
+    // কোন পার্ট কলামে ডাটা আছে
+    s.papers.forEach(p => p.parts.forEach(x => x.has = rows.some(r => num(grid[cl(x.col) + r]) != null)));
+    s.plan = buildPlan(s);
+    s.hasMcq = s.papers.some(p => p.parts.some(x => x.kind === 'mcq'));
+    s.hasCq = s.papers.some(p => p.parts.some(x => x.kind === 'cq'));
+    // ডিফল্ট কনফিগ
+    const strictSubj = RX('গণিত|ইসঃ|ইসলামের ইতিহাস|ইতিহাস|math','i').test(s.name);
+    s.cfg = {
+      include: s.hasData,
+      full: s.fullHint || (RX('আইসিটি|ict|তথ্য','i').test(s.name) ? 25 : 100 * s.papers.length),
+      optional: RX('কৃষি|মানতিক|ঐচ্ছিক|৪র্থ|চতুর্থ|optional|logic|agri','i').test(s.name),
+      minMcq: strictSubj && s.hasMcq ? 10 : null,
+      minCq: strictSubj && s.hasCq ? 23 : null
+    };
+  });
+  const metaCol = re => { for (let c = 1; c <= maxCol; c++) if (c !== nameCol && RX(re, 'i').test(T(c, H))) return c; return 0; };
+  return { H, subRow, dataStart, nameCol, rollCol, subjects, rows, titles,
+           fatherCol: metaCol('পিতা|father'), motherCol: metaCol('মাতা|mother'), regCol: metaCol('রেজি|reg'),
+           groupCol: metaCol('গ্রুপ|group'), dobCol: metaCol('জন্ম|dob|birth'), centreCol: metaCol('কেন্দ্র|centre|center') };
+}
+
+/* ---------- ফলাফল হিসাব ---------- */
+function evalSubject(grid, s, r) {
+  const c = s.cfg;
+  const P = s.papers.map(p => {
+    const vals = p.parts.map(x => num(grid[cl(x.col) + r]));
+    const any = vals.some(v => v != null);
+    const tot = any ? vals.reduce((a, v) => a + n0(v), 0) : (p.totalCol ? num(grid[cl(p.totalCol) + r]) : null);
+    return { vals, any, tot };
+  });
+  let total = P.reduce((a, p) => a + n0(p.tot), 0), hasAny = P.some(p => p.tot != null);
+  if (P.every(p => p.tot == null) && s.totalCol) { const v = num(grid[cl(s.totalCol) + r]); if (v != null) { total = v; hasAny = true; } }
+  const present = P.some(p => p.any) || total > 0;
+  let ok = true;
+  s.papers.forEach((p, pi) => p.parts.forEach((x, qi) => {
+    const v = n0(P[pi].vals[qi]);
+    if (x.kind === 'mcq' && c.minMcq != null && v < c.minMcq) ok = false;
+    if (x.kind === 'cq' && c.minCq != null && v < c.minCq) ok = false;
+  }));
+  const gp = (c.optional && !hasAny) ? null : (ok ? gpFor(total, c.full) : 0);
+  const cells = s.plan.map(it => it.t === 'part' ? P[it.pi].vals[it.qi] : it.t === 'ptot' ? n0(P[it.pi].tot) : total);
+  const kinds = { mcq:null, cq:null, prac:null }, pk = s.papers.map(() => ({ mcq:null, cq:null, prac:null }));
+  s.papers.forEach((p, pi) => p.parts.forEach((x, qi) => { const v = P[pi].vals[qi]; if (v != null && x.kind in kinds) { kinds[x.kind] = n0(kinds[x.kind]) + v; pk[pi][x.kind] = n0(pk[pi][x.kind]) + v; } }));
+  return { cells, total, gp, present, hasAny, kinds, pk, papers: P.map(p => p.tot) };
+}
+
+function effSubjects(L, merge) {
+  const subs = L.subjects.filter(s => s.cfg.include);
+  if (!merge) return subs;
+  const qi = subs.findIndex(s => !s.cfg.optional && /কোরআন/.test(s.name));
+  const hi = subs.findIndex(s => !s.cfg.optional && /হাদীস|হাদিস/.test(s.name));
+  if (qi < 0 || hi < 0) return subs;
+  const q = subs[qi], h = subs[hi];
+  const m = { name: q.name + ' ও ' + h.name, merged: true, flat: false, totalCol: null,
+    papers: [...q.papers.map(p => ({ ...p, ord: q.name })), ...h.papers.map(p => ({ ...p, ord: h.name }))],
+    cfg: { include: true, optional: false, full: q.cfg.full + h.cfg.full, minMcq: null, minCq: null } };
+  m.plan = buildPlan(m);
+  const out = subs.filter((s, k) => k !== qi && k !== hi);
+  out.splice(Math.min(qi, hi), 0, m);
+  return out;
+}
+function compute(grid, L, opts) {
+  const all = effSubjects(L, opts.merge);
+  const reg = all.filter(s => !s.cfg.optional);
+  const opt = all.filter(s => s.cfg.optional);
+  const list = [];
+  for (const r of L.rows) {
+    const ev = new Map();
+    [...reg, ...opt].forEach(s => ev.set(s, evalSubject(grid, s, r)));
+    const present = reg.some(s => ev.get(s).present);
+    const failNames = present ? reg.filter(s => ev.get(s).gp === 0).map(s => s.name) : [];
+    const pass = present && failNames.length === 0 && reg.length > 0;
+    const total = reg.reduce((a, s) => a + ev.get(s).total, 0) + (opts.optTotal ? opt.reduce((a, s) => a + ev.get(s).total, 0) : 0);
+    const gpa = pass ? reg.reduce((a, s) => a + ev.get(s).gp, 0) / reg.length : null;
+    list.push({ roll:num(grid[cl(L.rollCol) + r]), name:String(grid[cl(L.nameCol) + r] ?? '').trim(), ev, present, pass, failNames,
+                failN:failNames.length, total, gpa, grade: pass ? letter(gpa) : (present ? 'F' : null),
+                status: !present ? 'absent' : pass ? 'pass' : 'fail' });
+  }
+  const pass = list.filter(s => s.status==='pass').sort((a,b) => b.gpa-a.gpa || b.total-a.total || a.roll-b.roll);
+  pass.forEach((s,i) => s.rank = i+1);
+  const fail = list.filter(s => s.status==='fail').sort((a,b) => a.failN-b.failN || a.roll-b.roll);
+  const absent = list.filter(s => s.status==='absent').sort((a,b) => a.roll-b.roll);
+  const partic = list.filter(x => x.present);
+  const high = new Map();
+  [...reg, ...opt].forEach(sj => { let m = null; partic.forEach(st => { const e = st.ev.get(sj); if (sj.cfg.optional && !e.hasAny) return; if (m == null || e.total > m) m = e.total; }); high.set(sj, m); });
+  const highTotal = partic.length ? Math.max(...partic.map(x => x.total)) : 0;
+  const avgTotal = partic.length ? partic.reduce((a, x) => a + x.total, 0) / partic.length : 0;
+  return { high, highTotal, avgTotal, reg, opt, rows:[...pass, ...fail, ...absent], count:list.length, pass:pass.length, fail:fail.length,
+           absent:absent.length, present:pass.length+fail.length, aplus: pass.filter(s => s.grade==='A+').length };
+}
+
+/* ---------- xlsx reader (কোনো বাইরের লাইব্রেরি ছাড়া) ---------- */
+async function readZip(buf) {
+  const dv = new DataView(buf), u8 = new Uint8Array(buf);
+  let e = -1;
+  for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 65600); i--)
+    if (dv.getUint32(i, true) === 0x06054b50) { e = i; break; }
+  if (e < 0) throw new Error('এটি বৈধ .xlsx ফাইল নয়।');
+  const count = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
+  const entries = {};
+  for (let i = 0; i < count; i++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const nl = dv.getUint16(p+28, true), el = dv.getUint16(p+30, true), cl_ = dv.getUint16(p+32, true);
+    entries[new TextDecoder().decode(u8.subarray(p+46, p+46+nl))] =
+      { method:dv.getUint16(p+10, true), csize:dv.getUint32(p+20, true), usize:dv.getUint32(p+24, true), lo:dv.getUint32(p+42, true) };
+    p += 46 + nl + el + cl_;
+  }
+  const text = async name => {
+    const en = entries[name]; if (!en) return null;
+    const nl = dv.getUint16(en.lo+26, true), el = dv.getUint16(en.lo+28, true);
+    const s = en.lo + 30 + nl + el, data = u8.subarray(s, s + en.csize);
+    if (en.method === 0) return new TextDecoder().decode(data);
+    if (typeof DecompressionStream === 'undefined') throw new Error('এই ব্রাউজার পুরনো। Chrome/Edge/Safari-র নতুন ভার্সন ব্যবহার করুন।');
+    const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return await new Response(stream).text();
+  };
+  return { entries, text };
+}
+const xml = s => {
+  const d = new DOMParser().parseFromString(s, 'application/xml');
+  if (d.getElementsByTagName('parsererror').length) throw new Error('ফাইলটি পড়া যায়নি।');
+  return d;
+};
+const tags = (n, t) => Array.from(n.getElementsByTagNameNS('*', t));
+async function listSheets(zip) {
+  const wb = xml(await zip.text('xl/workbook.xml'));
+  const rels = xml(await zip.text('xl/_rels/workbook.xml.rels'));
+  const target = {};
+  tags(rels, 'Relationship').forEach(r => target[r.getAttribute('Id')] = r.getAttribute('Target'));
+  return tags(wb, 'sheet').map(s => {
+    const rid = s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id') || s.getAttribute('r:id');
+    let t = target[rid] || ''; t = t.startsWith('/') ? t.slice(1) : 'xl/' + t;
+    return { name:s.getAttribute('name'), path:t, size:(zip.entries[t] || {}).usize || 0 };
+  });
+}
+async function readGrid(zip, path) {
+  const sst = [];
+  const sx = await zip.text('xl/sharedStrings.xml');
+  if (sx) tags(xml(sx), 'si').forEach(si => sst.push(tags(si, 't').map(t => t.textContent).join('')));
+  const doc = xml(await zip.text(path));
+  const grid = { __maxRow:0, __maxCol:0 };
+  for (const c of tags(doc, 'c')) {
+    const ref = c.getAttribute('r'), t = c.getAttribute('t');
+    const m = /^([A-Z]+)(\d+)$/.exec(ref || ''); if (!m) continue;
+    const vEl = tags(c, 'v')[0]; const v = vEl ? vEl.textContent : null;
+    let val = null;
+    if (t === 's') val = v == null ? null : sst[+v];
+    else if (t === 'inlineStr') val = tags(c, 't').map(x => x.textContent).join('');
+    else if (t === 'str') val = v;
+    else if (t === 'b' || t === 'e') val = null;
+    else val = v == null ? null : parseFloat(v);
+    if (val == null || val === '') continue;
+    grid[ref] = val;
+    grid.__maxRow = Math.max(grid.__maxRow, +m[2]);
+    grid.__maxCol = Math.max(grid.__maxCol, ci(m[1]));
+  }
+  return grid;
+}
+
+/* ---------- UI ---------- */
+const $ = id => document.getElementById(id);
+let ZIP = null, GRID = null, LAYOUT = null;
+
+let examEdited = false;
+function buildTitle() {
+  if (examEdited) return;
+  const c = $('cls').value.trim(), y = $('yr').value.trim();
+  $('exam').textContent = `${c ? c + ' ' : ''}${$('etype').value} পরীক্ষার ফলাফল${y ? '-' + y : ''}`;
+}
+function renderCfg() {
+  let h = '<tr><th>নিন</th><th>বিষয়</th><th>কলাম</th><th>পূর্ণমান</th><th>ঐচ্ছিক</th><th>MCQ ন্যূনতম</th><th>CQ ন্যূনতম</th></tr>';
+  LAYOUT.subjects.forEach((s, i) => {
+    const c = s.cfg;
+    h += `<tr class="${c.include ? '' : 'off'}"><td><input type="checkbox" data-i="${i}" data-k="include" ${c.include ? 'checked' : ''}></td>`
+      + `<td class="l">${esc(s.name)}${s.hasData ? '' : ' <small>(ডাটা নেই)</small>'}</td><td>${s.colRange}</td>`
+      + `<td><input type="number" min="1" data-i="${i}" data-k="full" value="${c.full}"></td>`
+      + `<td><input type="checkbox" data-i="${i}" data-k="optional" ${c.optional ? 'checked' : ''}></td>`
+      + `<td>${s.hasMcq ? `<input type="number" min="0" data-i="${i}" data-k="minMcq" value="${c.minMcq ?? ''}">` : '—'}</td>`
+      + `<td>${s.hasCq ? `<input type="number" min="0" data-i="${i}" data-k="minCq" value="${c.minCq ?? ''}">` : '—'}</td></tr>`;
+  });
+  $('cfg').innerHTML = h;
+  $('layoutInfo').textContent = `হেডার সারি ${bn(LAYOUT.H)}${LAYOUT.subRow ? '–' + bn(LAYOUT.subRow) : ''}, ডাটা ${bn(LAYOUT.dataStart)} নম্বর সারি থেকে, ${bn(LAYOUT.rows.length)} জন পরীক্ষার্থী।`;
+  $('cfgBox').style.display = 'block';
+}
+
+function render() {
+  const R = compute(GRID, LAYOUT, { optTotal: $('opttot').checked, merge: $('mergeqh').checked });
+  window.__results = R; window.__layout = LAYOUT;
+  const subs = [...R.reg, ...R.opt];
+
+  $('stats').innerHTML = [
+    [R.count, 'মোট পরীক্ষার্থী', ''], [R.present, 'অংশগ্রহণ', ''], [R.pass, 'উত্তীর্ণ', 'ok'],
+    [R.fail, 'অনুত্তীর্ণ', 'bad'], [R.absent, 'অনুপস্থিত', ''],
+    [R.present ? bn((R.pass / R.present * 100).toFixed(1)) + '%' : '০%', 'পাশের হার', ''],
+    [R.aplus, 'A+ (GPA ৫)', 'ok']
+  ].map(([n,l,c]) => `<div class="stat ${c}"><div class="n">${typeof n === 'number' ? bn(n) : n}</div><div class="l">${l}</div></div>`).join('');
+
+  // হেডার: কোরআন ও হাদীস একসাথে থাকলে ৩ সারি (বিষয় → কোরআন/হাদীস → MCQ/CQ/মোট), না হলে ২ সারি
+  const multi = s => s.papers.length > 1;
+  const three = subs.some(multi), RS = three ? 3 : 2;
+  const grpName = s => { const o = s.papers[0] && s.papers[0].ord; return o; };
+  const paperTitle = (s, pi) => { const o = s.papers[pi].ord; if (s.merged) return o; return o ? (/পত্র$/.test(o) ? o : o + ' পত্র') : bn(pi + 1) + ' পত্র'; };
+  let h1 = `<tr><th rowspan="${RS}" class="s1">ক্রম</th><th rowspan="${RS}" class="s2">নাম</th>`;
+  let h2 = '<tr>', h3 = three ? '<tr>' : '';
+  subs.forEach(s => {
+    const labs = s.plan.map(it => {
+      let l = it.label;
+      if (multi(s) && it.pi != null) { const o = s.papers[it.pi].ord; if (o && l.startsWith(o)) l = l.slice(o.length).trim(); return l || 'মোট'; }
+      return l || 'নম্বর';
+    });
+    h1 += `<th colspan="${labs.length + 1}">${esc(s.name)}${s.cfg.optional ? ' (ঐচ্ছিক)' : ''}</th>`;
+    if (multi(s)) {
+      const grp = []; let tail = '';
+      s.plan.forEach((it, k) => {
+        if (it.pi == null) { tail += `<th class="sc" rowspan="2">${esc(labs[k])}</th>`; return; }
+        if (grp.length && grp[grp.length - 1].pi === it.pi) grp[grp.length - 1].n++; else grp.push({ pi: it.pi, n: 1 });
+        h3 += `<th class="sc">${esc(labs[k])}</th>`;
+      });
+      h2 += grp.map(g => `<th class="gh" colspan="${g.n}">${esc(paperTitle(s, g.pi))}</th>`).join('') + tail + '<th class="sc" rowspan="2">gp</th>';
+    } else if (three) {
+      h2 += [...labs, 'gp'].map(x => `<th class="sc" rowspan="2">${esc(x)}</th>`).join('');
+    } else {
+      h2 += [...labs, 'gp'].map(x => `<th class="sc">${esc(x)}</th>`).join('');
+    }
+  });
+  h1 += ['মোট নম্বর','GPA','গ্রেড','ফলাফল','মেধা ক্রম'].map(x => `<th rowspan="${RS}">${x}</th>`).join('') + '</tr>';
+  h2 += '</tr>'; if (three) h3 += '</tr>';
+
+  let body = '<tbody>';
+  for (const st of R.rows) {
+    body += `<tr class="${st.status}"><td class="s1">${bn(st.roll)}</td><td class="s2">${st.name ? esc(st.name) : '—'}</td>`;
+    for (const s of subs) {
+      const e = st.ev.get(s);
+      if (s.cfg.optional && !e.hasAny) { body += '<td class="sc">—</td>'.repeat(s.plan.length + 1); continue; }
+      body += e.cells.map(v => `<td class="sc">${v == null ? '—' : bn(v)}</td>`).join('');
+      const zero = st.status === 'fail' && !s.cfg.optional && e.gp === 0;
+      body += `<td class="sc gp${zero ? ' z' : ''}">${e.gp == null ? '—' : fmtGp(e.gp)}</td>`;
+    }
+    const resCell = st.status === 'pass' ? '<td class="res-pass">উত্তীর্ণ</td>'
+      : st.status === 'fail' ? `<td class="res-fail" title="${esc(st.failNames.join(', '))}">Fail-${st.failN}</td>`
+      : '<td>অনুপস্থিত</td>';
+    body += `<td class="tot">${st.present ? bn(st.total) : '—'}</td>`
+      + `<td>${st.gpa != null ? bn(st.gpa.toFixed(2)) : '—'}</td>`
+      + `<td>${st.grade ?? '—'}</td>${resCell}<td>${st.rank ? bn(st.rank) : '—'}</td></tr>`;
+  }
+  $('tbl').innerHTML = '<thead>' + h1 + h2 + h3 + '</thead>' + body + '</tbody>';
+  $('note').innerHTML = 'ক্রম সাজানো: উত্তীর্ণ (GPA বেশি থেকে কম) → অনুত্তীর্ণ (Fail-1, Fail-2… ফেল বিষয়ের সংখ্যা অনুযায়ী) → অনুপস্থিত। '
+    + 'Fail-এর ঘরের উপর ধরলে (মোবাইলে চেপে ধরলে) ফেল করা বিষয়ের নাম দেখা যায়।'
+    + `<br>GPA = ${bn(R.reg.length)}টি বিষয়ের মোট gp ÷ ${bn(R.reg.length)}। সব বিষয়ে পাস না করলে অনুত্তীর্ণ।`
+    + (R.opt.length ? `<br>ঐচ্ছিক বিষয় (${esc(R.opt.map(s => s.name).join(', '))}) শীটে দেখানো হয়েছে, কিন্তু GPA ও পাস/ফেলে যোগ হয়নি।` + ($('opttot').checked ? ' মোট নম্বরে যোগ করা হয়েছে।' : '') : '');
+  $('report').style.display = 'block';
+  const cv = $('cls').value.trim();
+  $('clsline').textContent = '';
+  const rl = $('rlogo'); if (LOGO) { rl.src = LOGO; rl.style.display = ''; } else rl.style.display = 'none';
+  renderStudents(R, subs);
+  renderAdmit();
+  renderTranscript(R, subs);
+  applyView();
+}
+
+const ordered = l => $('sorto').value === 'merit' ? l.slice() : l.slice().sort((a, b) => a.roll - b.roll);
+function headHtml(inst, exam) {
+  return `<div class="stu-head">${LOGO ? `<img src="${LOGO}" alt="">` : ''}<div><h4>${inst}</h4><h5>${exam}</h5></div></div>`;
+}
+function bigCard(st, subs, R, inst, exam, cls) {
+  const f = v => v == null ? '—' : bn(v);
+  const sumKind = { mcq:null, cq:null, prac:null }; let fullSum = 0;
+  let rows = '';
+  const ords = ['১ম','২য়','৩য়','৪র্থ'];
+  subs.forEach((s, i) => {
+    const e = st.ev.get(s), blank = s.cfg.optional && !e.hasAny, hi = R.high.get(s);
+    if (!s.cfg.optional) { fullSum += s.cfg.full; for (const k in sumKind) if (e.kinds[k] != null) sumKind[k] = n0(sumKind[k]) + e.kinds[k]; }
+    const zero = !s.cfg.optional && st.status === 'fail' && e.gp === 0;
+    const np = s.papers.length, nr = blank ? 1 : np, opt = s.cfg.optional ? ' <small>(ঐচ্ছিক)</small>' : '';
+    for (let pi = 0; pi < nr; pi++) {
+      const pk = (e.pk && e.pk[pi]) || {};
+      const label = np > 1 ? (s.merged ? esc(s.papers[pi].ord) : `${esc(s.name)}${opt} ${s.papers[pi].ord || ords[pi] || ''} পত্র`) : esc(s.name) + opt;
+      let tr = '<tr>';
+      if (pi === 0) tr += `<td rowspan="${nr}">${bn(i + 1)}</td>`;
+      tr += `<td class="l">${label}</td>`;
+      if (pi === 0) tr += `<td rowspan="${nr}">${bn(s.cfg.full)}</td>`;
+      tr += blank ? '<td>—</td>'.repeat(4)
+        : `<td>${f(pk.mcq)}</td><td>${f(pk.cq)}</td><td>${f(pk.prac)}</td><td>${np > 1 ? f(e.papers[pi]) : '—'}</td>`;
+      if (pi === 0) tr += `<td rowspan="${nr}" class="tot">${blank ? '—' : bn(e.total)}</td><td rowspan="${nr}">${hi == null ? '—' : bn(hi)}</td>`
+        + `<td rowspan="${nr}" class="${zero ? 'fl' : 'gp'}">${e.gp == null ? '—' : fmtGp(e.gp)}</td><td rowspan="${nr}" class="${zero ? 'fl' : ''}">${e.gp == null ? '—' : letter(e.gp)}</td>`;
+      rows += tr + '</tr>';
+    }
+  });
+  rows += `<tr class="tr-total"><td></td><td class="l">সর্বমোট</td><td>${bn(fullSum)}</td><td>${f(sumKind.mcq)}</td><td>${f(sumKind.cq)}</td><td>${f(sumKind.prac)}</td><td>—</td>`
+    + `<td>${st.present ? bn(st.total) : '—'}</td><td>${bn(R.highTotal)}</td><td>${st.gpa != null ? bn(st.gpa.toFixed(2)) : '—'}</td><td>${st.grade ?? '—'}</td></tr>`;
+  const result = st.status === 'pass' ? 'উত্তীর্ণ' : st.status === 'fail' ? `অনুত্তীর্ণ (Fail-${st.failN})` : 'অনুপস্থিত';
+  const scale = [['৮০–১০০','A+','৫.০০'],['৭০–৭৯','A','৪.০০'],['৬০–৬৯','A-','৩.৫০'],['৫০–৫৯','B','৩.০০'],['৪০–৪৯','C','২.০০'],['৩৩–৩৯','D','১.০০'],['০–৩২','F','০.০০']];
+  return `<div class="stu big">${headHtml(inst, exam)}`
+    + `<div class="info"><div><small>পরীক্ষার্থীর নাম</small><b>${st.name ? esc(st.name) : '&nbsp;'}</b></div><div><small>রোল/ক্রম</small><b>${bn(st.roll)}</b></div>`
+    + `<div><small>শ্রেণি</small><b>${cls || '&nbsp;'}</b></div><div><small>ফলাফল</small><b class="${st.status === 'fail' ? 'fl' : ''}">${result}</b></div></div>`
+    + `<div class="tw"><table><thead><tr><th>#</th><th>বিষয়</th><th>পূর্ণমান</th><th>MCQ</th><th>CQ</th><th>ব্যবহারিক</th><th>পত্র মোট</th><th>প্রাপ্ত মোট</th><th>শ্রেণিতে সর্বোচ্চ</th><th>GP</th><th>গ্রেড</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    + `<div class="sum2" style="margin-top:8px;border-top:1px solid #333"><div><small>মোট নম্বর</small><b>${st.present ? bn(st.total) : '—'}</b></div><div><small>GPA</small><b>${st.gpa != null ? bn(st.gpa.toFixed(2)) : '—'}</b></div>`
+    + `<div><small>গ্রেড</small><b>${st.grade ?? '—'}</b></div><div><small>মেধা ক্রম</small><b>${st.rank ? bn(st.rank) + ' / ' + bn(R.pass) : '—'}</b></div>`
+    + `</div>`
+    + (st.failNames.length ? `<div class="fl" style="margin-top:6px">ফেল বিষয় (${bn(st.failN)}টি): ${esc(st.failNames.join(', '))}</div>` : '')
+    + `<div class="scale"><b>গ্রেডিং স্কেল (বিষয়ভিত্তিক %)</b><table><tr><th>নম্বর %</th>${scale.map(x => `<td>${x[0]}</td>`).join('')}</tr><tr><th>গ্রেড</th>${scale.map(x => `<td>${x[1]}</td>`).join('')}</tr><tr><th>GP</th>${scale.map(x => `<td>${x[2]}</td>`).join('')}</tr></table></div>`
+    + `<div class="remark"><small>শিক্ষকের মন্তব্য:</small></div>`
+    + `<div class="sign"><span>অভিভাবকের স্বাক্ষর</span><span>শ্রেণি শিক্ষক</span><span>অধ্যক্ষ/সুপার</span></div></div>`;
+}
+function renderStudents(R, subs) {
+  const inst = esc($('inst').textContent), exam = esc($('exam').textContent), cls = esc($('cls').value.trim());
+  const list = ordered(R.rows.filter(st => !($('skipabs').checked && st.status === 'absent')));
+  const big = $('view').value === 'student1';
+  $('students').className = big ? 'one' : '';
+  if (big) { $('students').innerHTML = list.map(st => bigCard(st, subs, R, inst, exam, cls)).join(''); return; }
+  $('students').innerHTML = list.map(st => {
+    let rows = '';
+    subs.forEach((s, i) => {
+      const e = st.ev.get(s);
+      const blank = s.cfg.optional && !e.hasAny;
+      const zero = !s.cfg.optional && st.status === 'fail' && e.gp === 0;
+      rows += `<tr><td>${bn(i + 1)}</td><td class="l">${esc(s.name)}${s.cfg.optional ? ' <small>(ঐচ্ছিক)</small>' : ''}</td>`
+        + `<td>${blank ? '—' : bn(e.total)}</td><td>${bn(s.cfg.full)}</td>`
+        + `<td class="${zero ? 'fl' : ''}">${e.gp == null ? '—' : fmtGp(e.gp)}</td></tr>`;
+    });
+    const result = st.status === 'pass' ? 'উত্তীর্ণ' : st.status === 'fail' ? `অনুত্তীর্ণ (Fail-${st.failN})` : 'অনুপস্থিত';
+    return `<div class="stu">${headHtml(inst, exam)}`
+      + `<div class="who"><span>রোল/ক্রম: ${bn(st.roll)}</span><span>নাম: ${st.name ? esc(st.name) : '________________'}</span></div>`
+      + `<table><thead><tr><th>#</th><th>বিষয়</th><th>মোট</th><th>পূর্ণমান</th><th>GP</th></tr></thead><tbody>${rows}</tbody></table>`
+      + `<div class="sum"><div>মোট নম্বর<b>${st.present ? bn(st.total) : '—'}</b></div><div>GPA<b>${st.gpa != null ? bn(st.gpa.toFixed(2)) : '—'}</b></div>`
+      + `<div>গ্রেড<b>${st.grade ?? '—'}</b></div><div>ফলাফল<b class="${st.status === 'fail' ? 'fl' : ''}">${result}</b></div><div>মেধা ক্রম<b>${st.rank ? bn(st.rank) : '—'}</b></div></div>`
+      + (st.failNames.length ? `<div class="fl" style="margin-top:4px">ফেল বিষয়: ${esc(st.failNames.join(', '))}</div>` : '')
+      + `<div class="sign"><span>শ্রেণি শিক্ষক</span><span>পরীক্ষা নিয়ন্ত্রক</span><span>অধ্যক্ষ/সুপার</span></div></div>`;
+  }).join('');
+}
+function applyView() {
+  const v = $('view').value, stu = v.startsWith('student'), adm = v === 'admit', trn = v === 'transcript';
+  $('report').style.display = (stu || adm || trn) ? 'none' : 'block';
+  $('trans').style.display = trn ? 'block' : 'none';
+  $('trHint').style.display = trn ? 'block' : 'none';
+  $('trBox').style.display = (trn && LAYOUT) ? 'block' : 'none';
+  $('students').style.display = stu ? 'block' : 'none';
+  $('admit').style.display = adm ? 'block' : 'none';
+  $('admitBox').style.display = (adm && LAYOUT) ? 'block' : 'none';
+  if (LAYOUT) $('cfgBox').style.display = adm ? 'none' : 'block';
+  $('skipBox').style.display = stu ? 'flex' : 'none';
+  $('sortBox').style.display = (stu || trn) ? 'flex' : 'none';
+}
+
+/* ---------- এডমিট কার্ড ---------- */
+let ADMIT = [], LOGO = 'logo.jpg';
+const WD = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const DEF_INST = ['প্রবেশপত্র ছাড়া পরীক্ষা কক্ষে প্রবেশ করা যাবে না।','পরীক্ষা শুরুর ১৫ মিনিট আগে আসন গ্রহণ করতে হবে।','পরীক্ষা কক্ষে মোবাইল ফোন বা অননুমোদিত কোনো সামগ্রী আনা নিষেধ।','প্রবেশপত্র হারিয়ে গেলে অবিলম্বে অধ্যক্ষ/সুপারকে জানাতে হবে।'];
+function fmtDate(v) {
+  if (!v) return '';
+  const [y, m, d] = v.split('-').map(Number);
+  return `${bn(String(d).padStart(2, '0'))}/${bn(String(m).padStart(2, '0'))}/${bn(y)} (${WD[new Date(y, m - 1, d).getDay()]})`;
+}
+function buildAdmitBox() {
+  ADMIT = LAYOUT.subjects.map(s => ({ on: true, date: '', time: '' }));
+  const order = LAYOUT.subjects.map((s, i) => i).sort((a, b) => (LAYOUT.subjects[a].cfg.optional - LAYOUT.subjects[b].cfg.optional) || a - b);
+  LAYOUT.admitOrder = order;
+  let h = '<tr><th>নিন</th><th>বিষয়</th><th>তারিখ</th><th>সময় (ঐচ্ছিক)</th></tr>';
+  order.forEach(i => {
+    const s = LAYOUT.subjects[i];
+    h += `<tr><td><input type="checkbox" data-a="${i}" data-k="on" checked></td><td style="text-align:left;font-weight:600">${esc(s.name)}${s.cfg.optional ? ' <small>(ঐচ্ছিক)</small>' : ''}</td>`
+      + `<td><input type="date" data-a="${i}" data-k="date"></td><td><input type="text" data-a="${i}" data-k="time" placeholder="সাধারণ সময়" style="width:120px"></td></tr>`;
+  });
+  $('routine').innerHTML = h;
+  if (!$('ainst').value.trim()) $('ainst').value = DEF_INST.join('\n');
+}
+function renderAdmit() {
+  if (!LAYOUT) return;
+  const inst = esc($('inst').textContent), exam = esc($('exam').textContent), cls = esc($('cls').value.trim());
+  const gtime = $('atime').value.trim();
+  const rows = LAYOUT.admitOrder.filter(i => ADMIT[i].on).map((i, n) => {
+    const s = LAYOUT.subjects[i], a = ADMIT[i];
+    return `<tr><td>${bn(n + 1)}</td><td class="l">${esc(s.name)}${s.cfg.optional ? ' <small>(ঐচ্ছিক)</small>' : ''}</td><td>${a.date ? fmtDate(a.date) : '&nbsp;'}</td><td>${esc(a.time || (a.date ? gtime : '')) || '&nbsp;'}</td></tr>`;
+  }).join('');
+  const inst2 = $('ainst').value.split('\n').map(x => x.trim()).filter(Boolean).map(x => `<li>${esc(x)}</li>`).join('');
+  const per = $('aper').value;
+  const initial = ($('inst').textContent.trim() || 'ম').charAt(0);
+  const val = (r, col) => col ? esc(String(GRID[cl(col) + r] ?? '').trim()) : '';
+  const cell = (label, v) => `<div><small>${label}</small><b>${v || '&nbsp;'}</b></div>`;
+  const list = LAYOUT.rows.map(r => ({ r, roll: num(GRID[cl(LAYOUT.rollCol) + r]) })).sort((a, b) => a.roll - b.roll);
+  $('admit').className = 'p' + per;
+  $('admit').innerHTML = list.map(({ r, roll }) => {
+    const info = cell('পরীক্ষার্থীর নাম', val(r, LAYOUT.nameCol)) + cell('রোল নং', bn(roll))
+      + (LAYOUT.fatherCol ? cell('পিতার নাম', val(r, LAYOUT.fatherCol)) : '') + cell('শ্রেণি', cls)
+      + (LAYOUT.motherCol ? cell('মাতার নাম', val(r, LAYOUT.motherCol)) : '') + (LAYOUT.regCol ? cell('রেজি. নং', val(r, LAYOUT.regCol)) : '');
+    return `<div class="adm"><div class="adm-head"><div class="adm-logo">${LOGO ? `<img src="${LOGO}" alt="">` : esc(initial)}</div>`
+      + `<div class="adm-title"><div class="ins">${inst}</div><div class="ex">${exam}</div></div>`
+      + `<div class="adm-badge">প্রবেশপত্র<small>ADMIT CARD</small></div></div>`
+      + `<div class="adm-body"><div class="adm-info">${info}</div><div class="adm-photo">পাসপোর্ট<br>সাইজ<br>ছবি</div></div>`
+      + `<table><thead><tr><th style="width:36px">ক্রম</th><th>বিষয়</th><th>তারিখ ও বার</th><th>সময়</th></tr></thead><tbody>${rows}</tbody></table>`
+      + `<div class="adm-inst"><b>নির্দেশাবলি:</b><ol>${inst2}</ol></div>`
+      + `<div class="adm-sign"><span>পরীক্ষার্থীর স্বাক্ষর</span><span>শ্রেণি শিক্ষক</span><span>অধ্যক্ষ/সুপার</span></div></div>`;
+  }).join('');
+}
+
+/* ---------- একাডেমিক ট্রান্সক্রিপ্ট (বোর্ড ডিজাইন) ---------- */
+function fmtAnyDate(v) {
+  if (v == null || v === '') return '';
+  if (typeof v === 'number' && v > 20000) {
+    const d = new Date(Date.UTC(1899, 11, 30) + v * 864e5);
+    return bn(`${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`);
+  }
+  return esc(String(v).trim());
+}
+const marksOf = e => e.papers.length > 1 ? e.papers.map(v => bn(n0(v))).join('+') : bn(e.total);
+function renderTranscript(R, subs) {
+  if (!LAYOUT) return;
+  const inst = esc($('inst').textContent), exam = esc($('exam').textContent), cls = esc($('cls').value.trim());
+  const initial = esc(($('inst').textContent.trim() || 'ম').charAt(0));
+  const logo = LOGO ? `<img src="${LOGO}" alt="">` : initial;
+  const logoCls = LOGO ? ' img' : '';
+  const pubV = $('tpub').value;
+  const pub = pubV ? bn(pubV.split('-').reverse().join('/')) : '';
+  const N = R.reg.length || 1;
+  const scale = [['A+','৮০-১০০','৫'],['A','৭০-৭৯','৪'],['A-','৬০-৬৯','৩.৫'],['B','৫০-৫৯','৩'],['C','৪০-৪৯','২'],['D','৩৩-৩৯','১'],['F','০০-৩২','০']];
+  const scaleHtml = `<table class="tr-scale"><tr><th>লেটার<br>গ্রেড</th><th>ক্লাস<br>ইন্টারভ্যাল</th><th>গ্রেড<br>পয়েন্ট</th></tr>${scale.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table>`;
+  const val = (r, col) => col ? (typeof GRID[cl(col) + r] === 'number' && col === LAYOUT.dobCol ? fmtAnyDate(GRID[cl(col) + r]) : esc(String(GRID[cl(col) + r] ?? '').trim())) : '';
+  const list = ordered(R.rows.filter(st => st.status !== 'absent'));
+  const rowOf = new Map(); LAYOUT.rows.forEach(r => rowOf.set(num(GRID[cl(LAYOUT.rollCol) + r]), r));
+  $('trans').innerHTML = list.map(st => {
+    const r = rowOf.get(st.roll);
+    const shown = R.opt.filter(sj => st.ev.get(sj).hasAny);
+    const bonus = shown.reduce((m, sj) => Math.max(m, Math.max(0, (st.ev.get(sj).gp ?? 0) - 2)), 0);
+    const g1 = st.gpa, g2 = st.gpa != null ? Math.min(5, st.gpa + bonus / N) : null;
+    const n = R.reg.length, extra = shown.length ? 1 + shown.length : 0;
+    let rows = '';
+    R.reg.forEach((sj, i) => {
+      const e = st.ev.get(sj), zero = st.status === 'fail' && e.gp === 0;
+      rows += `<tr><td>${bn(i + 1)}</td><td class="l">${esc(sj.name)}</td><td class="mk">${marksOf(e)}</td><td class="${zero ? 'fl' : ''}">${letter(e.gp)}</td><td class="${zero ? 'fl' : ''}">${fmtGp(e.gp)}</td>`
+        + (i === 0 ? `<td rowspan="${n}" class="gpa">${g1 != null ? bn(g1.toFixed(2)) : '—'}</td><td rowspan="${n + extra}" class="gpa">${g2 != null ? bn(g2.toFixed(2)) : '—'}</td>` : '') + '</tr>';
+    });
+    if (shown.length) {
+      rows += `<tr><td colspan="5" class="addl">অতিরিক্ত বিষয়:</td><td class="sm">জিপি ২-এর উপরে</td></tr>`;
+      shown.forEach((sj, k) => {
+        const e = st.ev.get(sj);
+        rows += `<tr><td>${bn(n + k + 1)}</td><td class="l">${esc(sj.name)}</td><td class="mk">${marksOf(e)}</td><td>${letter(e.gp)}</td><td>${fmtGp(e.gp)}</td><td class="sm" style="font-size:18px">${bn(Math.max(0, e.gp - 2))}</td></tr>`;
+      });
+    }
+    const result = st.status === 'pass' ? 'উত্তীর্ণ' : `অনুত্তীর্ণ (ফেল: ${esc(st.failNames.join(', '))})`;
+    const row = (k, v, k2, v2) => `<div class="r"><span class="k">${k}</span><span class="c">:</span>` + (k2 ? `<span class="v" style="flex:1.2">${v}</span><span class="k2">${k2}</span><span class="c">:</span><span class="v">${v2}</span>` : `<span class="v">${v}</span>`) + '</div>';
+    const info = row('পরীক্ষার্থীর নাম', val(r, LAYOUT.nameCol))
+      + row('পিতার নাম', val(r, LAYOUT.fatherCol)) + row('মাতার নাম', val(r, LAYOUT.motherCol))
+      + row('প্রতিষ্ঠানের নাম', inst) + row('কেন্দ্রের নাম', $('tcentre').value.trim() ? esc($('tcentre').value.trim()) : val(r, LAYOUT.centreCol))
+      + row('রোল নং', bn(st.roll), 'রেজিস্ট্রেশন নং', val(r, LAYOUT.regCol))
+      + row('গ্রুপ', LAYOUT.groupCol ? val(r, LAYOUT.groupCol) : esc($('tgroup').value.trim()), 'ছাত্রের ধরন', esc($('ttype').value.trim()))
+      + row('শ্রেণি', cls) + row('জন্ম তারিখ', val(r, LAYOUT.dobCol));
+    return `<div class="tr" data-roll="${st.roll}" data-name="${esc(st.name)}" title="ক্লিক করলে এই শিক্ষার্থীর ট্রান্সক্রিপ্ট ডাউনলোড হবে"><div class="tr-in"><h2 class="tr-board">${inst}</h2><h3 class="tr-exam">${exam}</h3>`
+      + `<div class="tr-top"><div></div><div class="tr-mid"><div class="tr-logo${logoCls}">${logo}</div><div class="tr-title">একাডেমিক ট্রান্সক্রিপ্ট</div></div>${scaleHtml}</div>`
+      + `<div class="tr-info">${info}</div>`
+      + `<div class="tr-wrap"><table class="tr-tbl"><thead><tr><th style="width:44px">ক্রমিক<br>নং</th><th>বিষয়ের নাম</th><th style="width:92px">প্রাপ্ত<br>নম্বর</th><th style="width:66px">লেটার<br>গ্রেড</th><th style="width:70px">গ্রেড<br>পয়েন্ট</th><th style="width:96px">GPA<small>(অতিরিক্ত বিষয় ছাড়া)</small></th><th style="width:86px">GPA</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      + `<div class="tr-res" style="${st.status === 'fail' ? 'color:#b00020' : ''}">ফলাফল: ${result} &nbsp;|&nbsp; মোট নম্বর: ${bn(st.total)}${st.rank ? ` &nbsp;|&nbsp; মেধা ক্রম: ${bn(st.rank)}` : ''}</div>`
+      + `<div class="tr-foot"><div><b>ফলাফল প্রকাশের তারিখ:</b><br>${pub || '________________'}</div><div class="sg">${esc($('tsign').value.trim() || 'অধ্যক্ষ/সুপার')}</div></div></div></div>`;
+  }).join('');
+}
+
+async function loadSheet(path) {
+  GRID = await readGrid(ZIP, path);
+  LAYOUT = parseLayout(GRID);
+  $('inst').textContent = LAYOUT.titles[0] || 'চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা';
+  const ex = LAYOUT.titles[1] || '';
+  examEdited = false;
+  const cm = ex.match(RX('ইবতেদায়ী|দাখিল|আলিম|ফাজিল|কামিল|[০-৯]+(?:ম|ষ্ঠ|য়|র্থ)\\s*শ্রেণি'));
+  if (cm && !$('cls').value.trim()) $('cls').value = cm[0];
+  if (/অর্ধ/.test(ex)) $('etype').value = 'অর্ধ বার্ষিক';
+  else if (/বার্ষিক/.test(ex)) $('etype').value = 'বার্ষিক';
+  else if (/নির্বাচনী/.test(ex)) $('etype').value = 'নির্বাচনী';
+  const ym = ex.match(/(?:20|২০)[0-9০-৯]{2}/);
+  if (ym) $('yr').value = bn(ym[0].replace(/[০-৯]/g, d => BN.indexOf(d)));
+  else if (!$('yr').value) $('yr').value = bn(new Date().getFullYear());
+  buildTitle();
+  renderCfg(); buildAdmitBox(); render();
+}
+
+let lastBuf = null;
+async function processBuffer(buf, st) {
+  $('err').textContent = '';
+  try {
+    ZIP = await readZip(buf);
+    const sheets = await listSheets(ZIP);
+    if (!sheets.length) throw new Error('কোনো শিট পাওয়া যায়নি।');
+    const best = (st && sheets.find(x => x.path === st.sheet)) || sheets.reduce((a, b) => b.size > a.size ? b : a);
+    $('sheet').innerHTML = sheets.map(x => `<option value="${esc(x.path)}"${x === best ? ' selected' : ''}>${esc(x.name)}</option>`).join('');
+    $('sheetBox').style.display = sheets.length > 1 ? 'inline' : 'none';
+    $('opts').style.display = 'flex';
+    await loadSheet(best.path);
+    if (st) applySettings(st);
+    if (!window.__results.count) $('err').textContent = 'কোনো পরীক্ষার্থী পাওয়া যায়নি। ক্রম/রোল কলামে সংখ্যা আছে কিনা দেখুন, বা অন্য শিট বেছে নিন।';
+    if (typeof afterLoad === 'function') afterLoad();
+  } catch (e) {
+    $('report').style.display = 'none'; $('cfgBox').style.display = 'none';
+    $('err').textContent = 'ত্রুটি: ' + (e.message || e) + ' (শুধু .xlsx ফাইল সমর্থিত)';
+  }
+}
+async function handleFile(file) {
+  try { lastBuf = await file.arrayBuffer(); } catch (e) { $('err').textContent = 'ত্রুটি: ' + e.message; return; }
+  await processBuffer(lastBuf, null);
+}
+function captureSettings() {
+  const g = id => $(id) ? $(id).value : '';
+  return { inst: $('inst').textContent, exam: $('exam').textContent, examEdited, cls: g('cls'), etype: g('etype'), yr: g('yr'),
+    sheet: g('sheet'), opttot: $('opttot').checked, mergeqh: $('mergeqh').checked, sorto: g('sorto'), skipabs: $('skipabs').checked,
+    view: g('view') === 'admit' ? 'table' : g('view'), cfgs: JSON.parse(JSON.stringify(LAYOUT.subjects.map(x => x.cfg))),
+    tgroup: g('tgroup'), ttype: g('ttype'), tcentre: g('tcentre'), tpub: g('tpub'), tsign: g('tsign') };
+}
+function applySettings(st) {
+  if (st.inst) $('inst').textContent = st.inst;
+  ['cls', 'etype', 'yr'].forEach(k => { if (st[k] != null) $(k).value = st[k]; });
+  examEdited = false; buildTitle();
+  if (st.examEdited && st.exam) { $('exam').textContent = st.exam; examEdited = true; }
+  $('opttot').checked = !!st.opttot; $('mergeqh').checked = st.mergeqh !== false;
+  if (st.sorto) $('sorto').value = st.sorto;
+  $('skipabs').checked = st.skipabs !== false;
+  if (st.view) $('view').value = st.view;
+  (st.cfgs || []).forEach((c, i) => { if (LAYOUT.subjects[i]) Object.assign(LAYOUT.subjects[i].cfg, c); });
+  ['tgroup', 'ttype', 'tcentre', 'tpub', 'tsign'].forEach(k => { if (st[k] != null && $(k)) $(k).value = st[k]; });
+  renderCfg(); buildAdmitBox(); render();
+}
+
+const drop = $('drop'), fileIn = $('file');
+drop.addEventListener('click', () => fileIn.click());
+fileIn.addEventListener('change', () => fileIn.files[0] && handleFile(fileIn.files[0]));
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('on'); }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('on'); }));
+drop.addEventListener('drop', e => e.dataTransfer.files[0] && handleFile(e.dataTransfer.files[0]));
+$('opttot').addEventListener('change', () => GRID && render());
+$('mergeqh').addEventListener('change', () => GRID && render());
+$('sorto').addEventListener('change', () => GRID && render());
+$('sheet').addEventListener('change', async e => { try { await loadSheet(e.target.value); } catch (x) { $('err').textContent = 'ত্রুটি: ' + x.message; } });
+$('view').addEventListener('change', () => GRID && render());
+['cls','etype','yr'].forEach(id => $(id).addEventListener('input', () => { examEdited = false; buildTitle(); GRID && render(); }));
+$('exam').addEventListener('input', () => { examEdited = true; });
+$('skipabs').addEventListener('change', () => GRID && render());
+$('admitBox').addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.a != null) { const a = ADMIT[+t.dataset.a]; a[t.dataset.k] = t.type === 'checkbox' ? t.checked : t.value; }
+  if (t.id === 'alogo' && t.files[0]) { const fr = new FileReader(); fr.onload = () => { LOGO = fr.result; renderAdmit(); }; fr.readAsDataURL(t.files[0]); return; }
+  renderAdmit();
+});
+$('trBox').addEventListener('input', e => {
+  if (e.target.id === 'tlogo' && e.target.files[0]) { const fr = new FileReader(); fr.onload = () => { LOGO = fr.result; render(); }; fr.readAsDataURL(e.target.files[0]); return; }
+  GRID && render();
+});
+$('print').addEventListener('click', () => {
+  if (GRID) renderAdmit();
+  if (GRID) render(); if (GRID) renderStudents(window.__results, [...window.__results.reg, ...window.__results.opt]); window.print(); });
+/* ---------- PDF ডাউনলোড ---------- */
+const CDN = { h2c:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', pdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js' };
+const loadJs = src => new Promise((ok, no) => { const t = document.createElement('script'); t.src = src; t.onload = ok; t.onerror = () => no(new Error('PDF লাইব্রেরি লোড হয়নি — ইন্টারনেট সংযোগ দেখুন')); document.head.appendChild(t); });
+async function pdfLibs() { if (!window.html2canvas) await loadJs(CDN.h2c); if (!(window.jspdf && window.jspdf.jsPDF)) await loadJs(CDN.pdf); }
+function stageClear() {
+  let st = $('pdfstage');
+  if (!st) { st = document.createElement('div'); st.id = 'pdfstage'; st.style.cssText = 'position:fixed;left:-30000px;top:0;background:#fff;color:#111;'; document.body.appendChild(st); }
+  st.innerHTML = ''; return st;
+}
+const toast = t => { const e = $('toast'); e.textContent = t || ''; e.style.display = t ? 'block' : 'none'; };
+const snap = (el, sc) => html2canvas(el, { scale: sc, backgroundColor: '#fff', useCORS: true, logging: false });
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+const fname = suffix => (($('exam').textContent || 'ফলাফল').trim().replace(/[\\/:*?"<>|\s]+/g, '_') || 'result') + '_' + suffix + '.pdf';
+
+// কার্ড (ট্রান্সক্রিপ্ট/মার্কশীট/এডমিট): A4 পোর্ট্রেট, পেজে ফিট
+async function pdfCards(nodes, o) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const M = 8, CW = 194, CH = 281, per = o.per || 1, gap = per > 1 ? 5 : 0, boxH = per > 1 ? (CH - gap * (per - 1)) / per : CH;
+  for (let i = 0; i < nodes.length; i++) {
+    toast(`⏳ প্রস্তুত হচ্ছে... ${bn(i + 1)}/${bn(nodes.length)}`);
+    const st = stageClear(), el = nodes[i].cloneNode(true);
+    el.removeAttribute('id'); el.removeAttribute('title');
+    el.style.cssText += `;width:${o.w}px;max-width:none;margin:0;box-sizing:border-box;` + (o.fixedH ? `height:${Math.round(o.w * boxH / CW)}px;` : '');
+    st.appendChild(el);
+    await nextFrame();
+    const cv = await snap(el, o.w > 900 ? 1.3 : 1.6);
+    const ratio = cv.height / cv.width;
+    let dw = CW, dh = CW * ratio; if (dh > boxH) { dh = boxH; dw = boxH / ratio; }
+    if (i > 0 && i % per === 0) doc.addPage();
+    const x = M + (CW - dw) / 2, y = M + (i % per) * (boxH + gap);
+    doc.addImage(cv.toDataURL('image/jpeg', 0.9), 'JPEG', x, y, dw, dh);
+  }
+  stageClear();
+  doc.save(o.name);
+}
+
+// সকলের ফলাফল (মেধা তালিকা): A4 ল্যান্ডস্কেপ, প্রস্থে ফিট, প্রতি পেজে শিরোনাম ও টেবিল-হেডার সহ
+async function pdfTable(name) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const M = 8, CW = 281, CH = 194;
+  const mk = () => {
+    const titles = $('report').querySelector('.titles').cloneNode(true);
+    titles.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+    titles.querySelectorAll('[contenteditable]').forEach(e => e.removeAttribute('contenteditable'));
+    const stats = $('stats').cloneNode(true); stats.removeAttribute('id');
+    return { titles, stats };
+  };
+  // মাপ নেওয়ার জন্য পুরো টেবিল একবার বসানো
+  let st = stageClear();
+  const wrap = document.createElement('div'); wrap.style.cssText = 'display:inline-block;background:#fff;padding:8px;';
+  const m0 = mk(), full = document.createElement('table'); full.id = 'tblc'; full.innerHTML = $('tbl').innerHTML;
+  wrap.append(m0.titles, m0.stats, full); st.appendChild(wrap);
+  await nextFrame();
+  const PW = Math.max(full.offsetWidth, m0.titles.scrollWidth);
+  const rows = [...full.tBodies[0].rows], hs = rows.map(r => r.getBoundingClientRect().height);
+  const headH = full.tHead.getBoundingClientRect().height;
+  const tH = m0.titles.getBoundingClientRect().height + 8, sH = m0.stats.getBoundingClientRect().height + 22;
+  const pagePx = (PW + 16) * CH / CW * 0.97;
+  const pages = []; let cur = [], used = tH + sH + headH;
+  rows.forEach((r, i) => {
+    if (used + hs[i] > pagePx && cur.length) { pages.push(cur); cur = []; used = tH + headH; }
+    cur.push(i); used += hs[i];
+  });
+  if (cur.length) pages.push(cur);
+  const sc = Math.max(1, Math.min(2, 4500 / PW));
+  for (let p = 0; p < pages.length; p++) {
+    toast(`⏳ প্রস্তুত হচ্ছে... পেজ ${bn(p + 1)}/${bn(pages.length)}`);
+    st = stageClear();
+    const pg = document.createElement('div'); pg.style.cssText = `width:${PW + 16}px;background:#fff;padding:8px;box-sizing:border-box;`;
+    const m = mk(); pg.appendChild(m.titles); if (p === 0) pg.appendChild(m.stats);
+    const t = document.createElement('table'); t.id = 'tblc';
+    t.innerHTML = '<thead>' + $('tbl').tHead.innerHTML + '</thead><tbody></tbody>';
+    pages[p].forEach(i => t.tBodies[0].appendChild(rows[i].cloneNode(true)));
+    pg.appendChild(t); st.appendChild(pg);
+    await nextFrame();
+    const cv = await snap(pg, sc);
+    const ratio = cv.height / cv.width;
+    let dw = CW, dh = CW * ratio; if (dh > CH) { dh = CH; dw = CH / ratio; }
+    if (p > 0) doc.addPage();
+    doc.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', M + (CW - dw) / 2, M, dw, dh);
+  }
+  stageClear();
+  doc.save(name);
+}
+
+async function runDl(fn) {
+  const btn = $('dl'), old = btn.textContent; btn.disabled = true; $('err').textContent = '';
+  try { await pdfLibs(); await fn(); toast('✅ ডাউনলোড শুরু হয়েছে'); setTimeout(() => toast(''), 2500); }
+  catch (e) { console.error(e); toast(''); $('err').textContent = 'ডাউনলোড ব্যর্থ: ' + (e.message || e); }
+  btn.disabled = false; btn.textContent = old;
+}
+$('dl').addEventListener('click', () => {
+  if (!GRID) return;
+  render();
+  const v = $('view').value;
+  runDl(async () => {
+    if (v === 'table') return pdfTable(fname('মেধা_তালিকা'));
+    if (v === 'transcript') return pdfCards([...$('trans').querySelectorAll('.tr')], { w: 780, fixedH: true, per: 1, name: fname('ট্রান্সক্রিপ্ট') });
+    if (v === 'student1') return pdfCards([...$('students').querySelectorAll('.stu')], { w: 800, per: 1, name: fname('মার্কশীট') });
+    if (v === 'student') return pdfCards([...$('students').querySelectorAll('.stu')], { w: 760, per: 2, name: fname('মার্কশীট') });
+    if (v === 'admit') return pdfCards([...$('admit').querySelectorAll('.adm')], { w: 780, per: +$('aper').value || 2, name: fname('এডমিট_কার্ড') });
+  });
+});
+// একটি ট্রান্সক্রিপ্টে ক্লিক করলে শুধু সেটি ডাউনলোড
+$('trans').addEventListener('click', e => {
+  const el = e.target.closest('.tr'); if (!el) return;
+  const nm = (el.dataset.name || '').trim().replace(/[\\/:*?"<>|\s]+/g, '_');
+  runDl(() => pdfCards([el], { w: 780, fixedH: true, per: 1, name: `ট্রান্সক্রিপ্ট_রোল${el.dataset.roll || ''}${nm ? '_' + nm : ''}.pdf` }));
+});
+$('cfg').addEventListener('input', e => {
+  const t = e.target, s = LAYOUT.subjects[+t.dataset.i]; if (!s) return;
+  const k = t.dataset.k;
+  if (t.type === 'checkbox') s.cfg[k] = t.checked;
+  else { const v = num(t.value); s.cfg[k] = (k === 'full') ? (v || s.cfg.full) : v; }
+  if (k === 'include') t.closest('tr').classList.toggle('off', !t.checked);
+  render();
+});
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const fdb = firebase.firestore(), fauth = firebase.auth();
+// অ্যাডমিনের ইমেইল জানা থাকলে এখানে লিখুন, যেমন ['admin@example.com']। ফাঁকা থাকলে মোবাইল-নম্বর ভিত্তিক শিক্ষক অ্যাকাউন্ট বাদে যেকোনো লগইন করা ব্যবহারকারী অ্যাডমিন ধরা হবে।
+const ADMIN_EMAILS = [];
+let isAdmin = false, pubDocs = [], curPubId = null, pubUnsub = null;
+const PUB = id => $(id);
+const isAdminUser = u => {
+  if (!u || !u.email) return false;
+  if (ADMIN_EMAILS.length) return ADMIN_EMAILS.map(x => x.toLowerCase()).includes(u.email.toLowerCase());
+  return !/^\+?\d{10,13}$/.test(u.email.split('@')[0]);
+};
+function msg(t, ok) { const m = $('pubMsg'); m.textContent = t || ''; m.className = 'hint' + (ok ? ' okmsg' : ''); }
+function updateCtrl() { $('ctrl').style.display = (isAdmin || GRID) ? '' : 'none'; }
+function afterLoad() { updateCtrl(); if (isAdmin && GRID) $('saveBox').style.display = 'block'; }
+
+const b64FromBuf = buf => { const u = new Uint8Array(buf); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+const bufFromB64 = b => { const s = atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u.buffer; };
+
+function fillSelect(selectId) {
+  const sel = $('pubSel');
+  if (!pubDocs.length) { sel.innerHTML = '<option value="">এখনো কোনো ফলাফল প্রকাশ হয়নি</option>'; return; }
+  sel.innerHTML = pubDocs.map(d => `<option value="${esc(d.id)}">${esc(d.title || 'ফলাফল')}</option>`).join('');
+  sel.value = selectId && pubDocs.some(d => d.id === selectId) ? selectId : (curPubId && pubDocs.some(d => d.id === curPubId) ? curPubId : pubDocs[0].id);
+}
+async function loadPublished(id) {
+  const d = pubDocs.find(x => x.id === id); if (!d) return;
+  msg('ফলাফল লোড হচ্ছে...');
+  try {
+    const q = await fdb.collection('results').doc(id).collection('parts').orderBy('i').get();
+    const b64 = q.docs.map(x => x.data().data).join('');
+    const buf = bufFromB64(b64);
+    lastBuf = buf; curPubId = id;
+    await processBuffer(buf, d.settings ? JSON.parse(d.settings) : null);
+    $('pubTitle').value = d.title || '';
+    msg('', true);
+  } catch (e) { console.error(e); msg('❌ ফলাফল লোড করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); }
+}
+function startList() {
+  if (pubUnsub) pubUnsub();
+  pubUnsub = fdb.collection('results').orderBy('createdAt', 'desc').onSnapshot(s => {
+    pubDocs = s.docs.map(d => ({ id: d.id, ...d.data() }));
+    fillSelect();
+    if (pubDocs.length && !GRID && !curPubId) loadPublished($('pubSel').value);
+  }, e => { console.error(e); $('pubSel').innerHTML = '<option value="">লোড করা যায়নি</option>'; msg('❌ তালিকা লোড করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); });
+}
+$('pubSel').addEventListener('change', e => e.target.value && loadPublished(e.target.value));
+
+$('pubSave').addEventListener('click', async () => {
+  if (!isAdmin) return;
+  if (!lastBuf || !GRID) { msg('আগে একটি Excel ফাইল দিন।'); return; }
+  const btn = $('pubSave'); btn.disabled = true;
+  try {
+    const title = $('pubTitle').value.trim() || $('exam').textContent.trim() || 'ফলাফল';
+    const b64 = b64FromBuf(lastBuf), SZ = 700000, n = Math.ceil(b64.length / SZ);
+    const ref = fdb.collection('results').doc();
+    for (let i = 0; i < n; i++) {
+      msg(`সেভ হচ্ছে... (${bn(i + 1)}/${bn(n)})`);
+      await ref.collection('parts').doc(String(i).padStart(3, '0')).set({ i, data: b64.slice(i * SZ, (i + 1) * SZ) });
+    }
+    await ref.set({ title, cls: $('cls').value, exam: $('exam').textContent, yr: $('yr').value, size: lastBuf.byteLength, partCount: n,
+      settings: JSON.stringify(captureSettings()), by: (fauth.currentUser && fauth.currentUser.email) || '',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    curPubId = ref.id;
+    msg('✅ ডাটাবেসে সেভ হয়েছে। এখন সবাই এই পেজে ফলাফল দেখতে পারবে।', true);
+    setTimeout(() => fillSelect(ref.id), 600);
+  } catch (e) { console.error(e); msg('❌ সেভ করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); }
+  btn.disabled = false;
+});
+
+$('pubDel').addEventListener('click', async () => {
+  const id = $('pubSel').value; if (!isAdmin || !id) return;
+  const d = pubDocs.find(x => x.id === id);
+  if (!confirm('"' + (d ? d.title : '') + '" ফলাফলটি ডাটাবেস থেকে মুছে ফেলবেন?')) return;
+  try {
+    const parts = await fdb.collection('results').doc(id).collection('parts').get();
+    for (const p of parts.docs) await p.ref.delete();
+    await fdb.collection('results').doc(id).delete();
+    if (curPubId === id) { curPubId = null; GRID = null; $('report').style.display = 'none'; $('opts').style.display = 'none'; $('cfgBox').style.display = 'none'; $('saveBox').style.display = 'none'; updateCtrl(); }
+    msg('মুছে ফেলা হয়েছে।', true);
+  } catch (e) { console.error(e); msg('❌ মুছতে পারেনি: ' + (e.code || '') + ' ' + (e.message || '')); }
+});
+
+fauth.onAuthStateChanged(u => {
+  isAdmin = isAdminUser(u);
+  document.body.classList.toggle('is-admin', isAdmin);
+  $('admLink').style.display = u ? 'none' : '';
+  [...$('view').options].forEach(o => { if (o.value === 'admit') { o.hidden = !isAdmin; o.disabled = !isAdmin; } });
+  if (!isAdmin && $('view').value === 'admit') { $('view').value = 'table'; if (GRID) render(); }
+  ['inst', 'exam'].forEach(id => $(id).contentEditable = isAdmin ? 'true' : 'false');
+  if (!isAdmin) $('saveBox').style.display = 'none'; else if (GRID) $('saveBox').style.display = 'block';
+  updateCtrl();
+  if (!pubUnsub) startList();
+});
+updateCtrl();
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ছাত্র/ছাত্রীর তালিকা</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f7a4a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="মাদ্রাসা">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center}
+.bar b{font-size:17px}
+.bar a,.bar button{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;margin-left:6px}
+.wrap{max-width:900px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px}
+input,select,button.act{font:inherit;padding:10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin:4px 0}
+button.act{background:var(--pr);color:#fff;border:0;cursor:pointer;font-weight:700}
+.sec{background:var(--mu)!important}
+h2{font-size:17px;margin:18px 0 8px;color:var(--pr);border-right:4px solid var(--gd);padding-right:8px}
+h3{margin:0 0 6px}
+.mu{color:var(--mu);font-size:13px}
+.row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.tg{display:inline-block;padding:0 8px;border-radius:999px;font-size:12px;cursor:pointer;border:1px solid}
+.tg.a{background:rgba(220,38,38,.12);color:#dc2626;border-color:rgba(220,38,38,.35)}
+.tg.l{background:rgba(183,121,31,.15);color:#b7791f;border-color:rgba(183,121,31,.4)}
+.tg.z{background:rgba(15,122,74,.12);color:var(--pr);border-color:rgba(15,122,74,.35)}
+.yr{display:flex;align-items:center;gap:8px;margin:6px 0}
+.yr b{flex:1;text-align:center}
+.yr button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
+.mg{flex-basis:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border-top:1px dashed var(--bd);padding-top:10px}
+.mg div{text-align:center;border:1px solid var(--bd);border-radius:10px;padding:4px 2px;font-size:12px;color:var(--mu)}
+.mg div span{display:block;font-size:13px;color:var(--mu)}
+.mg div span i{font-style:normal}
+.mg div.on{border-color:var(--bd);background:rgba(220,38,38,.06)}
+.mg .ca{color:#dc2626;font-weight:700}.mg .cl{color:#b7791f;font-weight:700}
+.row:last-child{border-bottom:0}
+.info{flex:1;min-width:0}
+.roll{display:inline-block;min-width:30px;text-align:center;background:var(--pr);color:#fff;border-radius:8px;padding:0 6px;margin-right:6px;font-size:13px}
+.call{flex:none;display:inline-flex;align-items:center;gap:4px;background:var(--pr);color:#fff!important;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700;white-space:nowrap}
+.call:active{background:var(--pr2)}
+.acts{flex:none;display:flex;flex-direction:column;gap:6px;align-items:stretch;text-align:center}
+.call.wa{background:#25d366;color:#fff!important}
+.call.wa:active{background:#1da851}
+.acts .call{justify-content:center}
+.del{background:none;border:0;color:var(--er);cursor:pointer;font:inherit}
+.ed{background:none;border:0;color:var(--pr);cursor:pointer;font:inherit;margin-right:6px}
+.row2{display:flex;gap:8px}.row2>*{flex:1;min-width:0}
+.gh{font-weight:700;color:var(--pr);margin:12px 0 2px;display:flex;justify-content:space-between}
+.hide{display:none}
+#toast{position:fixed;left:10px;right:10px;top:calc(58px + env(safe-area-inset-top,0px));z-index:99;max-width:640px;margin:0 auto;padding:12px 40px 12px 14px;border-radius:12px;color:#fff;font-size:14px;white-space:pre-wrap;word-break:break-word;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#toast.err{background:#b42318}#toast.ok{background:#0f7a4a}
+#toast button{position:absolute;right:8px;top:6px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
+#ptbl{display:none}
+
+/* এক লাইনে: অনুপস্থিত, ছুটি, রিপোর্ট কার্ড, কল */
+.ln{display:flex;flex-wrap:nowrap;align-items:center;gap:4px;margin-top:4px;overflow-x:auto;white-space:nowrap}
+.ln .tags{flex-wrap:nowrap;margin:0;flex:none}
+.ln .tg{font-size:11px;padding:0 6px}
+.ln .rcb{margin:0;padding:2px 8px;font-size:11px;flex:none;white-space:nowrap}
+.ln .call{padding:2px 9px;font-size:11px}
+
+/* ===== রিপোর্ট কার্ড ===== */
+.rcb{background:none;border:1px solid var(--pr);color:var(--pr);border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;cursor:pointer;margin-top:4px}
+#rcm{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;overflow:auto;padding:12px;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+#rcm .sheet{background:#fff;color:#000;max-width:800px;margin:0 auto;border-radius:12px;padding:16px}
+#rcm table{width:100%;border-collapse:collapse;font-size:13px;margin:4px 0 10px}
+#rcm th,#rcm td{border:1px solid #000;padding:4px;text-align:center}
+#rcm th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#rcm textarea{border:0;margin:0;padding:2px;background:transparent;color:#000;font:inherit;width:100%;border-radius:0}
+#rcm textarea{border:1px solid #000}
+.rcact{display:flex;gap:8px;margin-bottom:10px}
+.rcact button{flex:1;margin:0}
+.sig{display:flex;justify-content:flex-end;margin-top:40px;font-size:13px}
+.sig span{border-top:1px solid #000;padding-top:2px;min-width:100px;text-align:center}
+
+@page{size:A4 portrait;margin:12mm 10mm}
+@media print{
+html,body{width:190mm;margin:0;padding:0}
+.bar,.noprint,.call,#toast,#list,#cnt,h2{display:none!important}
+#rcm h2{display:block!important}
+.wrap{max-width:none;margin:0;padding:0}
+body{background:#fff;color:#000;font-size:12px;line-height:1.35}
+#ptbl{display:block!important;width:100%}
+#ptbl h3{font-size:16px}
+#ptbl table{width:100%;table-layout:fixed;border-collapse:collapse}
+#ptbl th,#ptbl td{border:1px solid #000;padding:4px 3px;text-align:center;word-break:break-word;overflow-wrap:anywhere}
+#ptbl th:nth-child(1),#ptbl td:nth-child(1){width:11%}
+#ptbl th:nth-child(2),#ptbl td:nth-child(2){width:31%}
+#ptbl th:nth-child(3),#ptbl td:nth-child(3){width:20%}
+#ptbl th:nth-child(4),#ptbl td:nth-child(4){width:14%}
+#ptbl th:nth-child(5),#ptbl td:nth-child(5){width:11%}
+#ptbl th:nth-child(6),#ptbl td:nth-child(6){width:13%}
+#ptbl td.l{text-align:left}
+#ptbl thead{display:table-header-group}
+#ptbl th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:11px}
+#ptbl tr{page-break-inside:avoid}
+/* রিপোর্ট কার্ড খোলা থাকলে শুধু সেটাই প্রিন্ট হবে */
+body.rc-open .wrap,body.rc-open .bar,body.rc-open #ptbl{display:none!important}
+body.rc-open #rcm{position:static;background:none;padding:0;overflow:visible}
+body.rc-open #rcm .sheet{max-width:none;padding:0;border-radius:0}
+.rcact{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b>🎓 ছাত্র/ছাত্রীর তালিকা</b>
+  <div><a href="index.html">হোম</a></div>
+</div>
+
+<div id="toast" class="hide"><span id="tmsg"></span><button onclick="$('toast').classList.add('hide')">×</button></div>
+
+<div class="wrap">
+  <div id="need" class="card hide" style="text-align:center">
+    <b>🔐 তালিকা দেখতে লগইন করুন</b>
+    <div class="mu" style="margin:4px 0 10px">শিক্ষক বা অ্যাডমিন হিসেবে লগইন করলে তালিকা দেখা যাবে</div>
+    <a class="act" href="teacher.html" style="display:inline-block;background:var(--pr);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">👨‍🏫 শিক্ষক লগইন</a>
+    <a class="act" href="admin.html" style="display:inline-block;background:var(--mu);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">🔐 অ্যাডমিন</a>
+  </div>
+
+  <div id="main" class="hide">
+    <h2>শ্রেণিভিত্তিক তালিকা <span id="cnt" class="mu"></span></h2>
+    <div class="card noprint">
+      <div class="yr"><button onclick="shiftY(-1)">◀</button><b id="yl"></b><button onclick="shiftY(1)">▶</button></div>
+      <select id="fc"></select>
+      <input id="q" placeholder="🔍 এই শ্রেণিতে নাম, রোল বা মোবাইল দিয়ে খুঁজুন">
+      <button class="act sec" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+    </div>
+    <div id="ptbl"></div>
+    <div class="card" id="list"><div class="mu" style="text-align:center;padding:14px">👆 তালিকা দেখতে উপর থেকে শ্রেণি বেছে নিন</div></div>
+  </div>
+</div>
+
+<!-- রিপোর্ট কার্ড -->
+<div id="rcm" class="hide"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const auth = firebase.auth(), db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// বাংলা/ইংরেজি যেকোনো সংখ্যা থেকে কলযোগ্য নম্বর
+const telNum = p => String(p||'').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/[^\d+]/g, '');
+
+// WhatsApp-এর জন্য আন্তর্জাতিক ফরম্যাট (বাংলাদেশ: 880...)
+const waNum = p => {
+  let d = String(p||'').replace(/[০-৯]/g, x => '০১২৩৪৫৬৭৮৯'.indexOf(x)).replace(/\D/g, '');
+  if (d.startsWith('880')) d = d.slice(3);
+  if (d.startsWith('0')) d = d.slice(1);
+  return d.length === 10 ? '880' + d : '';
+};
+
+// ===== শ্রেণি তালিকা: ইবতেদায়ী ১ম → ফাজিল ৩য় বর্ষ =====
+const GROUPS = [
+  {g:'ইবতেদায়ী', items:['ইবতেদায়ী ১ম শ্রেণি','ইবতেদায়ী ২য় শ্রেণি','ইবতেদায়ী ৩য় শ্রেণি','ইবতেদায়ী ৪র্থ শ্রেণি','ইবতেদায়ী ৫ম শ্রেণি']},
+  {g:'দাখিল', items:['দাখিল ৬ষ্ঠ শ্রেণি','দাখিল ৭ম শ্রেণি','দাখিল ৮ম শ্রেণি','দাখিল ৯ম শ্রেণি','দাখিল ১০ম শ্রেণি']},
+  {g:'আলিম', items:['আলিম ১ম বর্ষ','আলিম ২য় বর্ষ']},
+  {g:'ফাজিল', items:['ফাজিল ১ম বর্ষ','ফাজিল ২য় বর্ষ','ফাজিল ৩য় বর্ষ']}
+];
+const ALL = GROUPS.flatMap(x => x.items);
+const optGroups = GROUPS.map(x => `<optgroup label="${x.g}">${x.items.map(c => `<option>${c}</option>`).join('')}</optgroup>`).join('');
+$('fc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
+
+// ===== মেসেজ =====
+var toastT = null;
+function showMsg(text, type){
+  const t = $('toast'); $('tmsg').textContent = text;
+  t.className = type === 'ok' ? 'ok' : 'err';
+  clearTimeout(toastT);
+  if (type === 'ok') toastT = setTimeout(() => t.classList.add('hide'), 3000);
+}
+function fail(e){
+  const c = (e && e.code) || 'error', m = (e && e.message) || String(e);
+  console.error(e);
+  const map = {'permission-denied':'অনুমতি নেই। লগইন ও Firestore Rules দেখুন।','unavailable':'সার্ভারের সাথে সংযোগ হচ্ছে না।'};
+  showMsg('❌ ' + (map[c] || 'সমস্যা হয়েছে।') + '\n[' + c + '] ' + m, 'err');
+}
+
+// ===== ডাটা =====
+var students = [], unsubS = null, att = {}, attDocs = [], attDirty = false, openId = {}, Y = new Date().getFullYear();
+const MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+
+// att[studentId] = {a:[১২ মাস], l:[১২ মাস], p:[১২ মাস], ta, tl, tp}
+function loadAtt(){
+  $('yl').textContent = bn(Y) + ' সাল (জানুয়ারি – ডিসেম্বর)';
+  if (!auth.currentUser) return;
+  const yy = Y;
+  db.collection('attendance').where('date', '>=', yy + '-01-01').where('date', '<=', yy + '-12-31').get().then(q => {
+    if (yy !== Y) return;
+    attDocs = q.docs.map(d => d.data()); attDirty = true;
+    render();
+  }).catch(fail);
+}
+// উপস্থিত/ছুটি/অনুপস্থিত হিসাব (পুরনো রেকর্ডে যাদের চিহ্ন নেই তারা উপস্থিত)
+function buildAtt(){
+  att = {}; attDirty = false;
+  const get = id => att[id] = att[id] || {a:Array(12).fill(0), l:Array(12).fill(0), p:Array(12).fill(0), ta:0, tl:0, tp:0};
+  attDocs.forEach(r => {
+    const mi = parseInt(String(r.date).slice(5, 7), 10) - 1;
+    if (!r.st || mi < 0 || mi > 11) return;
+    if (r.v) {
+      Object.keys(r.st).forEach(id => {
+        const v = r.st[id], x = get(id);
+        if (v === 'a') { x.a[mi]++; x.ta++; } else if (v === 'l') { x.l[mi]++; x.tl++; } else if (v === 'p') { x.tp++; x.p[mi]++; }
+      });
+    } else {
+      students.filter(s => s.class === r.class).forEach(s => {
+        const v = r.st[s.id], x = get(s.id);
+        if (v === 'a') { x.a[mi]++; x.ta++; } else if (v === 'l') { x.l[mi]++; x.tl++; } else { x.tp++; x.p[mi]++; }
+      });
+    }
+  });
+}
+function shiftY(n){ Y += n; att = {}; attDocs = []; attDirty = true; closeRC(); render(); loadAtt(); }
+function tg(id){ openId[id] = !openId[id]; render(); }
+function tags(id){
+  const x = att[id], ta = x ? x.ta : 0, tl = x ? x.tl : 0, ar = openId[id] ? '▴' : '▾';
+  if (!ta && !tl) return `<div class="tags"><span class="tg z" onclick="tg('${id}')">অনুপস্থিত ০ • ছুটি ০ ${ar}</span></div>`;
+  return `<div class="tags"><span class="tg a" onclick="tg('${id}')">অনুপস্থিত: ${bn(ta)} দিন ${ar}</span><span class="tg l" onclick="tg('${id}')">ছুটি: ${bn(tl)} দিন ${ar}</span></div>`;
+}
+function monthsGrid(id){
+  const x = att[id];
+  return '<div class="mg">' + MONTHS.map((m, i) => {
+    const a = x ? x.a[i] : 0, l = x ? x.l[i] : 0;
+    return `<div class="${a || l ? 'on' : ''}">${m}<span><i class="ca">অ ${bn(a)}</i> • <i class="cl">ছু ${bn(l)}</i></span></div>`;
+  }).join('') + '</div>';
+}
+
+auth.onAuthStateChanged(u => {
+  if (unsubS) { unsubS(); unsubS = null; }
+  students = []; att = {}; attDocs = []; attDirty = true;
+  closeRC();
+  $('need').classList.toggle('hide', !!u);
+  $('main').classList.toggle('hide', !u);
+  if (!u) return;
+  loadAtt();
+  unsubS = db.collection('students').onSnapshot(s => {
+    students = s.docs.map(d => ({id:d.id, ...d.data()}));
+    render();
+  }, e => { $('list').innerHTML = '<div class="mu">তালিকা লোড করা যায়নি</div>'; fail(e); });
+});
+
+function render(){
+  if (attDirty) buildAtt();
+  const fc = $('fc').value, q = $('q').value.trim().toLowerCase();
+  if (!fc) { $('ptbl').innerHTML = ''; $('cnt').textContent = ''; $('list').innerHTML = '<div class="mu" style="text-align:center;padding:14px">👆 তালিকা দেখতে উপর থেকে শ্রেণি বেছে নিন</div>'; return; }
+  let list = students.filter(s => (!fc || s.class === fc) &&
+    (!q || (s.name||'').toLowerCase().includes(q) || String(s.roll||'').includes(q) || (s.phone||'').includes(q) || (s.father||'').toLowerCase().includes(q)));
+  list.sort((a,b) => (ALL.indexOf(a.class) - ALL.indexOf(b.class)) || ((+a.roll||0) - (+b.roll||0)));
+  $('cnt').textContent = '(' + bn(list.length) + ' জন' + (q ? ' / শ্রেণিতে মোট ' + bn(students.filter(s => s.class === fc).length) + ' জন' : '') + ')';
+  if (!list.length) { $('ptbl').innerHTML = ''; $('list').innerHTML = '<div class="mu">কোনো ছাত্র/ছাত্রী নেই</div>'; return; }
+  printTable(students.filter(s => s.class === fc).sort((a,b) => (+a.roll||0) - (+b.roll||0)), fc);
+  let html = '', cur = null;
+  const counts = {}; list.forEach(s => counts[s.class] = (counts[s.class]||0) + 1);
+  list.forEach(s => {
+    if (s.class !== cur) { cur = s.class; html += `<div class="gh"><span>${esc(cur||'শ্রেণি নেই')}</span><span class="mu">${bn(counts[cur])} জন</span></div>`; }
+    const tel = telNum(s.phone);
+    html += `<div class="row"><div class="info"><span class="roll">${bn(s.roll||'–')}</span><b>${esc(s.name)}</b>
+      <div class="mu">${s.father ? 'পিতা: ' + esc(s.father) : ''}${s.father && s.phone ? ' • ' : ''}${s.phone ? bn(esc(s.phone)) : ''}</div>
+      <div class="ln">${tags(s.id)}<button class="rcb" onclick="openRC('${s.id}')">📄 রিপোর্ট কার্ড</button>${tel ? `<a class="call" href="tel:${esc(tel)}" aria-label="কল করুন">📞 কল</a>${waNum(s.phone) ? `<a class="call wa" href="https://wa.me/${waNum(s.phone)}" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>` : ''}` : ''}</div></div>
+      ${openId[s.id] ? monthsGrid(s.id) : ''}</div>`;
+  });
+  $('list').innerHTML = html;
+}
+function printTable(list, fc){
+  const rows = list.map(s => {
+    const x = att[s.id] || {tp:0, tl:0, ta:0};
+    return `<tr><td>${bn(s.roll||'–')}</td><td class="l">${esc(s.name)}</td><td>${s.phone ? bn(esc(s.phone)) : '–'}</td><td>${bn(x.tp)}</td><td>${bn(x.tl)}</td><td>${bn(x.ta)}</td></tr>`;
+  }).join('');
+  $('ptbl').innerHTML = `<h3 style="text-align:center;margin:0 0 2px">${esc(fc)} — ছাত্র/ছাত্রীর হাজিরা</h3>
+    <div style="text-align:center;margin-bottom:8px;font-size:13px">${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</div>
+    <table><thead><tr><th>রোল</th><th>নাম</th><th>মোবাইল নম্বর</th><th>মোট উপস্থিত</th><th>ছুটি</th><th>অনুপস্থিত</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ===== রিপোর্ট কার্ড =====
+var rcId = null;
+const rcKey = id => 'rc_' + Y + '_' + id;
+function rcLoad(id){ try { return JSON.parse(localStorage.getItem(rcKey(id))); } catch(e){ return null; } }
+function closeRC(){ rcId = null; $('rcm').classList.add('hide'); document.body.classList.remove('rc-open'); }
+function rcCalc(){
+  if (!rcId) return;
+  try { localStorage.setItem(rcKey(rcId), JSON.stringify({note: $('rcN').value})); } catch(e){}
+}
+function openRC(id){
+  const s = students.find(x => x.id === id); if (!s) return;
+  if (attDirty) buildAtt();
+  rcId = id;
+  const x = att[id] || {a:Array(12).fill(0), l:Array(12).fill(0), p:Array(12).fill(0), ta:0, tl:0, tp:0};
+  const tot = x.tp + x.tl + x.ta, pct = tot ? Math.round(x.tp * 100 / tot) : 0;
+  const sv = rcLoad(id) || {note:''};
+  const mm = MONTHS.map((m, i) => `<tr><td>${m}</td><td>${bn(x.p[i])}</td><td>${bn(x.l[i])}</td><td>${bn(x.a[i])}</td></tr>`).join('');
+  $('rcm').innerHTML = `<div class="sheet">
+    <div class="rcact"><button class="act" onclick="window.print()">🖨️ প্রিন্ট</button><button class="act sec" onclick="closeRC()">✖ বন্ধ</button></div>
+    <h2 style="text-align:center;margin:0 0 2px;font-size:20px;color:#000;border:0;padding:0">চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h2>
+    <h3 style="text-align:center;margin:0">রিপোর্ট কার্ড</h3>
+    <div style="text-align:center;margin-bottom:8px">${bn(Y)} সাল</div>
+    <table><tr><th>নাম</th><td>${esc(s.name)}</td><th>রোল</th><td>${bn(s.roll||'–')}</td></tr>
+    <tr><th>শ্রেণি</th><td>${esc(s.class)}</td><th>মোবাইল</th><td>${s.phone ? bn(esc(s.phone)) : '–'}</td></tr>
+    <tr><th>পিতা</th><td colspan="3">${esc(s.father||'–')}</td></tr></table>
+    <b>হাজিরা</b>
+    <table><thead><tr><th>মাস</th><th>উপস্থিত</th><th>ছুটি</th><th>অনুপস্থিত</th></tr></thead>
+    <tbody>${mm}<tr><th>মোট</th><th>${bn(x.tp)}</th><th>${bn(x.tl)}</th><th>${bn(x.ta)}</th></tr></tbody></table>
+    <div style="font-size:13px;margin-bottom:10px">উপস্থিতির হার: ${bn(pct)}%</div>
+    <b>মন্তব্য</b><textarea id="rcN" rows="2" oninput="rcCalc()">${esc(sv.note)}</textarea>
+    <div class="sig"><span>শ্রেণি শিক্ষকের স্বাক্ষর</span></div>
+  </div>`;
+  $('rcm').classList.remove('hide');
+  document.body.classList.add('rc-open');
+  $('rcm').scrollTop = 0;
+  rcCalc();
+}
+
+$('fc').onchange = render;
+$('q').oninput = render;
+
+window.addEventListener('unhandledrejection', ev => fail(ev.reason));
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>

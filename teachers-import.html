@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>শিক্ষক তালিকা ইমপোর্ট</title>
+<meta name="theme-color" content="#0f7a4a">
+<link rel="icon" type="image/jpeg" href="logo.jpg">
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center}
+.bar b{font-size:17px}
+.bar a{background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px}
+.wrap{max-width:1000px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px}
+.mu{color:var(--mu);font-size:13px}
+button{font:inherit;padding:10px 16px;border-radius:8px;border:0;background:var(--pr);color:#fff;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5}
+button.sec{background:var(--mu)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--pr);color:#fff;padding:6px;text-align:left;white-space:nowrap}
+td{padding:3px;border-bottom:1px solid var(--bd)}
+td input{font:inherit;width:100%;min-width:90px;padding:6px;border-radius:6px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+td.n{text-align:center;width:36px;color:var(--mu)}
+td.ix{white-space:nowrap;font-size:13px;color:var(--mu)}
+#msg{margin-top:10px;white-space:pre-wrap;word-break:break-word}
+#msg.ok{color:#0a7a34;font-weight:700}#msg.err{color:var(--er);font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style>
+</head>
+<body>
+<div class="bar"><b>👨‍🏫 শিক্ষক তালিকা ইমপোর্ট</b><a href="index.html">হোম</a></div>
+
+<div class="wrap">
+  <div id="need" class="card hide" style="display:none;text-align:center">
+    <b>🔐 আপলোড করতে অ্যাডমিন হিসেবে লগইন করুন</b>
+    <div style="margin-top:10px"><a href="admin.html" style="display:inline-block;background:var(--pr);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">🔐 অ্যাডমিন লগইন</a></div>
+  </div>
+
+  <div class="card">
+    <b>MPO তালিকা (চাটপাড়া সিনিয়র মাদ্রাসা, সেপ্টেম্বর ২০২৬) থেকে <span id="cnt"></span> জন</b>
+    <div class="mu" style="margin-top:4px">PDF-এ মোবাইল নম্বর নেই। শিক্ষকরা মোবাইল নম্বর দিয়ে লগইন করেন, তাই <b>মোবাইল</b> ঘরে নম্বর লিখুন (যাদের নম্বর এখন নেই, ফাঁকা রাখলেও চলবে, পরে যোগ করা যাবে)। নাম, পদ ও বিষয় দরকার হলে ঠিক করে নিন, ফাঁকা পদ/বিষয় PDF-এ ছিল না। বেতন, ব্যাংক হিসাব ও জন্মতারিখ ইচ্ছা করেই নেওয়া হয়নি।</div>
+  </div>
+
+  <div class="card tw">
+    <table>
+      <thead><tr><th>#</th><th>নাম</th><th>পদ</th><th>বিষয়</th><th>মোবাইল</th><th>ইনডেক্স</th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="up">⬆️ সবাইকে Firestore-এ আপলোড করুন</button>
+      <button class="sec" id="dl">⬇️ JSON ডাউনলোড</button>
+    </div>
+    <div class="mu" style="margin-top:6px">আপলোড হবে <b>teachers</b> কালেকশনে। প্রতিজনের ডকুমেন্ট আইডি = ইনডেক্স নম্বর, তাই আবার চালালে ডুপ্লিকেট হবে না, আগের তথ্য হালনাগাদ হবে। ফাঁকা মোবাইল ঘর থাকলে আগে থেকে জমা থাকা নম্বর মুছবে না।</div>
+    <div id="msg"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const auth = firebase.auth(), db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+
+// পদের কোড → বাংলা (যেগুলো নিশ্চিত); বাকিগুলো কোডই থাকবে
+const DESG = {PR:'অধ্যক্ষ', AP:'সহকারী অধ্যাপক', LEC:'প্রভাষক', LIB:'গ্রন্থাগারিক', AT:'সহকারী শিক্ষক', AM:'সহকারী মৌলভী'};
+const SUBJ = {'ARABIC':'আরবি','BENGALI':'বাংলা','ENGLISH':'ইংরেজি','MATHEMATICS':'গণিত','ISLAMIC HISTORY & CULTURE':'ইসলামের ইতিহাস ও সংস্কৃতি'};
+
+// [পদ কোড, ইনডেক্স, নাম, বিষয় (ইংরেজি)]
+const RAW = [
+ ['PR','S319438','MD ABUL HASAN','ARABIC'],
+ ['AP','S323727','MD KAMRUL ISLAM','ARABIC'],
+ ['AP','S2023552','NURJAHAN','BENGALI'],
+ ['AP','N2093841','JUBAIR RHAN','ARABIC'],
+ ['AP','N2109016','MD EHTERAMUL HAQUE','ENGLISH'],
+ ['','S311525','MOHAMMED AKSIR MIAH',''],
+ ['','S323190','MD ABDUL HYE',''],
+ ['','S302681','MD MOHSIN UDDIN',''],
+ ['AM','N2102128','MUSLA UDDIN',''],
+ ['LEC','M0022000','MD. NURUL ISLAM','ARABIC'],
+ ['LEC','M0026920','MD. KHURSHID ALAM','ISLAMIC HISTORY & CULTURE'],
+ ['LEC','M0046799','MD. SHAIFUL ISLAM','ISLAMIC HISTORY & CULTURE'],
+ ['LEC','M0046081','MOUSOMI SULTANA','BENGALI'],
+ ['LEC','M0066572','MOHAMMAD NAZMUL HOQUE','ARABIC'],
+ ['LEC','M0060781','MD. HABIBUR ROHMAN TALUKDER','ARABIC'],
+ ['LEC','M0026102','MAHBUBA KHANAM','ENGLISH'],
+ ['LEC','M0065274','MD. AMANULLAH AMAN','ARABIC'],
+ ['LIB','S703342','M A WADUD',''],
+ ['AT','N2126471','ANAMUL HAQUE','MATHEMATICS'],
+ ['AM','M0044979','SALEAAHMAD',''],
+ ['AT','M0026103','MD. MAIDUL ISLAM','ENGLISH'],
+ ['AM','M0067376','KAJIM UDDIN',''],
+ ['AT','M0066468','MST. FARJANA AKTAR NIPA','BENGALI'],
+ ['EB-Q','S706046','MD ABDUL ALIM',''],
+ ['','N2121640','MAHI UDDIN',''],
+ ['','N2121641','MD. MUSTAFIJUR RAHMAN',''],
+ ['EB-JM','N2126472','MUHAMMAD ABU TAYAB',''],
+ ['EB-JT','M0061081','MD. ASHIK MIAH',''],
+ ['','N2121639','HARUNUR RASHID','']
+];
+const title = s => s.toLowerCase().replace(/(^|[\s.])([a-z])/g, (m, a, b) => a + b.toUpperCase());
+const T = RAW.map(r => ({ index: r[1], name: title(r[2]), designation: DESG[r[0]] || r[0], subject: SUBJ[r[3]] || r[3], phone: '' }));
+
+$('cnt').textContent = bn(T.length);
+$('tb').innerHTML = T.map((t, i) => `<tr>
+  <td class="n">${bn(i + 1)}</td>
+  <td><input data-i="${i}" data-k="name" value="${esc(t.name)}"></td>
+  <td><input data-i="${i}" data-k="designation" value="${esc(t.designation)}"></td>
+  <td><input data-i="${i}" data-k="subject" value="${esc(t.subject)}"></td>
+  <td><input data-i="${i}" data-k="phone" inputmode="tel" placeholder="01XXXXXXXXX" value=""></td>
+  <td class="ix">${esc(t.index)}</td></tr>`).join('');
+$('tb').addEventListener('input', e => { const t = e.target; if (t.dataset.k) T[+t.dataset.i][t.dataset.k] = t.value.trim(); });
+
+const say = (t, c) => { const m = $('msg'); m.textContent = t; m.className = c || ''; };
+const rowData = t => {
+  const d = { name: t.name, designation: t.designation, subject: t.subject, index: t.index };
+  if (t.phone) d.phone = t.phone;
+  return d;
+};
+
+$('dl').onclick = () => {
+  const blob = new Blob([JSON.stringify(T.map(rowData), null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'teachers.json'; a.click();
+};
+
+$('up').onclick = async () => {
+  if (!auth.currentUser) { say('আগে অ্যাডমিন হিসেবে লগইন করুন।', 'err'); return; }
+  const list = T.filter(t => t.name);
+  if (!confirm(bn(list.length) + ' জন শিক্ষককে Firestore-এ আপলোড করবেন?')) return;
+  $('up').disabled = true; say('আপলোড হচ্ছে...');
+  try {
+    const batch = db.batch();
+    list.forEach(t => batch.set(db.collection('teachers').doc(t.index), rowData(t), { merge: true }));
+    await batch.commit();
+    say('✅ ' + bn(list.length) + ' জন শিক্ষক teachers কালেকশনে আপলোড হয়েছে।', 'ok');
+  } catch (e) {
+    console.error(e);
+    say('❌ আপলোড হয়নি: [' + (e.code || '') + '] ' + (e.message || e) + (e.code === 'permission-denied' ? '\nঅ্যাডমিন লগইন ও Firestore Rules দেখুন।' : ''), 'err');
+  }
+  $('up').disabled = false;
+};
+
+auth.onAuthStateChanged(u => { $('need').style.display = u ? 'none' : 'block'; });
+</script>
+</body>
+</html>

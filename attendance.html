@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>হাজিরা</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f7a4a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="মাদ্রাসা">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626;--lv:#b7791f}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033;--lv:#e0a63a}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center}
+.bar b{font-size:17px}
+.bar a{background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;margin-left:6px}
+.wrap{max-width:900px;margin:0 auto;padding:12px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px}
+input,select,button{font:inherit}
+input,select{padding:10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin:4px 0}
+button.act{padding:10px;border-radius:8px;border:0;background:var(--pr);color:#fff;width:100%;margin:4px 0;cursor:pointer;font-weight:700}
+button.act:disabled{opacity:.5}
+.sec{background:var(--mu)!important}
+h2{font-size:17px;margin:18px 0 8px;color:var(--pr);border-right:4px solid var(--gd);padding-right:8px}
+.mu{color:var(--mu);font-size:13px}
+.row2{display:flex;gap:8px}.row2>*{flex:1;min-width:0}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.sum div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:8px;text-align:center;font-size:12px;color:var(--mu)}
+.sum b{display:block;font-size:22px}
+.sum .u b{color:var(--mu)}.sum .p b{color:var(--pr)}.sum .a b{color:var(--er)}.sum .l b{color:var(--lv)}
+.bulk{position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0}
+.bulk .btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bulk .btns button{padding:10px 4px;border-radius:10px;border:0;color:#fff;font-weight:700;cursor:pointer}
+.b-p{background:var(--pr)}.b-a{background:var(--er)}.b-l{background:var(--lv)}
+.tools{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.tools button{background:none;border:0;color:var(--pr);cursor:pointer;font-size:14px;padding:4px 0}
+.s{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--bd);cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.s:last-child{border-bottom:0}
+.s.sel{background:rgba(15,122,74,.14);border-radius:8px}
+.ck{width:22px;height:22px;border:2px solid var(--bd);border-radius:6px;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff}
+.s.sel .ck{background:var(--pr);border-color:var(--pr)}
+.s.sel.l{background:rgba(183,121,31,.15)}.s.sel.l .ck{background:var(--lv);border-color:var(--lv)}
+.roll{display:inline-block;min-width:30px;text-align:center;background:var(--mu);color:#fff;border-radius:8px;padding:0 6px;font-size:13px}
+.s .nm{flex:1;min-width:0}
+.badge{font-size:12px;padding:1px 9px;border-radius:999px;color:#fff;white-space:nowrap}
+.badge.u{background:var(--mu);opacity:.7}.badge.p{background:var(--pr)}.badge.a{background:var(--er)}.badge.l{background:var(--lv)}
+.hide{display:none}
+.saveb{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:5}
+#toast{position:fixed;left:10px;right:10px;top:calc(58px + env(safe-area-inset-top,0px));z-index:99;max-width:640px;margin:0 auto;padding:12px 40px 12px 14px;border-radius:12px;color:#fff;font-size:14px;white-space:pre-wrap;word-break:break-word;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#toast.err{background:#b42318}#toast.ok{background:#0f7a4a}
+#toast button{position:absolute;right:8px;top:6px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b>✅ হাজিরা</b>
+  <div><a href="index.html">হোম</a></div>
+</div>
+
+<div id="toast" class="hide"><span id="tmsg"></span><button onclick="$('toast').classList.add('hide')">×</button></div>
+
+<div class="wrap">
+  <div id="need" class="card hide" style="text-align:center">
+    <b>🔐 হাজিরা দেখতে ও দিতে লগইন করুন</b>
+    <div class="mu" style="margin:4px 0 10px">হাজিরা দেখতে লগইন করতে হবে। হাজিরা দিতে পারবেন শুধু শ্রেণি শিক্ষক ও অ্যাডমিন।</div>
+    <a href="teacher.html" style="display:inline-block;background:var(--pr);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">👨‍🏫 শিক্ষক লগইন</a>
+    <a href="admin.html" style="display:inline-block;background:var(--mu);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">🔐 অ্যাডমিন</a>
+  </div>
+
+  <div id="main" class="hide">
+    <div class="mu" id="who"></div>
+    <div class="card">
+      <input id="dt" type="date">
+      <select id="cl"></select>
+    </div>
+
+    <div id="box" class="hide">
+      <div class="sum">
+        <div class="p"><b id="cP">০</b>উপস্থিত</div>
+        <div class="a"><b id="cA">০</b>অনুপস্থিত</div>
+        <div class="l"><b id="cL">০</b>ছুটি</div>
+      </div>
+
+      <div class="bulk" id="bulkbox">
+        <select id="md">
+          <option value="p">✅ উপস্থিত — নাম নির্বাচন করুন</option>
+          <option value="l">📝 ছুটি — নাম নির্বাচন করুন</option>
+        </select>
+        <div class="tools">
+          <span class="mu" id="selc"></span>
+          <span><button onclick="selAll()">☑️ সবাই</button> <button onclick="selNone()">✖ বাদ</button></span>
+        </div>
+      </div>
+
+      <div class="card" id="list" style="margin-top:8px"></div>
+
+      <div class="saveb" id="svbox"><button id="sv" class="act" onclick="save()">💾 হাজিরা সংরক্ষণ করুন</button></div>
+      <div class="mu" style="text-align:center" id="info"></div>
+    </div>
+    <div id="hint" class="card mu" style="text-align:center">👆 শ্রেণি বেছে নিন</div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const auth = firebase.auth(), db = firebase.firestore();
+const ADMIN_EMAIL = 'cfm@gmail.com';
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DAYS = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const ds = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today = () => ds(new Date());
+const normPhone = p => { let d = String(p||'').replace(/\D/g,''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };
+
+const GROUPS = [
+  {g:'ইবতেদায়ী', items:['ইবতেদায়ী ১ম শ্রেণি','ইবতেদায়ী ২য় শ্রেণি','ইবতেদায়ী ৩য় শ্রেণি','ইবতেদায়ী ৪র্থ শ্রেণি','ইবতেদায়ী ৫ম শ্রেণি']},
+  {g:'দাখিল', items:['দাখিল ৬ষ্ঠ শ্রেণি','দাখিল ৭ম শ্রেণি','দাখিল ৮ম শ্রেণি','দাখিল ৯ম শ্রেণি','দাখিল ১০ম শ্রেণি']},
+  {g:'আলিম', items:['আলিম ১ম বর্ষ','আলিম ২য় বর্ষ']},
+  {g:'ফাজিল', items:['ফাজিল ১ম বর্ষ','ফাজিল ২য় বর্ষ','ফাজিল ৩য় বর্ষ']}
+];
+const ALL = GROUPS.flatMap(x => x.items);
+const optGroups = GROUPS.map(x => `<optgroup label="${x.g}">${x.items.map(c => `<option>${c}</option>`).join('')}</optgroup>`).join('');
+
+var toastT = null;
+function showMsg(text, type){
+  const t = $('toast'); $('tmsg').textContent = text;
+  t.className = type === 'ok' ? 'ok' : 'err';
+  clearTimeout(toastT);
+  if (type === 'ok') toastT = setTimeout(() => t.classList.add('hide'), 3000);
+}
+function fail(e){
+  const c = (e && e.code) || 'error', m = (e && e.message) || String(e);
+  console.error(e);
+  const map = {'permission-denied':'অনুমতি নেই। লগইন ও Firestore Rules দেখুন।','unavailable':'সার্ভারের সাথে সংযোগ হচ্ছে না।'};
+  showMsg('❌ ' + (map[c] || 'সমস্যা হয়েছে।') + '\n[' + c + '] ' + m, 'err');
+}
+
+var teachers = [], students = [], me = null, isAdmin = false, uT = null, uS = null;
+var marks = {}, saved = false, dirty = false, curKey = '', saving = false, loadSeq = 0;
+
+const canEdit = () => isAdmin || (!!me && me.classOf === $('cl').value);
+const stuOf = c => students.filter(s => s.class === c).sort((a,b) => (+a.roll||0) - (+b.roll||0));
+const keyOf = (d, c) => d + '_' + ALL.indexOf(c);
+
+auth.onAuthStateChanged(u => {
+  if (uT) { uT(); uT = null; } if (uS) { uS(); uS = null; }
+  teachers = []; students = []; me = null; marks = {}; dirty = false; curKey = '';
+  $('need').classList.toggle('hide', !!u);
+  $('main').classList.toggle('hide', !u);
+  isAdmin = !!u && (u.email || '').toLowerCase() === ADMIN_EMAIL;
+  $('dt').value = today();
+  if (!isAdmin) $('dt').max = today(); else $('dt').removeAttribute('max');
+  if (u) {
+    uS = db.collection('students').onSnapshot(s => {
+      students = s.docs.map(d => ({id:d.id, ...d.data()}));
+      render();
+    }, fail);
+    uT = db.collection('teachers').onSnapshot(s => {
+      teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
+      const ph = normPhone((u.email||'').split('@')[0]);
+      me = isAdmin ? null : (teachers.find(t => normPhone(t.phone) === ph) || null);
+      setup();
+    }, fail);
+  }
+});
+
+function setup(){
+  $('who').textContent = isAdmin ? '👤 অ্যাডমিন'
+    : me ? '👤 ' + (me.name || '') + ' • শ্রেণি শিক্ষক: ' + (me.classOf || '')
+    : '👁️ শুধু দেখার মোড — হাজিরা দিতে পারবেন শ্রেণি শিক্ষক';
+  const keep = $('cl').value;
+  $('cl').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
+  $('cl').value = ALL.includes(keep) ? keep : (me && me.classOf ? me.classOf : '');
+  if (dirty) render(); else load();
+}
+
+async function load(){
+  const c = $('cl').value, d = $('dt').value;
+  $('box').classList.toggle('hide', !c);
+  $('hint').classList.toggle('hide', !!c);
+  marks = {}; saved = false; dirty = false; curKey = '';
+  if (!c || !d) { render(); return; }
+  const seq = ++loadSeq, key = keyOf(d, c);
+  try {
+    const doc = await db.collection('attendance').doc(key).get();
+    if (seq !== loadSeq) return;
+    marks = doc.exists ? Object.assign({}, doc.data().st || {}) : {};
+    saved = doc.exists;
+    if (doc.exists && !doc.data().v) stuOf(c).forEach(s => { if (!marks[s.id]) marks[s.id] = 'p'; });
+    $('info').textContent = doc.exists
+      ? (canEdit() ? 'এই দিনের হাজিরা আগে নেওয়া হয়েছে (' + (doc.data().byName || '') + ')। সংরক্ষণ করলে আপডেট হবে।' : 'হাজিরা নিয়েছেন: ' + (doc.data().byName || ''))
+      : (canEdit() ? 'এই দিনের হাজিরা এখনো নেওয়া হয়নি। যাদের নির্বাচন করবেন না, তারা অনুপস্থিত ধরা হবে।' : 'এই দিনের হাজিরা এখনো নেওয়া হয়নি।');
+  } catch(e){ fail(e); }
+  curKey = key;
+  render();
+}
+
+function confirmLeave(){ return !dirty || confirm('সংরক্ষণ না করা পরিবর্তন বাদ যাবে। চালিয়ে যাবেন?'); }
+var prevCl = '', prevDt = '';
+$('cl').onfocus = () => prevCl = $('cl').value;
+$('dt').onfocus = () => prevDt = $('dt').value;
+$('cl').onchange = () => { if (!confirmLeave()) { $('cl').value = prevCl; return; } load(); };
+$('dt').onchange = () => {
+  if (!$('dt').value) { $('dt').value = prevDt || today(); return; }
+  if (!isAdmin && $('dt').value > today()) { showMsg('ভবিষ্যতের তারিখে হাজিরা দেওয়া যাবে না'); $('dt').value = prevDt || today(); return; }
+  if (!confirmLeave()) { $('dt').value = prevDt; return; }
+  load();
+};
+
+function render(){
+  const c = $('cl').value; if (!c) return;
+  const ce = canEdit();
+  $('bulkbox').classList.toggle('hide', !ce); $('svbox').classList.toggle('hide', !ce);
+  const list = stuOf(c);
+  const cnt = k => list.filter(s => marks[s.id] === k).length;
+  const p = cnt('p'), l = cnt('l'), a = list.length - p - l;
+  const showA = saved && !dirty;
+  $('cP').textContent = bn(p); $('cA').textContent = showA ? bn(a) : '—'; $('cL').textContent = bn(l);
+  $('selc').textContent = 'নির্বাচন না করলে অনুপস্থিত ধরা হবে';
+  if (!list.length) { $('list').innerHTML = '<div class="mu" style="text-align:center;padding:10px">এই শ্রেণিতে কোনো ছাত্র/ছাত্রী নেই</div>'; $('sv').disabled = true; return; }
+  $('sv').disabled = saving;
+  const lab = {p:'উপস্থিত', a:'অনুপস্থিত', l:'ছুটি'};
+  $('list').innerHTML = list.map(s => {
+    const st = marks[s.id] === 'p' || marks[s.id] === 'l' ? marks[s.id] : 'a';
+    return `<div class="s ${st !== 'a' ? 'sel ' + st : ''}" ${ce ? `onclick="tog('${s.id}')"` : 'style="cursor:default"'}>
+      ${ce ? `<div class="ck">${st !== 'a' ? '✓' : ''}</div>` : ''}
+      <span class="roll">${bn(s.roll||'–')}</span><div class="nm"><b>${esc(s.name)}</b></div>${st === 'a' && !showA ? '' : `<span class="badge ${st}">${lab[st]}</span>`}</div>`;
+  }).join('');
+}
+$('md').onchange = render;
+function tog(id){
+  if (!canEdit()) return;
+  const md = $('md').value;
+  if (marks[id] === md) delete marks[id]; else marks[id] = md;
+  dirty = true; render();
+}
+function selAll(){ if (!canEdit()) return; const md = $('md').value; stuOf($('cl').value).forEach(s => marks[s.id] = md); dirty = true; render(); }
+function selNone(){ if (!canEdit()) return; const md = $('md').value; stuOf($('cl').value).forEach(s => { if (marks[s.id] === md) delete marks[s.id]; }); dirty = true; render(); }
+
+function save(){
+  const c = $('cl').value, d = $('dt').value;
+  if (saving) return;
+  if (!auth.currentUser) return showMsg('হাজিরা দিতে লগইন করুন');
+  if (!c || !d) return showMsg('শ্রেণি ও তারিখ বেছে নিন');
+  if (!isAdmin && (!me || me.classOf !== c)) return showMsg('শুধু আপনার শ্রেণির হাজিরা দিতে পারবেন');
+  if (!isAdmin && d > today()) return showMsg('ভবিষ্যতের তারিখে হাজিরা দেওয়া যাবে না');
+  const list = stuOf(c); if (!list.length) return;
+  const st = {}; list.forEach(s => { st[s.id] = marks[s.id] === 'p' || marks[s.id] === 'l' ? marks[s.id] : 'a'; });
+  const l = Object.values(st).filter(v => v === 'l').length, p = Object.values(st).filter(v => v === 'p').length, a = list.length - p - l;
+  if (!p && !l && !confirm('কাউকে উপস্থিত বা ছুটি দেওয়া হয়নি। সবাইকে অনুপস্থিত ধরে সংরক্ষণ করবেন?')) return;
+  const rec = {v:2, date:d, class:c, st, total:list.length, absent:a, leave:l, present:p,
+    byName: isAdmin ? 'অ্যাডমিন' : (me.name || ''), by: auth.currentUser.uid, ts: firebase.firestore.FieldValue.serverTimestamp()};
+  saving = true; $('sv').disabled = true;
+  const t = setTimeout(() => { saving = false; $('sv').disabled = false; showMsg('⚠️ সার্ভার থেকে নিশ্চিতকরণ আসেনি, হাজিরা সেভ হয়নি।\nইন্টারনেট ও Firestore Rules দেখুন।', 'err'); }, 8000);
+  db.collection('attendance').doc(keyOf(d, c)).set(rec).then(() => {
+    clearTimeout(t); dirty = false; saved = true; render();
+    showMsg('✅ হাজিরা সংরক্ষিত: উপস্থিত ' + bn(rec.present) + ', অনুপস্থিত ' + bn(a) + ', ছুটি ' + bn(l), 'ok');
+    $('info').textContent = DAYS[new Date(d + 'T00:00:00').getDay()] + ', ' + bn(d) + ' এর হাজিরা সংরক্ষিত হয়েছে।';
+  }).catch(e => { clearTimeout(t); fail(e); }).finally(() => { saving = false; $('sv').disabled = false; });
+}
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('unhandledrejection', ev => fail(ev.reason));
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>
