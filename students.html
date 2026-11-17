@@ -134,7 +134,7 @@ body.rc-open #rcm .sheet{max-width:none;padding:0;border-radius:0}
       <div class="yr"><button onclick="shiftY(-1)">◀</button><b id="yl"></b><button onclick="shiftY(1)">▶</button></div>
       <select id="fc"></select>
       <input id="q" placeholder="🔍 এই শ্রেণিতে নাম, রোল বা মোবাইল দিয়ে খুঁজুন">
-      <button class="act sec" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+      <button class="act sec" onclick="doPrint()">🖨️ প্রিন্ট করুন</button>
     </div>
     <div id="ptbl"></div>
     <div class="card" id="list"><div class="mu" style="text-align:center;padding:14px">👆 তালিকা দেখতে উপর থেকে শ্রেণি বেছে নিন</div></div>
@@ -170,6 +170,12 @@ const waNum = p => {
   if (d.startsWith('0')) d = d.slice(1);
   return d.length === 10 ? '880' + d : '';
 };
+
+// প্রিন্ট: Android অ্যাপের ভেতরে হলে AndroidPrint ব্রিজ, নইলে ব্রাউজারের window.print()
+function doPrint(){
+  if (window.AndroidPrint && typeof AndroidPrint.print === 'function') AndroidPrint.print();
+  else window.print();
+}
 
 // ===== শ্রেণি তালিকা: ইবতেদায়ী ১ম → ফাজিল ৩য় বর্ষ =====
 const GROUPS = [
@@ -311,7 +317,7 @@ function openRC(id){
   const sv = rcLoad(id) || {note:''};
   const mm = MONTHS.map((m, i) => `<tr><td>${m}</td><td>${bn(x.p[i])}</td><td>${bn(x.l[i])}</td><td>${bn(x.a[i])}</td></tr>`).join('');
   $('rcm').innerHTML = `<div class="sheet">
-    <div class="rcact"><button class="act" onclick="window.print()">🖨️ প্রিন্ট</button><button class="act sec" onclick="closeRC()">✖ বন্ধ</button></div>
+    <div class="rcact"><button class="act" onclick="doPrint()">🖨️ প্রিন্ট</button><button class="act sec" onclick="closeRC()">✖ বন্ধ</button></div>
     <h2 style="text-align:center;margin:0 0 2px;font-size:20px;color:#000;border:0;padding:0">চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h2>
     <h3 style="text-align:center;margin:0">রিপোর্ট কার্ড</h3>
     <div style="text-align:center;margin-bottom:8px">${bn(Y)} সাল</div>
