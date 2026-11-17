@@ -1,0 +1,37 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "চাটপাড়া মাদ্রাসা",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "CFM",
+  "start_url": "/",
+  "theme_color": "#0e7034",
+  "icons": [
+    {
+      "src": "https://imaidul-hub.github.io/imaidul/logo.jpg",
+      "type": "image/jpeg",
+      "sizes": "283x269",
+      "isSquare": false,
+      "isPng": false,
+      "isWebp": false,
+      "isJpg": true,
+      "width": 283,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    },
+    {
+      "src": "https://imaidul-hub.github.io/imaidul/apple-touch-icon.png",
+      "isSquare": false,
+      "isPng": true,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 0,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ]
+}
