@@ -39,6 +39,8 @@ input{font:inherit;padding:12px;border-radius:10px;border:1px solid var(--bd);ba
 .mg div span i{font-style:normal}
 .mg .cm{color:#dc2626;font-weight:700}.mg .cp{color:var(--pr);font-weight:700}
 .empty{text-align:center;color:var(--mu);padding:30px}
+.sec{display:flex;justify-content:space-between;align-items:center;margin:16px 2px 8px;padding:0 0 4px;border-bottom:2px solid var(--pr);color:var(--pr);font-weight:700;font-size:16px}
+.sec span{font-size:13px;color:var(--mu);font-weight:500}
 #ptbl{display:none}
 @page{size:A4 portrait;margin:12mm 10mm}
 .pbtn{font:inherit;padding:10px;border-radius:10px;border:0;background:var(--pr);color:#fff;width:100%;margin-top:8px;cursor:pointer;font-weight:700}
@@ -65,7 +67,8 @@ body{background:#fff;color:#000;font-size:12px;line-height:1.35}
 #ptbl td.l{text-align:left}
 #ptbl thead{display:table-header-group}
 #ptbl th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:11px}
-#ptbl tr{page-break-inside:avoid}}
+#ptbl tr{page-break-inside:avoid}
+#ptbl tr.sh td{background:#cfe3d6;font-weight:700;text-align:left;font-size:12.5px;padding:5px 6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;break-after:avoid;page-break-after:avoid}}
 .hide{display:none!important}
 </style>
 </head>
@@ -129,11 +132,70 @@ const idxOf = t => { for (const f of INDEX_FIELDS) if (t[f] !== undefined && t[f
 const DESIG_FIELDS = ['designation','post','position','title','role','পদবি'];
 const desigOf = t => { for (const f of DESIG_FIELDS) if (t[f]) return t[f]; return t.subject || ''; };
 
+// ক্যাটাগরি: পদবি দেখে ভাগ করা হয় (বানানের ছোটখাটো ভিন্নতা ধরবে)
+const CATS = ['অধ্যক্ষ', 'উপাধ্যক্ষ', 'সহকারী অধ্যাপক', 'প্রভাষক', 'সহকারী শিক্ষক', 'ইবতেদায়ী', 'অন্যান্য'];
+// বাংলা টেক্সট এক রূপে আনা: ইউনিকোডের ভিন্ন রূপ (ী/ি, ূ/ু, ড়, ZWNJ) ও স্পেস/ড্যাশ বাদ
+const fold = x => String(x || '').normalize('NFC').replace(/[\s\-.\u200c\u200d]/g, '').replace(/ী/g, 'ি').replace(/ূ/g, 'ু').toLowerCase();
+const R = src => new RegExp(src.normalize('NFC').replace(/ী/g, 'ি').replace(/ূ/g, 'ু'), 'i');
+const EBT = R('[ইএ]বতেদায়[ীি]|ebtedayee|ibtidai');
+const QARI = R('ক্বারি|ক্বরি|qari');
+const QARI_LOOSE = R('(^|[^হ])কারি');   // 'কারী' (ক্ব ছাড়া), তবে 'সহকারী' নয়
+const RX_STAFF = R('কর্মচারী|পিয়ন|পিওন|দপ্তরি|দফতরি|নৈশ|প্রহরী|আয়া|ঝাড়ু|অফিসসহকারী|ক্লার্ক|কেরানি|staff|peon');
+const RX_PRINC = R('ধ্?য?ক্?ষ|প্রিন্সিপাল|principal');
+const RX_DEPUTY = R('উপ|deputy|vice|ভাইস');
+const RX_ASSTPROF = R('সহকারী(অধ্যাপক|প্রফেসর)|সহঃ?অধ্যাপক|assistantprofessor');
+const RX_LECT = R('প্রভা[ষস]ক|lecturer');
+const RX_LIB = R('গ্রন্থাগ[ার]*িক|লাইব্রেরিয়ান|librarian');
+const RX_PROF = R('অধ্যাপক|প্রফেসর|professor');
+const RX_TEACH = R('সহকারী|সহকারি|সহঃ|শিক্ষক|শিক্ষিকা|মৌলভী|মৌলবী|মাওলানা|assistant|teacher');
+// একটি টেক্সট থেকে ক্যাটাগরি (না পেলে অন্যান্য)
+function catFromText(raw, loose){
+  const d = fold(raw), K = n => CATS.indexOf(n);
+  if (!d) return K('অন্যান্য');
+  if (RX_STAFF.test(d)) return K('অন্যান্য');   // কর্মচারীরা অন্যান্য সেকশনে
+  if (EBT.test(d) || QARI.test(d) || (loose && QARI_LOOSE.test(d))) return K('ইবতেদায়ী');   // ক্বারীও ইবতেদায়ীতে
+  const princ = RX_PRINC.test(d);
+  if (princ && RX_DEPUTY.test(d)) return K('উপাধ্যক্ষ');
+  if (princ) return K('অধ্যক্ষ');
+  if (RX_ASSTPROF.test(d)) return K('সহকারী অধ্যাপক');
+  if (RX_LECT.test(d)) return K('প্রভাষক');
+  if (RX_LIB.test(d)) return K('সহকারী শিক্ষক');
+  if (RX_PROF.test(d)) return K('অন্যান্য');
+  if (RX_TEACH.test(d)) return K('সহকারী শিক্ষক');
+  return K('অন্যান্য');
+}
+const SKIP_KEYS = ['id', 'name', 'phone', 'email', 'mobile', 'password', 'uid'];
+function catOf(t){
+  const K = n => CATS.indexOf(n);
+  const dz = desigOf(t);
+  if (RX_STAFF.test(fold(dz))) return K('অন্যান্য');   // কর্মচারী: অন্য ঘর দেখার দরকার নেই
+  let c = catFromText(dz, true);
+  // পদবির ঘরে না পেলে শিক্ষকের অন্য ঘরগুলোতে খোঁজা (ঘরের নাম যা-ই হোক)
+  if (c === K('অন্যান্য')) {
+    for (const k in t) {
+      if (SKIP_KEYS.includes(k) || typeof t[k] !== 'string') continue;
+      const x = catFromText(t[k], false);
+      if (x !== K('অন্যান্য')) { c = x; break; }
+    }
+  }
+  // পদবি শিক্ষক/অন্যান্য হলে, কোনো ঘরে "ইবতেদায়ী" থাকলে ইবতেদায়ীতে
+  if (c === K('সহকারী শিক্ষক') || c === K('অন্যান্য')) {
+    for (const k in t) { if (k !== 'id' && typeof t[k] === 'string' && (EBT.test(fold(t[k])) || QARI.test(fold(t[k])))) return K('ইবতেদায়ী'); }
+  }
+  return c;
+}
+function groupByCat(arr){
+  const g = CATS.map(() => []);
+  arr.forEach(t => g[catOf(t)].push(t));
+  return g;
+}
 function printTable(){
-  const rows = teachers.map(t => {
+  const row = t => {
     const x = missed[t.id] || {total:0, ptotal:0}, ph = normPhone(t.phone), ix = idxOf(t);
     return `<tr><td class="l">${esc(t.name)}</td><td>${ix !== '' ? bn(esc(ix)) : '–'}</td><td>${ph ? bn(ph) : '–'}</td><td>${bn(x.total)}</td><td>${bn(x.ptotal)}</td></tr>`;
-  }).join('');
+  };
+  const rows = groupByCat(teachers).map((arr, i) => arr.length
+    ? `<tr class="sh"><td colspan="5">${CATS[i]} (${bn(arr.length)} জন)</td></tr>` + arr.map(row).join('') : '').join('');
   $('ptbl').innerHTML = `<h3 style="text-align:center;margin:0 0 2px">শিক্ষকবৃন্দের তথ্য</h3>
     <div style="text-align:center;margin-bottom:8px;font-size:13px">${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</div>
     <table><thead><tr><th>নাম</th><th>ইনডেক্স নং</th><th>মোবাইল নং</th><th>মোট ক্লাস মিস</th><th>মোট প্রক্সি</th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -143,7 +205,7 @@ function render(){
   const list = teachers.filter(t => !q || (t.name||'').toLowerCase().includes(q) || (t.subject||'').toLowerCase().includes(q) || normPhone(t.phone).includes(q.replace(/\D/g,'') || '§'));
   printTable();
   $('cnt').textContent = 'মোট ' + bn(list.length) + ' জন শিক্ষক';
-  $('list').innerHTML = list.length ? list.map(t => {
+  const card = t => {
     const ph = normPhone(t.phone), ok = /^01\d{9}$/.test(ph), ix = idxOf(t), ds = desigOf(t);
     return `<div class="t">
       <div class="av">${esc((t.name||'?').trim().charAt(0))}</div>
@@ -159,7 +221,10 @@ function render(){
           <a class="wa ${ok?'':'off'}" href="${ok ? 'https://wa.me/88' + ph : '#'}" target="_blank" rel="noopener" title="WhatsApp">💬</a>
         </div>
       </div>${openId[t.id] ? months(t.id) : ''}</div>`;
-  }).join('') : '<div class="empty">কোনো শিক্ষক পাওয়া যায়নি</div>';
+  };
+  $('list').innerHTML = list.length ? groupByCat(list).map((arr, i) => arr.length
+    ? `<div class="sec">${CATS[i]} <span>${bn(arr.length)} জন</span></div>` + arr.map(card).join('') : '').join('')
+    : '<div class="empty">কোনো শিক্ষক পাওয়া যায়নি</div>';
 }
 
 // প্রক্সি যিনি করেছেন তার আইডির সম্ভাব্য ফিল্ড (আপনার ডাটায় যেটা আছে সেটা ধরবে)
