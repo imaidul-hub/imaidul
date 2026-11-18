@@ -29,7 +29,12 @@ input{font:inherit;padding:12px;border-radius:10px;border:1px solid var(--bd);ba
 .ab.z{background:rgba(15,122,74,.12);color:var(--pr);border-color:rgba(15,122,74,.35)}
 .yr{display:flex;align-items:center;gap:8px;margin:10px 0}
 .yr b{flex:1;text-align:center}
-.yr button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
+.yr button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:14px;padding:16px 22px;font:inherit;font-size:16px;cursor:pointer}
+.yr b{font-size:17px}
+.ctl{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:14px;margin-bottom:12px}
+.ctl .yr{margin:0 0 10px}
+.ctl .pbtn{margin-top:10px}
+@media print{.ctl{display:none!important}}
 .ab{cursor:pointer}
 .mg{flex-basis:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border-top:1px dashed var(--bd);padding-top:10px}
 .mg div{text-align:center;border:1px solid var(--bd);border-radius:10px;padding:4px 2px;font-size:12px;color:var(--mu)}
@@ -48,7 +53,7 @@ input{font:inherit;padding:12px;border-radius:10px;border:1px solid var(--bd);ba
 /* নতুন লেআউট: পদবি+ইন্ডেক্স এক সারি, ফোন এক সারি, নিচে মিস/প্রক্সি/কল এক সারি */
 .in .r1,.in .r2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bot{flex-basis:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px dashed var(--bd);padding-top:10px}
-.bot .tgs{flex-wrap:nowrap;flex:1;min-width:0}
+.bot .tgs{flex-wrap:wrap;flex:1;min-width:0}
 .bot .ab{white-space:nowrap;margin-top:0}
 
 @media print{
@@ -70,6 +75,37 @@ body{background:#fff;color:#000;font-size:12px;line-height:1.35}
 #ptbl tr{page-break-inside:avoid}
 #ptbl tr.sh td{background:#cfe3d6;font-weight:700;text-align:left;font-size:12.5px;padding:5px 6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;break-after:avoid;page-break-after:avoid}}
 .hide{display:none!important}
+.rcb{flex-basis:100%;font:inherit;font-size:14px;font-weight:700;padding:9px;border-radius:10px;border:1px solid var(--pr);background:transparent;color:var(--pr);cursor:pointer}
+#rcm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;overflow:auto;padding:10px}
+#rcm.show{display:block}
+.rcc{max-width:720px;margin:0 auto;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px}
+.rch{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.rch h3{margin:0;font-size:18px;color:var(--pr)}
+.rcx{border:0;background:var(--bd);color:var(--tx);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;flex:none}
+.rcn{display:flex;align-items:center;gap:8px;margin:12px 0}
+.rcn select{flex:1;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.rcn button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
+.rcs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.rcs div{text-align:center;border-radius:10px;padding:8px;font-size:13px}
+.rcs b{display:block;font-size:22px}
+.rcs .a{background:rgba(220,38,38,.1);color:#dc2626}.rcs .b{background:rgba(15,122,74,.12);color:var(--pr)}
+.rt{width:100%;border-collapse:collapse;font-size:13px}
+.rt th,.rt td{border:1px solid var(--bd);padding:6px 4px;text-align:center}
+.rt th{background:rgba(15,122,74,.12)}
+.rt td.l{text-align:left}
+.rcc .empty{padding:14px;font-size:13px}
+@media print{
+#rcm{display:none!important}
+body.rcp .bar,body.rcp .wrap,body.rcp #ptbl,body.rcp .rcno{display:none!important}
+body.rcp #rcm{display:block!important;position:static;background:none;padding:0;overflow:visible}
+body.rcp .rcc{border:0;border-radius:0;padding:0;background:#fff;color:#000;max-width:none}
+body.rcp .rch h3{color:#000}
+body.rcp .rcp-only{display:block!important}
+body.rcp .rt th,body.rcp .rt td{border:1px solid #000;color:#000}
+body.rcp .rt th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.rcp .rt tr{page-break-inside:avoid}
+body.rcp .rcs div{border:1px solid #000;background:none;color:#000}
+}
 </style>
 </head>
 <body>
@@ -83,14 +119,18 @@ body{background:#fff;color:#000;font-size:12px;line-height:1.35}
     <a href="admin.html" style="display:inline-block;background:var(--mu);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">🔐 অ্যাডমিন</a>
   </div>
   <div id="main" class="hide">
+  <div class="ctl">
   <div class="yr"><button onclick="shiftY(-1)">◀</button><b id="yl"></b><button onclick="shiftY(1)">▶</button></div>
   <input id="q" type="search" placeholder="🔍 নাম, বিষয় বা মোবাইল দিয়ে খুঁজুন" oninput="render()">
-  <button class="pbtn" onclick="doPrint()">🖨️ সব শিক্ষকের তথ্য প্রিন্ট করুন</button>
+  <button class="pbtn" onclick="document.body.classList.remove('rcp');doPrint()">🖨️ সব শিক্ষকের তথ্য প্রিন্ট করুন</button>
+  </div>
   <div class="cnt" id="cnt"></div>
   <div id="ptbl"></div>
   <div id="list"><div class="empty">লোড হচ্ছে...</div></div>
   </div>
 </div>
+
+<div id="rcm" onclick="if(event.target===this)closeRC()"><div class="rcc" id="rcc"></div></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -116,14 +156,8 @@ const MONTHS = ['জানুয়ারি','ফেব্রুয়ারি
 // মোট ক্লাস মিস (অনুপস্থিত থাকায়) ও মোট প্রক্সি (অন্যের ক্লাস নেওয়ায়)
 function absTag(id){
   const a = missed[id], cls = a ? a.total : 0, px = a ? a.ptotal : 0;
-  const arrow = openId[id] ? '▴' : '▾';
-  return `<div class="tgs"><span class="ab ${cls ? '' : 'z'}" onclick="tg('${id}')">মিস: ${bn(cls)}টি ${arrow}</span><span class="ab p" onclick="tg('${id}')">প্রক্সি: ${bn(px)}টি ${arrow}</span></div>`;
+  return `<div class="tgs"><span class="ab ${cls ? '' : 'z'}" onclick="openRC('${id}')">মিস: ${bn(cls)}টি</span><span class="ab p" onclick="openRC('${id}')">প্রক্সি: ${bn(px)}টি</span><span class="ab p" onclick="openRC('${id}')">📋 রিপোর্ট</span></div>`;
 }
-function months(id){
-  const a = missed[id];
-  return '<div class="mg">' + MONTHS.map((m, i) => { const n = a ? a.m[i] : 0, p = a ? a.pm[i] : 0; return `<div class="${n || p ? 'on' : ''}">${m}<span><i class="cm">মিস ${bn(n)}</i> • <i class="cp">প্রক্সি ${bn(p)}</i></span></div>`; }).join('') + '</div>';
-}
-function tg(id){ openId[id] = !openId[id]; render(); }
 function shiftY(n){ Y += n; loadMissed(); }
 // ইনডেক্স নম্বরের সম্ভাব্য ফিল্ড
 const INDEX_FIELDS = ['index','indexNo','indexNumber','idx','indexNum','teacherIndex'];
@@ -220,7 +254,7 @@ function render(){
           <a class="call ${ok?'':'off'}" href="${ok ? 'tel:+88' + ph : '#'}" title="কল">📞</a>
           <a class="wa ${ok?'':'off'}" href="${ok ? 'https://wa.me/88' + ph : '#'}" target="_blank" rel="noopener" title="WhatsApp">💬</a>
         </div>
-      </div>${openId[t.id] ? months(t.id) : ''}</div>`;
+      </div></div>`;
   };
   $('list').innerHTML = list.length ? groupByCat(list).map((arr, i) => arr.length
     ? `<div class="sec">${CATS[i]} <span>${bn(arr.length)} জন</span></div>` + arr.map(card).join('') : '').join('')
@@ -236,15 +270,71 @@ function loadMissed(){
   db.collection('proxies').where('date', '>=', yy + '-01-01').where('date', '<=', yy + '-12-31').get().then(q => {
     if (yy !== Y) return;
     missed = {};
-    const get = id => missed[id] = missed[id] || {m: Array(12).fill(0), total: 0, pm: Array(12).fill(0), ptotal: 0};
+    const get = id => missed[id] = missed[id] || {m: Array(12).fill(0), total: 0, pm: Array(12).fill(0), ptotal: 0, ml: [], pl: []};
     q.docs.forEach(d => { const p = d.data();
       const mi = parseInt(String(p.date).slice(5, 7), 10) - 1;
       if (mi < 0 || mi > 11) return;
-      if (p.absentId) { const a = get(p.absentId); a.m[mi]++; a.total++; }
-      const pid = proxyOf(p);
-      if (pid) { const b = get(pid); b.pm[mi]++; b.ptotal++; } });
-    render();
+      const pid = proxyOf(p), det = {d: String(p.date), c: clsOf(p), s: subOf(p), pr: perOf(p)};
+      if (p.absentId) { const a = get(p.absentId); a.m[mi]++; a.total++; a.ml.push({...det, o: pid}); }
+      if (pid) { const b = get(pid); b.pm[mi]++; b.ptotal++; b.pl.push({...det, o: p.absentId}); } });
+    render(); if (rcId) drawRC();
   }).catch(e => console.error(e));
+}
+// ক্লাস / বিষয় / পিরিয়ডের সম্ভাব্য ফিল্ড (আপনার ডাটায় যেটা আছে সেটা ধরবে)
+const pick = (p, fs) => { for (const f of fs) { const v = p[f]; if (v !== undefined && v !== null && v !== '' && typeof v !== 'object') return String(v); } return ''; };
+const clsOf = p => pick(p, ['className','class','cls','classId','classNo','classNumber','grade','section']);
+const subOf = p => pick(p, ['subject','subjectName','sub','subjectId']);
+const perOf = p => pick(p, ['period','periodNo','periodNumber','slot']);
+
+var rcId = null;
+const tName = id => { const x = teachers.find(z => z.id === id); return x ? x.name : (id ? String(id) : '–'); };
+function openRC(id){
+  rcId = id;
+  drawRC(); $('rcm').classList.add('show'); document.body.style.overflow = 'hidden';
+}
+function closeRC(){ rcId = null; $('rcm').classList.remove('show'); document.body.classList.remove('rcp'); document.body.style.overflow = ''; }
+function printRC(){ document.body.classList.add('rcp'); doPrint(); }
+window.addEventListener('afterprint', () => document.body.classList.remove('rcp'));
+function downloadRC(){
+  const t = teachers.find(x => x.id === rcId); if (!t) return;
+  // অ্যান্ড্রয়েড অ্যাপে ফাইল ডাউনলোড না চললে প্রিন্ট ডায়ালগ থেকে PDF সেভ করা যাবে
+  if (window.AndroidPrint && typeof AndroidPrint.print === 'function') { printRC(); return; }
+  const c = $('rcc').cloneNode(true);
+  c.querySelectorAll('.rcno').forEach(e => e.remove());
+  const po = c.querySelector('.rcp-only'); if (po) po.style.cssText = 'text-align:center;font-weight:700;margin:8px 0';
+  const css = '@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html{background:#ddd}'
+    + 'body{font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;width:210mm;min-height:297mm;margin:0 auto;padding:12mm 10mm;background:#fff;color:#000;line-height:1.45;font-size:13px}'
+    + '.rch h3{margin:0 0 4px;font-size:18px}.mu{font-size:12px;color:#444}.rcs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.rcs div{border:1px solid #000;text-align:center;padding:6px;border-radius:8px;font-size:12px}.rcs b{display:block;font-size:20px}'
+    + '.sec{display:flex;justify-content:space-between;border-bottom:2px solid #000;margin:14px 0 8px;font-weight:700;font-size:14px}.sec span{font-weight:400;font-size:12px}'
+    + '.rt{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}.rt th,.rt td{border:1px solid #000;padding:5px 3px;text-align:center;word-break:break-word;overflow-wrap:anywhere}.rt th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '.rt th:nth-child(1){width:28%}.rt th:nth-child(2){width:18%}.rt th:nth-child(3){width:22%}.rt thead{display:table-header-group}.rt tr{page-break-inside:avoid}.empty{text-align:center;padding:10px;font-size:12px}'
+    + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}';
+  const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>রিপোর্ট কার্ড - ' + esc(t.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
+  const nm = String(t.name || 'শিক্ষক').replace(/[\\\/:*?"<>|]/g, '').trim();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
+  a.download = 'রিপোর্ট-কার্ড-' + nm + '-' + Y + '.html';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+function drawRC(){
+  const t = teachers.find(x => x.id === rcId); if (!t) return;
+  const a = missed[rcId] || {ml: [], pl: []};
+  const srt = (x, y) => x.d < y.d ? -1 : x.d > y.d ? 1 : 0;
+  const ml = a.ml.slice().sort(srt), pl = a.pl.slice().sort(srt);
+  const dt = e => bn(e.d.slice(8, 10) + '/' + e.d.slice(5, 7) + '/' + e.d.slice(0, 4));
+  const tbl = rows => rows.length
+    ? '<table class="rt"><thead><tr><th>তারিখ</th><th>পিরিয়ড</th><th>শ্রেণী</th><th>বিষয়</th></tr></thead><tbody>' +
+      rows.map(e => `<tr><td>${dt(e)}</td><td>${e.pr ? bn(esc(e.pr)) : '–'}</td><td>${e.c ? bn(esc(e.c)) : '–'}</td><td>${e.s ? esc(e.s) : '–'}</td></tr>`).join('') + '</tbody></table>'
+    : '<div class="empty">এই বছরে কোনো তথ্য নেই</div>';
+  const ix = idxOf(t), ds = desigOf(t);
+  $('rcc').innerHTML = `<div class="rch"><div><h3>📋 ${esc(t.name)}</h3><div class="mu">${esc(ds || '—')} • ইন্ডেক্স: ${ix !== '' ? bn(esc(ix)) : '–'}</div></div><button class="rcx rcno" onclick="closeRC()">✕</button></div>
+    <div class="yr rcno"><button onclick="shiftY(-1)">◀</button><b>${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</b><button onclick="shiftY(1)">▶</button></div>
+    <div style="text-align:center;font-weight:700;margin:8px 0;display:none" class="rcp-only">${bn(Y)} সাল</div>
+    <div class="rcs"><div class="a"><b>${bn(ml.length)}</b>ক্লাস মিস</div><div class="b"><b>${bn(pl.length)}</b>প্রক্সি নিয়েছেন</div></div>
+    <div class="sec">❌ ক্লাস মিস <span>${bn(Y)} সাল</span></div>${tbl(ml)}
+    <div class="sec">✅ প্রক্সি <span>${bn(Y)} সাল</span></div>${tbl(pl)}
+    <div class="rcno" style="display:flex;gap:8px"><button class="pbtn" onclick="downloadRC()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="printRC()">🖨️ প্রিন্ট</button></div>`;
 }
 var unsubT = null;
 function startT(){
