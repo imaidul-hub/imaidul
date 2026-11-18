@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>মূল্যায়ন পরীক্ষা</title>
@@ -41,8 +44,23 @@ select,input.f{font:inherit;padding:12px;border-radius:12px;border:1px solid var
 .chip button{border:0;background:transparent;color:var(--er);font-size:15px;cursor:pointer;padding:2px 6px}
 .pt{border-top:1px dashed var(--bd);padding:8px 0}
 </style>
+<style id="sl-css">
+#sl{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f4f8f5;transition:opacity .45s ease,visibility .45s ease}
+#sl.sl-out{opacity:0;visibility:hidden;pointer-events:none}
+#sl .sl-ring{width:54px;height:54px;border-radius:50%;border:4px solid rgba(15,122,74,.18);border-top-color:#0f7a4a;border-right-color:#c9a227;animation:sl-spin .9s cubic-bezier(.5,.1,.5,.9) infinite}
+#sl .sl-txt{font:600 14px "Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;color:#0f7a4a;animation:sl-pulse 1.4s ease-in-out infinite}
+#sl-bar{position:fixed;top:0;left:0;height:3px;width:0;z-index:100000;background:linear-gradient(90deg,#0f7a4a,#c9a227);box-shadow:0 0 8px rgba(15,122,74,.5);transition:width .35s ease,opacity .3s ease}
+body{animation:sl-fade .5s ease both}
+body.sl-leave{opacity:0;transition:opacity .18s ease}
+@keyframes sl-spin{to{transform:rotate(360deg)}}
+@keyframes sl-pulse{0%,100%{opacity:.45}50%{opacity:1}}
+@keyframes sl-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-color-scheme:dark){#sl{background:#0e1712}#sl .sl-ring{border-color:rgba(52,181,122,.2);border-top-color:#34b57a}#sl .sl-txt{color:#34b57a}}
+@media(prefers-reduced-motion:reduce){#sl .sl-ring,#sl .sl-txt,body{animation:none}}
+</style>
 </head>
 <body>
+<div id="sl" role="status" aria-live="polite"><div class="sl-ring"></div><div class="sl-txt">লোড হচ্ছে...</div></div><div id="sl-bar"></div>
 <div class="bar"><b>📝 মূল্যায়ন পরীক্ষা</b><a href="index.html">হোম</a></div>
 
 <div class="wrap">
@@ -97,6 +115,9 @@ firebase.initializeApp({
   appId: "1:1001193607775:web:c4539574a49cddf59341ea"
 });
 const db = firebase.firestore(), auth = firebase.auth();
+// ⚡ দ্রুত ও স্থিতিশীল লোডিং: ধীর/ব্লকড নেটওয়ার্কে স্বয়ংক্রিয় long-polling + অফলাইন ক্যাশ
+try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) {}
+db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 const $ = id => document.getElementById(id);
 const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
 const en = s => String(s).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
@@ -289,6 +310,38 @@ auth.onAuthStateChanged(u => {
   if (!u) { $('svb').classList.add('hide'); return; }
   boot(u);
 });
+</script>
+<script id="sl-js">
+(function(){
+  var sl=document.getElementById('sl'),bar=document.getElementById('sl-bar'),done=false,w=8,t0=Date.now();
+  if(!sl)return;
+  bar.style.width=w+'%';
+  var iv=setInterval(function(){w+=(90-w)*.08;bar.style.width=w+'%';},250);
+  function hide(){
+    if(done)return;done=true;clearInterval(iv);
+    var wait=Math.max(0,350-(Date.now()-t0));
+    setTimeout(function(){
+      bar.style.width='100%';
+      sl.classList.add('sl-out');
+      setTimeout(function(){bar.style.opacity='0';},250);
+      setTimeout(function(){sl.remove();bar.remove();},700);
+    },wait);
+  }
+  var loaded=document.readyState==='complete',authed=false;
+  function check(){if(loaded&&authed)hide();}
+  window.addEventListener('load',function(){loaded=true;check();});
+  try{firebase.auth().onAuthStateChanged(function(){authed=true;check();},function(){authed=true;check();});}catch(e){authed=true;}
+  setTimeout(hide,6000);
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href]');
+    if(!a||a.target==='_blank'||e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey)return;
+    var h=a.getAttribute('href');
+    if(!h||h.charAt(0)==='#'||/^(javascript|mailto|tel|blob|data):/i.test(h)||a.hasAttribute('download'))return;
+    if(a.origin&&a.origin!==location.origin)return;
+    document.body.classList.add('sl-leave');
+  });
+  window.addEventListener('pageshow',function(e){if(e.persisted)document.body.classList.remove('sl-leave');});
+})();
 </script>
 </body>
 </html>
