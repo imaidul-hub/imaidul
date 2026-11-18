@@ -34,6 +34,18 @@ h2{font-size:17px;margin:16px 0 8px;color:var(--pr);border-right:4px solid var(-
 #toast.err{background:#b42318}#toast.ok{background:#0f7a4a}
 #toast button{position:absolute;right:8px;top:6px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
 .hide{display:none}
+.dtabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.dtabs::-webkit-scrollbar{display:none}
+.dchip{flex:none;display:flex;flex-direction:column;align-items:center;min-width:56px;padding:6px 8px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;font-size:13px;line-height:1.35;cursor:pointer;transition:background .2s,transform .15s}
+.dchip:active{transform:scale(.95)}
+.dchip small{color:var(--mu);font-size:11px}
+.dchip.on{background:var(--pr);color:#fff;border-color:var(--pr)}
+.dchip.on small{color:#fff;opacity:.9}
+.dchip.td:not(.on){border-color:var(--gd);box-shadow:inset 0 -3px 0 var(--gd)}
+.rthead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.rtday{animation:rtin .25s ease both}
+@keyframes rtin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.it:last-child{border-bottom:0}
 </style>
 <style id="sl-css">
 #sl{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f4f8f5;transition:opacity .45s ease,visibility .45s ease}
@@ -79,6 +91,12 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
 
     <h2>আজকের সব প্রক্সি তালিকা</h2>
     <div class="card" id="all"></div>
+
+    <h2>📅 আপনার সাপ্তাহিক ক্লাস রুটিন</h2>
+    <div class="card">
+      <div class="dtabs" id="rtTabs"></div>
+      <div id="rtBox"></div>
+    </div>
 
     <div class="card">
       <a href="proxy.html" style="color:var(--pr)">📄 সপ্তাহের প্রক্সি রিপোর্ট দেখুন</a>
@@ -166,7 +184,7 @@ function item(p, mine){
     <div class="mu">${mine ? '' : esc(tName(p.subId)) + ' • '}${p.absentId ? esc(tName(p.absentId)) + '-এর পরিবর্তে' : 'প্রক্সি'}${p.room ? ' • রুম ' + esc(p.room) : ''}</div></div></div>`;
 }
 function render(){
-  findMe(); updPushUi();
+  findMe(); updPushUi(); watchRoutine(); renderRt();
   const d = new Date();
   $('dt').textContent = DAYS[d.getDay()] + ', ' + bn(ds(d));
   $('hi').textContent = me ? 'আসসালামু আলাইকুম, ' + me.name : 'আসসালামু আলাইকুম';
@@ -182,7 +200,38 @@ function startData(){
   unsubT = db.collection('teachers').onSnapshot(s => { teachers = s.docs.map(d => ({id:d.id, ...d.data()})); render(); }, fail);
   unsubP = db.collection('proxies').where('date','==',day).onSnapshot(s => { proxies = s.docs.map(d => ({id:d.id, ...d.data()})); render(); }, fail);
 }
-function stopData(){ if (unsubT) { unsubT(); unsubT = null; } if (unsubP) { unsubP(); unsubP = null; } }
+function stopData(){ if (unsubT) { unsubT(); unsubT = null; } if (unsubP) { unsubP(); unsubP = null; } if (unsubR) { unsubR(); unsubR = null; } rtFor = null; myRt = []; }
+
+// ---- সাপ্তাহিক ক্লাস রুটিন ----
+var myRt = [], unsubR = null, rtFor = null, selDay = new Date().getDay();
+const WEEK = [6,0,1,2,3,4,5];   // শনি থেকে শুক্র
+const fmtT = t => { if (!t) return ''; const a = String(t).split(':').map(Number); let h = a[0], m = a[1] || 0; const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return bn(h + ':' + String(m).padStart(2,'0')) + ' ' + ap; };
+function watchRoutine(){
+  if (!me || rtFor === me.id) return;
+  if (unsubR) unsubR();
+  rtFor = me.id; myRt = [];
+  unsubR = db.collection('routines').where('teacherId','==',me.id).onSnapshot(s => {
+    myRt = s.docs.map(d => ({id:d.id, ...d.data()})); renderRt();
+  }, fail);
+}
+function pickDay(d){ selDay = d; renderRt(); }
+function renderRt(){
+  const tabs = $('rtTabs'), box = $('rtBox'); if (!tabs || !box) return;
+  if (!me) { tabs.innerHTML = ''; box.innerHTML = '<div class="empty">এই নম্বর শিক্ষক তালিকায় পাওয়া যায়নি</div>'; return; }
+  const today = new Date().getDay();
+  tabs.innerHTML = WEEK.map(d => {
+    const n = myRt.filter(r => r.day === d).length;
+    return '<button class="dchip' + (d === selDay ? ' on' : '') + (d === today ? ' td' : '') + '" onclick="pickDay(' + d + ')">' + DAYS[d].replace('বার','') + '<small>' + (n ? bn(n) + 'টি' : '–') + '</small></button>';
+  }).join('');
+  const rows = myRt.filter(r => r.day === selDay).sort((a,b) => a.period - b.period);
+  const head = '<div class="rthead"><b>' + DAYS[selDay] + (selDay === today ? ' (আজ)' : '') + '</b><span class="mu">সপ্তাহে মোট ' + bn(myRt.length) + 'টি ক্লাস</span></div>';
+  const list = rows.length ? rows.map(r => {
+    const tm = r.start ? fmtT(r.start) + (r.end ? ' – ' + fmtT(r.end) : '') : '';
+    const meta = [tm, r.room ? 'রুম ' + esc(r.room) : ''].filter(Boolean).join(' • ');
+    return '<div class="it"><div class="pn">' + bn(r.period) + '</div><div><b>' + esc(r.class) + '</b> — ' + esc(r.subject) + (meta ? '<div class="mu">' + meta + '</div>' : '') + '</div></div>';
+  }).join('') : '<div class="empty">এই দিনে আপনার কোনো ক্লাস নেই</div>';
+  box.innerHTML = '<div class="rtday" key="' + selDay + '">' + head + list + '</div>';
+}
 
 // ---- পুশ নোটিফিকেশন (FCM) ----
 const VAPID_KEY = 'YOUR_VAPID_KEY';   // Firebase Console > Project settings > Cloud Messaging > Web Push certificates
