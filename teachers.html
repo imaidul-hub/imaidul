@@ -297,8 +297,6 @@ function printRC(){ document.body.classList.add('rcp'); doPrint(); }
 window.addEventListener('afterprint', () => document.body.classList.remove('rcp'));
 function downloadRC(){
   const t = teachers.find(x => x.id === rcId); if (!t) return;
-  // অ্যান্ড্রয়েড অ্যাপে ফাইল ডাউনলোড না চললে প্রিন্ট ডায়ালগ থেকে PDF সেভ করা যাবে
-  if (window.AndroidPrint && typeof AndroidPrint.print === 'function') { printRC(); return; }
   const c = $('rcc').cloneNode(true);
   c.querySelectorAll('.rcno').forEach(e => e.remove());
   const po = c.querySelector('.rcp-only'); if (po) po.style.cssText = 'text-align:center;font-weight:700;margin:8px 0';
@@ -311,9 +309,14 @@ function downloadRC(){
     + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}';
   const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>রিপোর্ট কার্ড - ' + esc(t.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
   const nm = String(t.name || 'শিক্ষক').replace(/[\\\/:*?"<>|]/g, '').trim();
+  const fname = 'রিপোর্ট-কার্ড-' + nm + '-' + Y + '.html';
+  // অ্যান্ড্রয়েড অ্যাপ: সরাসরি Downloads ফোল্ডারে সেভ
+  if (window.AndroidPrint && typeof AndroidPrint.saveFile !== 'undefined') { AndroidPrint.saveFile(fname, html, 'text/html'); return; }
+  // অ্যাপের ভেতরে আছে কিন্তু অ্যাপে ডাউনলোড সুবিধা নেই (পুরনো অ্যাপ ভার্সন)
+  if (window.AndroidPrint) { alert('ডাউনলোডের জন্য অ্যাপটি নতুন ভার্সনে আপডেট করুন (MainActivity.java নতুন করে বিল্ড করুন)।'); return; }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
-  a.download = 'রিপোর্ট-কার্ড-' + nm + '-' + Y + '.html';
+  a.download = fname;
   document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
