@@ -259,7 +259,7 @@
   <div class="panel no-print" id="pubBox">
     <h3>📊 প্রকাশিত ফলাফল</h3>
     <div class="row" style="margin:0">
-      <select id="pubSel"><option value="">লোড হচ্ছে...</option></select>
+      <select id="pubSel"><option value="">শ্রেণি নির্বাচন করুন</option></select>
       <button class="adm-only" id="pubDel" style="color:#b00020">🗑️ মুছুন</button>
     </div>
     <div class="hint" id="pubMsg"></div>
@@ -1185,8 +1185,8 @@ const bufFromB64 = b => { const s = atob(b), u = new Uint8Array(s.length); for (
 function fillSelect(selectId) {
   const sel = $('pubSel');
   if (!pubDocs.length) { sel.innerHTML = '<option value="">এখনো কোনো ফলাফল প্রকাশ হয়নি</option>'; return; }
-  sel.innerHTML = pubDocs.map(d => `<option value="${esc(d.id)}">${esc(d.title || 'ফলাফল')}</option>`).join('');
-  sel.value = selectId && pubDocs.some(d => d.id === selectId) ? selectId : (curPubId && pubDocs.some(d => d.id === curPubId) ? curPubId : pubDocs[0].id);
+  sel.innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + pubDocs.map(d => `<option value="${esc(d.id)}">${esc(d.title || 'ফলাফল')}</option>`).join('');
+  sel.value = selectId && pubDocs.some(d => d.id === selectId) ? selectId : (curPubId && pubDocs.some(d => d.id === curPubId) ? curPubId : '');
 }
 async function loadPublished(id) {
   const d = pubDocs.find(x => x.id === id); if (!d) return;
@@ -1206,7 +1206,6 @@ function startList() {
   pubUnsub = fdb.collection('results').orderBy('createdAt', 'desc').onSnapshot(s => {
     pubDocs = s.docs.map(d => ({ id: d.id, ...d.data() }));
     fillSelect();
-    if (pubDocs.length && !GRID && !curPubId) loadPublished($('pubSel').value);
   }, e => { console.error(e); $('pubSel').innerHTML = '<option value="">লোড করা যায়নি</option>'; msg('❌ তালিকা লোড করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); });
 }
 $('pubSel').addEventListener('change', e => e.target.value && loadPublished(e.target.value));
