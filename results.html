@@ -321,8 +321,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <h3 class="adm-only">ফলাফল শীট তৈরি করুন (যেকোনো Excel থেকে)</h3>
     <div class="row adm-only" style="margin:0 0 10px">
       <label class="chk">শ্রেণি:
-        <input id="cls" list="clsList" placeholder="যেমন: দাখিল" style="font:inherit;padding:7px 10px;border:1px solid #9aa3b5;border-radius:8px;width:170px">
-        <datalist id="clsList"><option value="ইবতেদায়ী"><option value="৬ষ্ঠ শ্রেণি"><option value="৭ম শ্রেণি"><option value="৮ম শ্রেণি"><option value="৯ম শ্রেণি"><option value="১০ম শ্রেণি"><option value="দাখিল"><option value="আলিম"><option value="ফাজিল"><option value="কামিল"></datalist>
+        <select id="cls" style="font:inherit;padding:7px 10px;border:1px solid #9aa3b5;border-radius:8px;min-width:150px"><option value="">-- শ্রেণি বেছে নিন --</option><optgroup label="ইবতেদায়ী"><option>ইবতেদায়ী ১ম শ্রেণি</option><option>ইবতেদায়ী ২য় শ্রেণি</option><option>ইবতেদায়ী ৩য় শ্রেণি</option><option>ইবতেদায়ী ৪র্থ শ্রেণি</option><option>ইবতেদায়ী ৫ম শ্রেণি</option></optgroup><optgroup label="দাখিল"><option>দাখিল ৬ষ্ঠ শ্রেণি</option><option>দাখিল ৭ম শ্রেণি</option><option>দাখিল ৮ম শ্রেণি</option><option>দাখিল ৯ম শ্রেণি</option><option>দাখিল ১০ম শ্রেণি</option></optgroup><optgroup label="আলিম"><option>আলিম ১ম বর্ষ</option><option>আলিম ২য় বর্ষ</option></optgroup><optgroup label="ফাজিল"><option>ফাজিল ১ম বর্ষ</option><option>ফাজিল ২য় বর্ষ</option><option>ফাজিল ৩য় বর্ষ</option></optgroup></select>
       </label>
       <label class="chk">পরীক্ষা:
         <select id="etype"><option>নির্বাচনী</option><option>অর্ধ বার্ষিক</option><option>বার্ষিক</option></select>
@@ -350,6 +349,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     </div>
     <div class="hint adm-only" id="hint">হেডার সারিতে "নাম" লেখা থাকলে পেজ নিজেই বিষয়, MCQ/CQ/মোট কলাম চিনে নেয়। বিষয় প্রতি ফাইলে আলাদা হলেও চলবে। প্রিন্ট ডায়ালগে "Save as PDF" বাছলে PDF হবে (A3 landscape)।</div>
     <div class="err" id="err"></div>
+    <div class="hint" id="nameHint" style="color:#b00020"></div>
   </div>
 
   <details class="panel no-print adm-only" id="cfgBox" style="display:none" open>
@@ -429,6 +429,64 @@ const n0 = v => v == null ? 0 : v;
 const RX = (s, f) => new RegExp(s.normalize('NFC'), f);
 const cl = i => { let s = ''; while (i > 0) { const m = (i-1) % 26; s = String.fromCharCode(65+m) + s; i = Math.floor((i-1)/26); } return s; };
 const ci = s => s.split('').reduce((a,ch) => a*26 + ch.charCodeAt(0) - 64, 0);
+
+/* ---------- শিক্ষার্থীর নাম: Firestore থেকে (Excel থেকে নয়) ---------- */
+const STUDENT_COL = 'students';   // অ্যাডমিন পেজের শিক্ষার্থী কালেকশন (name, class, roll)
+let STU_ALL = null, STU_P = null, STU_ERR = '', NM_CACHE = {};
+const _nk = s => String(s).normalize('NFC').toLowerCase().replace(/[\s_\-.]/g, '');
+const _pick = (d, keys) => { const m = {}; for (const k in d) m[_nk(k)] = d[k]; for (const k of keys) { const v = m[_nk(k)]; if (v != null && String(v).trim() !== '') return v; } return ''; };
+const clsKey = s => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+function loadStudents(force) {
+  if (STU_P && !force) return STU_P;
+  STU_P = fdb.collection(STUDENT_COL).get().then(q => {
+    STU_ALL = q.docs.map(x => {
+      const d = x.data();
+      return {
+        name: String(_pick(d, ['name', 'nameBn', 'name_bn', 'studentName', 'student_name', 'fullName', 'নাম'])).trim(),
+        roll: num(_pick(d, ['roll', 'rollNo', 'roll_no', 'rollNumber', 'রোল', 'রোলনং', 'ক্রম', 'serial'])),
+        cls: clsKey(_pick(d, ['class', 'cls', 'className', 'class_name', 'classId', 'grade', 'শ্রেণি', 'শ্রেণী'])),
+        sec: String(_pick(d, ['section', 'sec', 'শাখা', 'সেকশন'])).trim().toLowerCase()
+      };
+    }).filter(s => s.name && s.roll != null);
+    STU_ERR = ''; NM_CACHE = {};
+  }).catch(e => { console.error(e); STU_ALL = []; STU_ERR = ((e.code || '') + ' ' + (e.message || '')).trim(); STU_P = null; });
+  return STU_P;
+}
+function nameMap() {
+  const k = clsKey($('cls') ? $('cls').value : '');
+  if (!k || !STU_ALL) return new Map();
+  if (!NM_CACHE[k]) {
+    const m = new Map();
+    STU_ALL.forEach(s => { if (!(s.cls === k || s.cls.endsWith(' ' + k) || s.cls.startsWith(k + ' '))) return; if (!m.has(s.roll)) m.set(s.roll, []); m.get(s.roll).push(s); });
+    NM_CACHE[k] = m;
+  }
+  return NM_CACHE[k];
+}
+function stuName(roll, sec) {
+  const l = nameMap().get(roll); if (!l) return '';
+  if (l.length > 1 && sec) { const h = l.find(x => x.sec && x.sec === String(sec).trim().toLowerCase()); if (h) return h.name; }
+  return l[0].name;
+}
+function setCls(v) {
+  const sel = $('cls'); v = clsKey(v);
+  if (v && ![...sel.options].some(o => o.value === v)) {
+    const m = [...sel.options].filter(o => o.value && (o.value.endsWith(' ' + v) || o.value.startsWith(v + ' ')));
+    if (m.length === 1) v = m[0].value; else sel.add(new Option(v, v));
+  }
+  sel.value = v;
+}
+
+/* ---------- শ্রেণি অনুযায়ী পাশের নিয়ম ---------- */
+// ৬–৮ শ্রেণি: সব বিষয়ে মোট নম্বরের ৩৩%  |  ৯/১০ (দাখিল): আইসিটি-তে অভি ও ব্যব আলাদা ৩৩%
+function clsGroup() {
+  const orig = ($('cls') ? $('cls').value : '').normalize('NFC');
+  const raw = orig.replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+  if (/নবম|দশম|(^|\D)(9|10)(\D|$)/i.test(raw)) return 'high';
+  if (/ষষ্ঠ|সপ্তম|অষ্টম|(^|\D)(6|7|8)(\D|$)/i.test(raw)) return 'mid';
+  if (/দাখিল|dakhil/i.test(raw)) return 'high';
+  return '';
+}
+const isIct = name => RX('আইসিটি|ict|তথ্য','i').test(name);
 
 /* ---------- grade points (পূর্ণমান অনুযায়ী) ---------- */
 function gpFor(t, F) {
@@ -549,6 +607,14 @@ function parseLayout(grid) {
       minMcq: strictSubj && s.hasMcq ? 10 : null,
       minCq: strictSubj && s.hasCq ? 23 : null
     };
+    s.ict = isIct(s.name);
+    s.hasPrac = s.papers.some(p => p.parts.some(x => x.kind === 'prac'));
+    if (s.ict && s.hasMcq && s.hasPrac) {   // অভি ও ব্যব-এর পূর্ণমান (না জানা থাকলে সমান ভাগ; নিচের সেটিংসে বদলানো যাবে)
+      const F = s.cfg.full, lab = k => { for (const p of s.papers) for (const x of p.parts) if (x.kind === k) { const m = String(x.label || '').match(/[0-9০-৯]+/); if (m) return num(m[0]); } return null; };
+      const fm = lab('mcq'), fp = lab('prac');
+      s.cfg.fullMcq = fm != null ? fm : (fp != null ? F - fp : Math.ceil(F / 2));
+      s.cfg.fullPrac = fp != null ? fp : F - s.cfg.fullMcq;
+    }
   });
   const metaCol = re => { for (let c = 1; c <= maxCol; c++) if (c !== nameCol && RX(re, 'i').test(T(c, H))) return c; return 0; };
   return { H, subRow, dataStart, nameCol, rollCol, subjects, rows, titles,
@@ -557,7 +623,7 @@ function parseLayout(grid) {
 }
 
 /* ---------- ফলাফল হিসাব ---------- */
-function evalSubject(grid, s, r) {
+function evalSubject(grid, s, r, grp) {
   const c = s.cfg;
   const P = s.papers.map(p => {
     const vals = p.parts.map(x => num(grid[cl(x.col) + r]));
@@ -571,9 +637,15 @@ function evalSubject(grid, s, r) {
   let ok = true;
   s.papers.forEach((p, pi) => p.parts.forEach((x, qi) => {
     const v = n0(P[pi].vals[qi]);
+    if (grp === 'mid') return;   // ৬–৮: শুধু মোট নম্বরের ৩৩% (অংশভিত্তিক ন্যূনতম নয়)
     if (x.kind === 'mcq' && c.minMcq != null && v < c.minMcq) ok = false;
     if (x.kind === 'cq' && c.minCq != null && v < c.minCq) ok = false;
   }));
+  if (grp === 'high' && s.ict && c.fullMcq != null && c.fullPrac != null) {   // ৯/১০: আইসিটি — অভি ও ব্যব আলাদা ৩৩%
+    let am = null, ap = null;
+    s.papers.forEach((p, pi) => p.parts.forEach((x, qi) => { const v = P[pi].vals[qi]; if (v == null) return; if (x.kind === 'mcq') am = n0(am) + v; else if (x.kind === 'prac') ap = n0(ap) + v; }));
+    if (hasAny && (n0(am) < Math.round(c.fullMcq * 33 / 100) || n0(ap) < Math.round(c.fullPrac * 33 / 100))) ok = false;
+  }
   const gp = (c.optional && !hasAny) ? null : (ok ? gpFor(total, c.full) : 0);
   const cells = s.plan.map(it => it.t === 'part' ? P[it.pi].vals[it.qi] : it.t === 'ptot' ? n0(P[it.pi].tot) : total);
   const kinds = { mcq:null, cq:null, prac:null }, pk = s.papers.map(() => ({ mcq:null, cq:null, prac:null }));
@@ -603,16 +675,20 @@ function compute(grid, L, opts) {
   const list = [];
   for (const r of L.rows) {
     const ev = new Map();
-    [...reg, ...opt].forEach(s => ev.set(s, evalSubject(grid, s, r)));
+    [...reg, ...opt].forEach(s => ev.set(s, evalSubject(grid, s, r, opts.grp)));
     const present = reg.some(s => ev.get(s).present);
     const failNames = present ? reg.filter(s => ev.get(s).gp === 0).map(s => s.name) : [];
     const pass = present && failNames.length === 0 && reg.length > 0;
     const total = reg.reduce((a, s) => a + ev.get(s).total, 0) + (opts.optTotal ? opt.reduce((a, s) => a + ev.get(s).total, 0) : 0);
     const gpa = pass ? reg.reduce((a, s) => a + ev.get(s).gp, 0) / reg.length : null;
-    list.push({ roll:num(grid[cl(L.rollCol) + r]), name:String(grid[cl(L.nameCol) + r] ?? '').trim(), ev, present, pass, failNames,
+    list.push({ roll:num(grid[cl(L.rollCol) + r]), name:stuName(num(grid[cl(L.rollCol) + r]), L.sectionCol ? grid[cl(L.sectionCol) + r] : ''), ev, present, pass, failNames,
                 failN:failNames.length, total, gpa, grade: pass ? letter(gpa) : (present ? 'F' : null),
                 status: !present ? 'absent' : pass ? 'pass' : 'fail' });
   }
+  { const miss = list.filter(s => !s.name).length, h = $('nameHint');
+    if (h) h.textContent = STU_ERR ? '⚠️ ডাটাবেস থেকে নাম আনা যায়নি: ' + STU_ERR
+      : !$('cls').value ? '⚠️ নাম আনতে উপরে শ্রেণি নির্বাচন করুন।'
+      : (STU_ALL && miss ? `⚠️ ${bn(miss)} জনের নাম ডাটাবেসে পাওয়া যায়নি (রোল মেলেনি)।` : ''); }
   const pass = list.filter(s => s.status==='pass').sort((a,b) => b.gpa-a.gpa || b.total-a.total || a.roll-b.roll);
   pass.forEach((s,i) => s.rank = i+1);
   const fail = list.filter(s => s.status==='fail').sort((a,b) => a.failN-b.failN || a.roll-b.roll);
@@ -705,7 +781,7 @@ function buildTitle() {
   $('exam').textContent = `${c ? c + ' ' : ''}${$('etype').value} পরীক্ষার ফলাফল${y ? '-' + y : ''}`;
 }
 function renderCfg() {
-  let h = '<tr><th>নিন</th><th>বিষয়</th><th>কলাম</th><th>পূর্ণমান</th><th>ঐচ্ছিক</th><th>MCQ ন্যূনতম</th><th>CQ ন্যূনতম</th></tr>';
+  let h = '<tr><th>নিন</th><th>বিষয়</th><th>কলাম</th><th>পূর্ণমান</th><th>ঐচ্ছিক</th><th>MCQ ন্যূনতম</th><th>CQ ন্যূনতম</th><th>আইসিটি: অভি পূর্ণ</th><th>আইসিটি: ব্যব পূর্ণ</th></tr>';
   LAYOUT.subjects.forEach((s, i) => {
     const c = s.cfg;
     h += `<tr class="${c.include ? '' : 'off'}"><td><input type="checkbox" data-i="${i}" data-k="include" ${c.include ? 'checked' : ''}></td>`
@@ -713,7 +789,9 @@ function renderCfg() {
       + `<td><input type="number" min="1" data-i="${i}" data-k="full" value="${c.full}"></td>`
       + `<td><input type="checkbox" data-i="${i}" data-k="optional" ${c.optional ? 'checked' : ''}></td>`
       + `<td>${s.hasMcq ? `<input type="number" min="0" data-i="${i}" data-k="minMcq" value="${c.minMcq ?? ''}">` : '—'}</td>`
-      + `<td>${s.hasCq ? `<input type="number" min="0" data-i="${i}" data-k="minCq" value="${c.minCq ?? ''}">` : '—'}</td></tr>`;
+      + `<td>${s.hasCq ? `<input type="number" min="0" data-i="${i}" data-k="minCq" value="${c.minCq ?? ''}">` : '—'}</td>`
+      + `<td>${c.fullMcq != null ? `<input type="number" min="1" data-i="${i}" data-k="fullMcq" value="${c.fullMcq}">` : '—'}</td>`
+      + `<td>${c.fullPrac != null ? `<input type="number" min="1" data-i="${i}" data-k="fullPrac" value="${c.fullPrac}">` : '—'}</td></tr>`;
   });
   $('cfg').innerHTML = h;
   $('layoutInfo').textContent = `হেডার সারি ${bn(LAYOUT.H)}${LAYOUT.subRow ? '–' + bn(LAYOUT.subRow) : ''}, ডাটা ${bn(LAYOUT.dataStart)} নম্বর সারি থেকে, ${bn(LAYOUT.rows.length)} জন পরীক্ষার্থী।`;
@@ -721,7 +799,7 @@ function renderCfg() {
 }
 
 function render() {
-  const R = compute(GRID, LAYOUT, { optTotal: $('opttot').checked, merge: $('mergeqh').checked });
+  const R = compute(GRID, LAYOUT, { optTotal: $('opttot').checked, merge: $('mergeqh').checked, grp: clsGroup() });
   window.__results = R; window.__layout = LAYOUT;
   const subs = [...R.reg, ...R.opt];
 
@@ -917,7 +995,7 @@ function renderAdmit() {
   const list = LAYOUT.rows.map(r => ({ r, roll: num(GRID[cl(LAYOUT.rollCol) + r]) })).sort((a, b) => a.roll - b.roll);
   $('admit').className = 'p' + per;
   $('admit').innerHTML = list.map(({ r, roll }) => {
-    const info = cell('পরীক্ষার্থীর নাম', val(r, LAYOUT.nameCol)) + cell('রোল নং', bn(roll))
+    const info = cell('পরীক্ষার্থীর নাম', esc(stuName(roll, LAYOUT.sectionCol ? GRID[cl(LAYOUT.sectionCol) + r] : ''))) + cell('রোল নং', bn(roll))
       + (LAYOUT.fatherCol ? cell('পিতার নাম', val(r, LAYOUT.fatherCol)) : '') + cell('শ্রেণি', cls)
       + (LAYOUT.motherCol ? cell('মাতার নাম', val(r, LAYOUT.motherCol)) : '') + (LAYOUT.regCol ? cell('রেজি. নং', val(r, LAYOUT.regCol)) : '');
     return `<div class="adm"><div class="adm-head"><div class="adm-logo">${LOGO ? `<img src="${LOGO}" alt="">` : esc(initial)}</div>`
@@ -1044,11 +1122,12 @@ function renderTranscript(R, subs) {
 async function loadSheet(path) {
   GRID = await readGrid(ZIP, path);
   LAYOUT = parseLayout(GRID);
+  await loadStudents();
   $('inst').textContent = 'চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা';
   const ex = LAYOUT.titles[1] || '';
   examEdited = false;
   const cm = ex.match(RX('ইবতেদায়ী|দাখিল|আলিম|ফাজিল|কামিল|[০-৯]+(?:ম|ষ্ঠ|য়|র্থ)\\s*শ্রেণি'));
-  if (cm && !$('cls').value.trim()) $('cls').value = cm[0];
+  if (cm && !$('cls').value.trim()) setCls(cm[0]);
   if (/অর্ধ/.test(ex)) $('etype').value = 'অর্ধ বার্ষিক';
   else if (/বার্ষিক/.test(ex)) $('etype').value = 'বার্ষিক';
   else if (/নির্বাচনী/.test(ex)) $('etype').value = 'নির্বাচনী';
@@ -1091,7 +1170,8 @@ function captureSettings() {
     tgroup: g('tgroup'), tsign: g('tsign'), tlang: g('tlang'), tmedium: g('tmedium'), tshift: g('tshift'), tsection: g('tsection'), tsub: g('tsub') };
 }
 function applySettings(st) {
-  ['cls', 'etype', 'yr'].forEach(k => { if (st[k] != null) $(k).value = st[k]; });
+  if (st.cls != null) setCls(st.cls);
+  ['etype', 'yr'].forEach(k => { if (st[k] != null) $(k).value = st[k]; });
   examEdited = false; buildTitle();
   if (st.examEdited && st.exam) { $('exam').textContent = st.exam; examEdited = true; }
   $('opttot').checked = !!st.opttot; $('mergeqh').checked = st.mergeqh !== false;
@@ -1114,6 +1194,7 @@ $('mergeqh').addEventListener('change', () => GRID && render());
 $('sorto').addEventListener('change', () => GRID && render());
 $('sheet').addEventListener('change', async e => { try { await loadSheet(e.target.value); } catch (x) { $('err').textContent = 'ত্রুটি: ' + x.message; } });
 $('view').addEventListener('change', () => GRID && render());
+$('cls').addEventListener('input', () => GRID && render());
 ['cls','etype','yr'].forEach(id => $(id).addEventListener('input', () => { examEdited = false; buildTitle(); GRID && render(); }));
 $('exam').addEventListener('input', () => { examEdited = true; });
 $('skipabs').addEventListener('change', () => GRID && render());
