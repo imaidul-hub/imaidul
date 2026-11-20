@@ -100,7 +100,7 @@ details summary{cursor:pointer;color:var(--pr);font-size:14px;margin-top:8px}
   html,body{background:#fff!important}
   .bar,.ctl,.info,.err,.empty.np,#gate,.who{display:none!important}
   .wrap{max-width:none;padding:0}
-  #cards{zoom:1!important;transform:none!important}
+  #cards{zoom:1!important;transform:none!important;margin:0!important;width:auto!important}
   .ac{margin:0 auto 4mm}
   .two .ac:nth-child(2n){page-break-after:always;break-after:page}
   .one .ac{page-break-after:always;break-after:page;margin-bottom:0}
@@ -281,9 +281,22 @@ function card(s, rows, ctx){
   </div>`;
 }
 function fit(){
-  const w = window.innerWidth - 16, full = 194 * 3.7795 + 16;
-  $('cards').style.zoom = w < full ? (w / full) : 1;
+  const c = $('cards'), w = c.parentElement;
+  c.style.transform = ''; c.style.marginBottom = ''; c.style.marginLeft = ''; c.style.width = '';
+  const first = c.firstElementChild;
+  if (!first || !first.classList.contains('ac')) return;
+  const cs = getComputedStyle(w);
+  const avail = w.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const full = first.offsetWidth;                       // কার্ডের আসল প্রস্থ (১৯৪ মিমি)
+  if (!avail || !full) return;
+  const k = Math.min(1, avail / full);
+  c.style.width = full + 'px';
+  c.style.transformOrigin = 'top left';
+  c.style.transform = 'scale(' + k + ')';
+  c.style.marginLeft = Math.max(0, (avail - full * k) / 2) + 'px';
+  c.style.marginBottom = (-(c.offsetHeight * (1 - k))) + 'px';   // স্কেলের পর নিচের ফাঁকা জায়গা বাদ
 }
+function noFit(){ const c = $('cards'); c.style.transform = 'none'; c.style.marginLeft = '0'; c.style.marginBottom = '0'; c.style.width = 'auto'; }
 function draw(){
   const ex = $('ex').value, cl = $('cl').value, one = $('pp').value === 'one';
   $('cards').className = (one ? 'one' : 'two') + ($('cm').value === 'bw' ? ' bw' : '');
@@ -299,7 +312,10 @@ function draw(){
   fit();
 }
 window.addEventListener('resize', fit);
-window.addEventListener('beforeprint', () => { $('cards').style.zoom = 1; });
+window.addEventListener('beforeprint', noFit);
+window.addEventListener('load', fit);
+window.addEventListener('orientationchange', () => setTimeout(fit, 250));
+if (window.ResizeObserver) { let lw = 0; new ResizeObserver(en => { const w = Math.round(en[0].contentRect.width); if (w !== lw) { lw = w; if (AUTH) fit(); } }).observe(document.querySelector('.wrap')); }
 window.addEventListener('afterprint', fit);
 
 async function boot(){
