@@ -106,9 +106,14 @@ h3{margin:0 0 6px}
 .rcs b{display:block;font-size:22px}
 .rcs .a{background:rgba(220,38,38,.1);color:#dc2626}.rcs .b{background:rgba(15,122,74,.12);color:var(--pr)}.rcs .l{background:rgba(183,121,31,.15);color:#b7791f}
 .rcp-only{display:none}
+#rcm .rh{display:flex;align-items:center;gap:10px;margin:0 0 10px;background:#e8eee9;border:1px solid #9fb0a5;border-radius:8px;padding:8px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#rcm .rh .lg{width:72px;height:72px;flex:none;object-fit:contain}
+#rcm .rh .ph{width:72px;height:72px;flex:none;object-fit:cover;border:1px solid #888;border-radius:6px;background:#fff}
+#rcm .rh .tx{flex:1;text-align:center;min-width:0}
+#rcm .rh h2{margin:0;padding:0;border:0;font-size:22px;line-height:1.25;font-weight:700;color:#1b1b3a}
+#rcm .rh .tt{display:inline-block;margin-top:6px;padding:3px 30px;border-top:1px solid #888;border-bottom:2px solid #555;font-size:15px;font-weight:600;color:#000}
 .pbtn{font:inherit;padding:10px;border-radius:10px;border:0;background:var(--pr);color:#fff;width:100%;margin-top:8px;cursor:pointer;font-weight:700}
 .rcbt{display:flex;gap:8px;margin-top:6px}
-.fbk{border:1px solid var(--bd);border-radius:8px;padding:6px 8px;font-size:13px;line-height:1.5;margin:4px 0 10px;background:rgba(15,122,74,.07);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
 @page{size:A4 portrait;margin:12mm 10mm}
 @media print{
@@ -389,9 +394,29 @@ var rcId = null;
 const rcKey = id => 'rc_' + Y + '_' + id;
 function rcLoad(id){ try { return JSON.parse(localStorage.getItem(rcKey(id))); } catch(e){ return null; } }
 function closeRC(){ rcId = null; $('rcm').classList.add('hide'); document.body.classList.remove('rc-open'); }
+var rcFb = '', LOGO_DU = '';
+(function(){
+  const im = new Image();
+  im.onload = () => { try {
+    const k = Math.min(1, 200 / Math.max(im.naturalWidth, im.naturalHeight, 1)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(im.naturalWidth * k)); c.height = Math.max(1, Math.round(im.naturalHeight * k));
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+    LOGO_DU = c.toDataURL('image/jpeg', .9);
+    document.querySelectorAll('#rcm .rh .lg').forEach(i => { i.src = LOGO_DU; });
+  } catch (e) {} };
+  im.src = 'logo.jpg';
+})();
+function rcFit(){ const t = $('rcN'); if (t) { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; } }
+// শিক্ষক নিজে লিখলে/বদলালে তবেই সেভ হয়; না বদলালে মন্তব্যে সবসময় সর্বশেষ স্বয়ংক্রিয় ফিডব্যাক বসে
 function rcCalc(){
   if (!rcId) return;
-  try { localStorage.setItem(rcKey(rcId), JSON.stringify({note: $('rcN').value})); } catch(e){}
+  try { localStorage.setItem(rcKey(rcId), JSON.stringify({note: $('rcN').value, edited: true})); } catch(e){}
+  rcFit();
+}
+function rcAuto(){
+  if (!rcId) return;
+  try { localStorage.removeItem(rcKey(rcId)); } catch(e){}
+  $('rcN').value = rcFb; rcFit();
 }
 // ===== স্বয়ংক্রিয় ফিডব্যাক: মূল্যায়ন ও হাজিরার পারফরম্যান্স থেকে =====
 function rcFeedback(al, x, tot, pct){
@@ -454,8 +479,9 @@ function openRC(id){
   const two = al.length > 22, rpc = two ? Math.ceil(al.length / 2) : al.length;
   const dens = rpc > 30 ? 'xxs' : rpc > 27 ? 'xs' : rpc > 24 ? 'sm' : '';
   // A4 এক পেজে রাখতে: সারির উচ্চতা (মিমি) ধরে আনুমানিক মোট উচ্চতা বেশি হলে পুরো কার্ড ছোট করা হয়
-  const fb = rcFeedback(al, x, tot, pct);
-  const est = 145 + (fb ? 9 + Math.ceil(fb.length / 75) * 5.2 : 0) + rpc * ({'': 5.7, sm: 5.2, xs: 4.7, xxs: 4.2}[dens]);
+  const fb = rcFeedback(al, x, tot, pct); rcFb = fb;
+  const edited = !!(sv.edited || (sv.note && sv.note.trim())), shown = edited ? (sv.note || '') : fb;
+  const est = 157 + (shown ? 4 + Math.ceil(shown.length / 75) * 5.2 : 0) + rpc * ({'': 5.7, sm: 5.2, xs: 4.7, xxs: 4.2}[dens]);
   const zoom = est > 258 ? Math.max(0.45, +(258 / est).toFixed(3)) : 1;
   const head = '<thead><tr><th style="width:25%">তারিখ</th><th>বিষয়</th><th style="width:17%">নম্বর</th><th style="width:17%">মোট</th></tr></thead>';
   const tbl = (arr, df) => `<table class="fx ${dens}">${head}<tbody>${arr.map(e => `<tr><td>${df(e.d)}</td><td class="l">${esc(e.s)}</td><td>${e.ab ? 'অনু.' : fmt(e.n)}</td><td>${fmt(e.t)}</td></tr>`).join('')}</tbody></table>`;
@@ -464,12 +490,11 @@ function openRC(id){
   else if (!two) asHtml = tbl(al, dFull);
   else { const h = Math.ceil(al.length / 2); asHtml = `<div class="two">${tbl(al.slice(0, h), dShort)}${tbl(al.slice(h), dShort)}</div>`; }
   const asSum = al.length ? `<div class="asum">মোট প্রাপ্ত নম্বর: ${fmt(G)} / ${fmt(T)} (${T ? bn(Math.round(G * 100 / T)) + '%' : '–'}) • অনুপস্থিত: ${bn(A)}টি</div>` : '';
+  const phHtml = (typeof s.photo === 'string' && s.photo.startsWith('data:image/')) ? `<img class="ph" src="${s.photo}" alt="">` : '<div class="ph"></div>';
   $('rcm').innerHTML = `<div class="sheet rcc" style="--z:${zoom}">
     <div class="rch rcno"><div><h3>📋 ${esc(s.name)}</h3><div class="mu">${esc(s.class||'—')} • রোল: ${bn(s.roll||'–')}</div></div><button class="rcx" onclick="closeRC()">✕</button></div>
     <div class="yr rcno"><button onclick="shiftY(-1)">◀</button><b>${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</b><button onclick="shiftY(1)">▶</button></div>
-    <div class="rcp-only"><h2 style="text-align:center;margin:0 0 2px;font-size:20px;color:#000;border:0;padding:0">চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h2>
-    <h3 style="text-align:center;margin:0">রিপোর্ট কার্ড</h3>
-    <div style="text-align:center;margin-bottom:8px">${bn(Y)} সাল</div>
+    <div class="rcp-only"><div class="rh"><img class="lg" src="${LOGO_DU || 'logo.jpg'}" alt="" onerror="this.style.visibility='hidden'"><div class="tx"><h2>চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h2><div class="tt">রিপোর্ট কার্ড : ${bn(Y)} সাল</div></div>${phHtml}</div>
     <table><tr><th>নাম</th><td>${esc(s.name)}</td><th>রোল</th><td>${bn(s.roll||'–')}</td></tr>
     <tr><th>শ্রেণি</th><td>${esc(s.class)}</td><th>মোবাইল</th><td>${s.phone ? bn(esc(s.phone)) : '–'}</td></tr>
     <tr><th>পিতা</th><td colspan="3">${esc(s.father||'–')}</td></tr></table></div>
@@ -479,15 +504,15 @@ function openRC(id){
     <tbody>${mm}<tr><th>মোট</th><th>${bn(x.tp)}</th><th>${bn(x.tl)}</th><th>${bn(x.ta)}</th><th colspan="4">উপস্থিতির হার: ${bn(pct)}%</th></tr></tbody></table>
     <b>মূল্যায়ন রিপোর্ট</b>
     ${asHtml}${asSum}
-    ${fb ? `<b>স্বয়ংক্রিয় ফিডব্যাক</b><div class="fbk">${esc(fb)}</div>` : ''}
-    <b>মন্তব্য</b><textarea id="rcN" rows="2" oninput="rcCalc()">${esc(sv.note)}</textarea>
+    <b>মন্তব্য</b> <button class="rcb rcno" onclick="rcAuto()">🔄 স্বয়ংক্রিয় ফিডব্যাক বসান</button>
+    <textarea id="rcN" rows="2" oninput="rcCalc()">${esc(shown)}</textarea>
     <div class="sig"><span>শ্রেণি শিক্ষকের স্বাক্ষর</span></div>
     <div class="rcbt rcno"><button class="pbtn" onclick="downloadRC()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="doPrint()">🖨️ প্রিন্ট</button></div>
   </div>`;
   $('rcm').classList.remove('hide');
   document.body.classList.add('rc-open');
   $('rcm').scrollTop = keep;
-  rcCalc();
+  rcFit();
 }
 
 $('rcm').onclick = e => { if (e.target === $('rcm')) closeRC(); };
@@ -495,13 +520,14 @@ function downloadRC(){
   const s = students.find(x => x.id === rcId); if (!s) return;
   const c = $('rcm').querySelector('.sheet').cloneNode(true);
   c.querySelectorAll('.rcno').forEach(e => e.remove());
+  if (LOGO_DU) c.querySelectorAll('.rh .lg').forEach(i => { i.src = LOGO_DU; });
   const ta = c.querySelector('textarea');
   if (ta) { const d = document.createElement('div'); d.style.cssText = 'border:1px solid #000;padding:4px;min-height:34px;white-space:pre-wrap'; d.textContent = $('rcN').value; ta.replaceWith(d); }
   const css = '@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html{background:#ddd}'
     + 'body{font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;width:210mm;min-height:297mm;margin:0 auto;padding:12mm 10mm;background:#fff;color:#000;line-height:1.45;font-size:13px}'
     + '.rcp-only{display:block}.mu{font-size:12px;color:#444}.rcs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.rcs div{border:1px solid #000;text-align:center;padding:6px;border-radius:8px;font-size:12px}.rcs b{display:block;font-size:20px}'
     + 'table{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0 10px}th,td{border:1px solid #000;padding:4px;text-align:center}th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}td.l{text-align:left}table.fx{table-layout:fixed}td{word-break:break-word;overflow-wrap:anywhere}'
-    + '.fbk{border:1px solid #000;padding:4px 6px;font-size:12px;line-height:1.45;margin:4px 0 10px}'
+    + '.rh{display:flex;align-items:center;gap:10px;margin:0 0 10px;background:#e8eee9;border:1px solid #9fb0a5;border-radius:8px;padding:8px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.rh .lg{width:72px;height:72px;flex:none;object-fit:contain}.rh .ph{width:72px;height:72px;flex:none;object-fit:cover;border:1px solid #888;border-radius:6px;background:#fff}.rh .tx{flex:1;text-align:center;min-width:0}.rh h2{margin:0;font-size:22px;line-height:1.25;font-weight:700;color:#1b1b3a}.rh .tt{display:inline-block;margin-top:6px;padding:3px 30px;border-top:1px solid #888;border-bottom:2px solid #555;font-size:15px;font-weight:600}'
     + '.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}.two table{margin:0}.asum{font-size:12px;margin:2px 0 8px}.sig{display:flex;justify-content:flex-end;margin-top:40px}.sig span{border-top:1px solid #000;padding-top:2px;min-width:100px;text-align:center}'
     + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}';
   const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>রিপোর্ট কার্ড - ' + esc(s.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
