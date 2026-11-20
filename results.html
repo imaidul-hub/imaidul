@@ -296,7 +296,7 @@
   #tblc td.res-pass { color:#0a7a34; font-weight:700; }
   #tblc tbody tr.fail { background:#fff7f7; }
   #tblc tbody tr.absent { background:#f4f4f4; color:#777; }
-  @media screen { #trans .tr { cursor:pointer; zoom:var(--trz,1); } }
+  @media screen { #trans .tr { zoom:var(--trz,1); } }
   .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#17241c; color:#fff; padding:8px 16px; border-radius:999px; font-size:14px; z-index:99; display:none; max-width:90vw; text-align:center; }
 </style>
 <style id="pub-css">
@@ -341,6 +341,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <h3>📊 প্রকাশিত ফলাফল</h3>
     <div class="row" style="margin:0">
       <select id="pubSel"><option value="">শ্রেণি নির্বাচন করুন</option></select>
+      <button class="adm-only" id="pubTog" style="display:none">👁️ প্রকাশ করুন</button>
       <button class="adm-only" id="pubDel" style="color:#b00020">🗑️ মুছুন</button>
     </div>
     <div class="hint" id="pubMsg"></div>
@@ -350,9 +351,10 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <h3>💾 ডাটাবেসে প্রকাশ করুন</h3>
     <div class="row" style="margin:0">
       <input id="pubTitle" placeholder="শিরোনাম (যেমন: দাখিল ৯ম শ্রেণি বার্ষিক ২০২৬)">
-      <button class="primary" id="pubSave">💾 সেভ করে প্রকাশ করুন</button>
+      <label class="chk"><input type="checkbox" id="pubPubl"> সেভের সাথেই প্রকাশ করুন</label>
+      <button class="primary" id="pubSave">💾 ডাটাবেসে সেভ করুন</button>
     </div>
-    <div class="hint">সেভ করলে এই Excel ও উপরের সেটিং (বিষয়, শ্রেণি, পরীক্ষা, সাল ইত্যাদি) ডাটাবেসে জমা হবে এবং সবাই এই পেজে ফলাফল দেখতে পারবে।</div>
+    <div class="hint">সেভ করলে এই Excel ও উপরের সেটিং (বিষয়, শ্রেণি, পরীক্ষা, সাল ইত্যাদি) ডাটাবেসে জমা হবে। প্রকাশ না করা পর্যন্ত ফলাফল শুধু অ্যাডমিন দেখতে পাবে; প্রকাশ করলে সবাই দেখতে পাবে। পরে উপরের তালিকা থেকে নির্বাচন করে প্রকাশ/অপ্রকাশিত করা যাবে।</div>
   </div>
 
   <div class="panel no-print" id="ctrl">
@@ -447,7 +449,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
   </div>
   <div id="students"></div>
   <div id="admit"></div>
-  <div class="hint no-print" id="trHint" style="display:none">যেকোনো ট্রান্সক্রিপ্টের উপর ক্লিক/ট্যাপ করলে শুধু সেই শিক্ষার্থীর ট্রান্সক্রিপ্ট PDF হিসেবে ডাউনলোড হবে।</div>
+  
   <div id="trans"></div>
 </div>
 <div class="toast no-print" id="toast"></div>
@@ -511,7 +513,7 @@ function stuName(roll, sec) { const o = stuObj(roll, sec); return o ? o.name : '
 
 /* ---------- উপস্থিতি (attendance কালেকশন থেকে; ট্রান্সক্রিপ্টের কার্যদিবস/উপস্থিত/অনুপস্থিত) ---------- */
 // ATT[শিক্ষার্থীর id] = [কার্যদিবস, উপস্থিত, অনুপস্থিত(ছুটি সহ)] — সাল: ট্রান্সক্রিপ্টের "সাল" ঘর, জানুয়ারি–ডিসেম্বর
-let ATT = {}, ATT_KEY = '';
+let ATT = {}, ATT_KEY = '', ATT_R = {};   // ATT_R: রোল|শাখা অনুযায়ী কপি — লগইন ছাড়া students কালেকশন পড়া যায় না, তাই
 const sameCls = (a, b) => !!a && !!b && (a === b || a.endsWith(' ' + b) || a.startsWith(b + ' ') || b.endsWith(' ' + a) || b.startsWith(a + ' '));
 async function loadAtt() {
   if (!fauth.currentUser || !GRID) return false;   // লগইন ছাড়া পড়া যায় না; তখন প্রকাশিত ফলাফলের সংরক্ষিত তথ্য ব্যবহার হয়
@@ -1013,7 +1015,7 @@ function applyView() {
   const v = $('view').value, stu = v.startsWith('student'), adm = v === 'admit', trn = v === 'transcript';
   $('report').style.display = (stu || adm || trn) ? 'none' : 'block';
   $('trans').style.display = trn ? 'block' : 'none';
-  $('trHint').style.display = trn ? 'block' : 'none';
+  $('dl').style.display = trn ? 'none' : '';
   $('trBox').style.display = (trn && LAYOUT) ? 'block' : 'none';
   $('tcolBox').style.display = trn ? 'inline-flex' : 'none';
   $('students').style.display = stu ? 'block' : 'none';
@@ -1173,12 +1175,15 @@ function renderTranscript(R, subs) {
                   [T('Class', 'শ্রেণি'), cls], [T('Section', 'শাখা'), esc(secOf(st))], [T('Group', 'গ্রুপ'), esc(grpOf(st))], [T('Roll', 'রোল'), N(st.roll)]];
     const cell = r => `<td class="k">${r[0]}</td><td class="v">${r[1] || '&nbsp;'}</td>`;
     const infoHtml = `<table class="pr-info"><tr>${info.slice(0, 4).map(cell).join('')}</tr><tr>${info.slice(4).map(cell).join('')}</tr></table>`;
-    const so = stuObj(st.roll, secOf(st)), at = so ? ATT[so.id] : null;
+    const so = stuObj(st.roll, secOf(st)), rk = st.roll + '|' + String(secOf(st)).trim().toLowerCase();
+    let at = so ? ATT[so.id] : null;
+    if (at) { ATT_R[rk] = at; if (!(st.roll in ATT_R)) ATT_R[st.roll] = at; }
+    else if (!so) at = ATT_R[rk] || ATT_R[st.roll] || null;
     const merit = `<table class="pr-merit"><tr><th style="width:17%">${T('Class Merit', 'শ্রেণি মেধাক্রম')}</th><th style="width:17%">${T('Section Merit', 'শাখা মেধাক্রম')}</th><th style="width:17%">${T('Group Merit', 'গ্রুপ মেধাক্রম')}</th>`
       + `<th>${T('Attend', 'উপস্থিত')}</th><th>${T('Absent', 'অনুপস্থিত')}</th><th>${T('Discipline', 'শৃঙ্খলা')}</th><th>${T('Cleanliness', 'পরিচ্ছন্নতা')}</th></tr>`
       + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${LAYOUT.sectionCol ? rankIn(st, sKey) : '—'}</td><td>${LAYOUT.groupCol ? rankIn(st, gKey) : '—'}</td><td>${at ? N(at[1]) : ''}</td><td>${at ? N(at[2]) : ''}</td><td></td><td></td></tr></table>`;
     const sg = en ? ['Signature of Teacher', 'Signature of Coordinator', 'Signature of ' + esc(signer)] : ['শিক্ষকের স্বাক্ষর', 'সমন্বয়কারীর স্বাক্ষর', esc(signer) + '-এর স্বাক্ষর'];
-    return `<div class="tr${colMode ? ' col' : ''}" data-roll="${st.roll}" data-name="${esc(st.name)}" title="ক্লিক করলে এই শিক্ষার্থীর ট্রান্সক্রিপ্ট ডাউনলোড হবে">${wm}`
+    return `<div class="tr${colMode ? ' col' : ''}" data-roll="${st.roll}" data-name="${esc(st.name)}">${wm}`
       + `<div class="pr-head"><div class="pr-left"><div class="pr-logo${logoCls}">${logo}</div><div class="pr-school"><h2>${inst}</h2>${subHtml ? `<div class="sub">${subHtml}</div>` : ''}`
       + `<div class="pr-title">${T('Progress Report', 'প্রগ্রেস রিপোর্ট')} : ${exam}</div></div></div>`
       + `<div class="pr-right">${scaleHtml}</div></div>`
@@ -1403,12 +1408,6 @@ function fitTr(){
 window.addEventListener('orientationchange', () => setTimeout(fitTr, 250));
 window.addEventListener('load', fitTr);
 
-// একটি ট্রান্সক্রিপ্টে ক্লিক করলে শুধু সেটি ডাউনলোড
-$('trans').addEventListener('click', e => {
-  const el = e.target.closest('.tr'); if (!el) return;
-  const nm = (el.dataset.name || '').trim().replace(/[\\/:*?"<>|\s]+/g, '_');
-  runDl(() => pdfCards([el], { w: 1100, per: 2, fit: true, name: `ট্রান্সক্রিপ্ট_রোল${el.dataset.roll || ''}${nm ? '_' + nm : ''}.pdf` }));
-});
 $('cfg').addEventListener('input', e => {
   const t = e.target, s = LAYOUT.subjects[+t.dataset.i]; if (!s) return;
   const k = t.dataset.k;
@@ -1453,9 +1452,10 @@ const bufFromB64 = b => { const s = atob(b), u = new Uint8Array(s.length); for (
 
 function fillSelect(selectId) {
   const sel = $('pubSel');
-  if (!pubDocs.length) { sel.innerHTML = '<option value="">এখনো কোনো ফলাফল প্রকাশ হয়নি</option>'; return; }
-  sel.innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + pubDocs.map(d => `<option value="${esc(d.id)}">${esc(d.title || 'ফলাফল')}</option>`).join('');
+  if (!pubDocs.length) { sel.innerHTML = '<option value="">এখনো কোনো ফলাফল প্রকাশ হয়নি</option>'; updateTog(); return; }
+  sel.innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + pubDocs.map(d => `<option value="${esc(d.id)}">${d.published === true ? '' : '🔒 (অপ্রকাশিত) '}${esc(d.title || 'ফলাফল')}</option>`).join('');
   sel.value = selectId && pubDocs.some(d => d.id === selectId) ? selectId : (curPubId && pubDocs.some(d => d.id === curPubId) ? curPubId : '');
+  updateTog();
 }
 async function loadPublished(id) {
   const d = pubDocs.find(x => x.id === id); if (!d) return false;
@@ -1464,7 +1464,8 @@ async function loadPublished(id) {
     const q = await fdb.collection('results').doc(id).collection('parts').orderBy('i').get();
     const b64 = q.docs.map(x => x.data().data).join('');
     const buf = bufFromB64(b64);
-    try { ATT = d.attData ? JSON.parse(d.attData) : {}; } catch (e) { ATT = {}; } ATT_KEY = '';
+    try { ATT = d.attData ? JSON.parse(d.attData) : {}; } catch (e) { ATT = {}; }
+    try { ATT_R = d.attRoll ? JSON.parse(d.attRoll) : {}; } catch (e) { ATT_R = {}; } ATT_KEY = '';
     lastBuf = buf; curPubId = id;
     await processBuffer(buf, d.settings ? JSON.parse(d.settings) : null);
     $('pubTitle').value = d.title || '';
@@ -1474,8 +1475,12 @@ async function loadPublished(id) {
 }
 function startList() {
   if (pubUnsub) pubUnsub();
-  pubUnsub = fdb.collection('results').orderBy('createdAt', 'desc').onSnapshot(s => {
-    pubDocs = s.docs.map(d => ({ id: d.id, ...d.data() }));
+  // অ্যাডমিন সব দেখে; অন্যরা শুধু published == true (নিরাপত্তা Firestore Rules দিয়েও নিশ্চিত করতে হবে)
+  const col = fdb.collection('results');
+  const qy = isAdmin ? col : col.where('published', '==', true);
+  const ts = d => (d.createdAt && d.createdAt.seconds) || 0;
+  pubUnsub = qy.onSnapshot(s => {
+    pubDocs = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => ts(b) - ts(a));
     fillSelect(); fillLookup();
   }, e => { console.error(e); $('pubSel').innerHTML = '<option value="">লোড করা যায়নি</option>'; msg('❌ তালিকা লোড করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); });
 }
@@ -1486,6 +1491,7 @@ $('pubSave').addEventListener('click', async () => {
   if (!lastBuf || !GRID) { msg('আগে একটি Excel ফাইল দিন।'); return; }
   const btn = $('pubSave'); btn.disabled = true;
   try {
+    render();   // ATT_R হালনাগাদ
     const title = $('pubTitle').value.trim() || $('exam').textContent.trim() || 'ফলাফল';
     const b64 = b64FromBuf(lastBuf), SZ = 700000, n = Math.ceil(b64.length / SZ);
     const ref = fdb.collection('results').doc();
@@ -1494,15 +1500,31 @@ $('pubSave').addEventListener('click', async () => {
       await ref.collection('parts').doc(String(i).padStart(3, '0')).set({ i, data: b64.slice(i * SZ, (i + 1) * SZ) });
     }
     await ref.set({ title, cls: $('cls').value, exam: $('exam').textContent, yr: $('yr').value, size: lastBuf.byteLength, partCount: n,
-      attData: JSON.stringify(ATT || {}), settings: JSON.stringify(captureSettings()), by: (fauth.currentUser && fauth.currentUser.email) || '',
+      published: !!$('pubPubl').checked, attData: JSON.stringify(ATT || {}), attRoll: JSON.stringify(ATT_R || {}), settings: JSON.stringify(captureSettings()), by: (fauth.currentUser && fauth.currentUser.email) || '',
       createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     curPubId = ref.id;
-    msg('✅ ডাটাবেসে সেভ হয়েছে। এখন সবাই এই পেজে ফলাফল দেখতে পারবে।', true);
+    msg($('pubPubl').checked ? '✅ সেভ ও প্রকাশ হয়েছে। এখন সবাই এই পেজে ফলাফল দেখতে পারবে।' : '✅ অপ্রকাশিত অবস্থায় সেভ হয়েছে (শুধু অ্যাডমিন দেখছে)। উপরের তালিকা থেকে নির্বাচন করে "প্রকাশ করুন" চাপুন।', true);
     setTimeout(() => fillSelect(ref.id), 600);
   } catch (e) { console.error(e); msg('❌ সেভ করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); }
   btn.disabled = false;
 });
 
+function updateTog() {
+  const b = $('pubTog'); if (!b) return;
+  const d = pubDocs.find(x => x.id === $('pubSel').value);
+  b.style.display = (isAdmin && d) ? '' : 'none';
+  if (d) b.textContent = d.published === true ? '⏸️ অপ্রকাশিত করুন' : '👁️ প্রকাশ করুন';
+}
+$('pubSel').addEventListener('change', updateTog);
+$('pubTog').addEventListener('click', async () => {
+  const id = $('pubSel').value, d = pubDocs.find(x => x.id === id); if (!isAdmin || !d) return;
+  const to = d.published !== true;
+  if (!confirm('"' + (d.title || '') + '" ফলাফলটি ' + (to ? 'প্রকাশ করবেন? সবাই দেখতে পারবে।' : 'অপ্রকাশিত করবেন? শুধু অ্যাডমিন দেখতে পারবে।'))) return;
+  const b = $('pubTog'); b.disabled = true;
+  try { await fdb.collection('results').doc(id).update({ published: to }); msg(to ? '✅ প্রকাশ করা হয়েছে।' : '✅ অপ্রকাশিত করা হয়েছে।', true); }
+  catch (e) { console.error(e); msg('❌ পরিবর্তন করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); }
+  b.disabled = false;
+});
 $('pubDel').addEventListener('click', async () => {
   const id = $('pubSel').value; if (!isAdmin || !id) return;
   const d = pubDocs.find(x => x.id === id);
@@ -1520,20 +1542,20 @@ $('pubDel').addEventListener('click', async () => {
 const docCls = d => { let c = d.cls; if (!c && d.settings) { try { c = JSON.parse(d.settings).cls; } catch (e) {} } return clsKey(c); };
 function clearLook() {
   PUB_ROLL = null; $('trans').innerHTML = '';
-  $('opts').style.display = 'none'; $('trHint').style.display = 'none';
+  $('opts').style.display = 'none';
 }
 function fillLookup() {
   const sel = $('lkCls'); if (!sel) return;
   const keep = sel.value, seen = new Set(), order = [...$('cls').options].map(o => clsKey(o.value)).filter(Boolean);
-  pubDocs.forEach(d => { const c = docCls(d); if (c) seen.add(c); });
+  pubDocs.forEach(d => { if (d.published !== true) return; const c = docCls(d); if (c) seen.add(c); });
   const cs = [...seen].sort((a, b) => { const x = order.indexOf(a), y = order.indexOf(b); return (x < 0 ? 999 : x) - (y < 0 ? 999 : y) || a.localeCompare(b, 'bn'); });
   sel.innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + cs.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
   if (cs.includes(keep)) sel.value = keep;
-  if (!pubDocs.length) msg('এখনো কোনো ফলাফল প্রকাশ হয়নি।');
+  if (!pubDocs.some(d => d.published === true)) msg('এখনো কোনো ফলাফল প্রকাশ হয়নি।');
   fillLookExam();
 }
 function fillLookExam() {
-  const c = $('lkCls').value, ex = $('lkExam'), ms = c ? pubDocs.filter(d => docCls(d) === c) : [];
+  const c = $('lkCls').value, ex = $('lkExam'), ms = c ? pubDocs.filter(d => d.published === true && docCls(d) === c) : [];
   const keep = ex.value;
   ex.innerHTML = ms.map(d => `<option value="${esc(d.id)}">${esc(d.title || 'ফলাফল')}</option>`).join('');
   if (ms.some(d => d.id === keep)) ex.value = keep;
@@ -1543,7 +1565,7 @@ async function lookupResult() {
   const c = $('lkCls').value, roll = num($('lkRoll').value);
   if (!c) { msg('আগে শ্রেণি নির্বাচন করুন।'); return; }
   if (roll == null || !Number.isInteger(roll) || roll <= 0) { msg('সঠিক রোল নম্বর দিন।'); return; }
-  const ms = pubDocs.filter(d => docCls(d) === c);
+  const ms = pubDocs.filter(d => d.published === true && docCls(d) === c);
   const d = ms.find(x => x.id === $('lkExam').value) || ms[0];
   if (!d) { msg('এই শ্রেণির ফলাফল এখনো প্রকাশ হয়নি।'); return; }
   const btn = $('lkGo'); btn.disabled = true;
@@ -1574,7 +1596,7 @@ fauth.onAuthStateChanged(u => {
   ['inst', 'exam'].forEach(id => $(id).contentEditable = isAdmin ? 'true' : 'false');
   if (!isAdmin) $('saveBox').style.display = 'none'; else if (GRID) $('saveBox').style.display = 'block';
   updateCtrl();
-  if (!pubUnsub) startList();
+  startList();
 });
 updateCtrl();
 </script>
