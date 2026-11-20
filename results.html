@@ -415,7 +415,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
         <textarea id="tsub" rows="4" style="width:340px;font:inherit" placeholder="জ্ঞানই আলো&#10;স্থাপিত ১৯৩৮ ইন নং-১১০৫৩০&#10;(Nikli, Kishoreganj, Post code - 2360)&#10;www.example.edu.bd"></textarea></label>
       <label class="chk">লোগো (ঐচ্ছিক): <input type="file" id="tlogo" accept="image/*"></label>
     </div>
-    <div class="hint">ID, নাম, সেকশন, গ্রুপ — ফাইলে "ID/আইডি/রেজি", "শাখা/Section", "গ্রুপ" নামের কলাম থাকলে নিজে থেকে আসে, না থাকলে এখানে লেখা মান সবার জন্য বসে। Class Merit ফাইলের উত্তীর্ণদের মধ্যে হিসাব হয়; Section/Group Merit শুধু তখনই আসে যখন ফাইলে সেই কলাম থাকে। Working Days, Attend, Absent, Discipline, Cleanliness ঘর হাতে পূরণের জন্য ফাঁকা থাকে। বিষয় অনুযায়ী CQ/MCQ/Practical ঘর ফাইলের কলাম থেকে আসে, না থাকলে হাইফেন (-)। লোগো দিলে মাঝখানে হালকা ওয়াটারমার্কও হয়।</div>
+    <div class="hint">ID, নাম, সেকশন, গ্রুপ — ফাইলে "ID/আইডি/রেজি", "শাখা/Section", "গ্রুপ" নামের কলাম থাকলে নিজে থেকে আসে, না থাকলে এখানে লেখা মান সবার জন্য বসে। Class Merit ফাইলের উত্তীর্ণদের মধ্যে হিসাব হয়; Section/Group Merit শুধু তখনই আসে যখন ফাইলে সেই কলাম থাকে। Attend, Absent, Discipline, Cleanliness ঘর হাতে পূরণের জন্য ফাঁকা থাকে। বিষয় অনুযায়ী CQ/MCQ/Practical ঘর ফাইলের কলাম থেকে আসে, না থাকলে হাইফেন (-)। লোগো দিলে মাঝখানে হালকা ওয়াটারমার্কও হয়।</div>
   </details>
 
   <details class="panel no-print adm-only" id="admitBox" style="display:none" open>
@@ -1175,8 +1175,8 @@ function renderTranscript(R, subs) {
     const infoHtml = `<table class="pr-info"><tr>${info.slice(0, 4).map(cell).join('')}</tr><tr>${info.slice(4).map(cell).join('')}</tr></table>`;
     const so = stuObj(st.roll, secOf(st)), at = so ? ATT[so.id] : null;
     const merit = `<table class="pr-merit"><tr><th style="width:17%">${T('Class Merit', 'শ্রেণি মেধাক্রম')}</th><th style="width:17%">${T('Section Merit', 'শাখা মেধাক্রম')}</th><th style="width:17%">${T('Group Merit', 'গ্রুপ মেধাক্রম')}</th>`
-      + `<th>${T('Working Days', 'কার্যদিবস')}</th><th>${T('Attend', 'উপস্থিত')}</th><th>${T('Absent', 'অনুপস্থিত')}</th><th>${T('Discipline', 'শৃঙ্খলা')}</th><th>${T('Cleanliness', 'পরিচ্ছন্নতা')}</th></tr>`
-      + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${LAYOUT.sectionCol ? rankIn(st, sKey) : '—'}</td><td>${LAYOUT.groupCol ? rankIn(st, gKey) : '—'}</td><td>${at ? N(at[0]) : ''}</td><td>${at ? N(at[1]) : ''}</td><td>${at ? N(at[2]) : ''}</td><td></td><td></td></tr></table>`;
+      + `<th>${T('Attend', 'উপস্থিত')}</th><th>${T('Absent', 'অনুপস্থিত')}</th><th>${T('Discipline', 'শৃঙ্খলা')}</th><th>${T('Cleanliness', 'পরিচ্ছন্নতা')}</th></tr>`
+      + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${LAYOUT.sectionCol ? rankIn(st, sKey) : '—'}</td><td>${LAYOUT.groupCol ? rankIn(st, gKey) : '—'}</td><td>${at ? N(at[1]) : ''}</td><td>${at ? N(at[2]) : ''}</td><td></td><td></td></tr></table>`;
     const sg = en ? ['Signature of Teacher', 'Signature of Coordinator', 'Signature of ' + esc(signer)] : ['শিক্ষকের স্বাক্ষর', 'সমন্বয়কারীর স্বাক্ষর', esc(signer) + '-এর স্বাক্ষর'];
     return `<div class="tr${colMode ? ' col' : ''}" data-roll="${st.roll}" data-name="${esc(st.name)}" title="ক্লিক করলে এই শিক্ষার্থীর ট্রান্সক্রিপ্ট ডাউনলোড হবে">${wm}`
       + `<div class="pr-head"><div class="pr-left"><div class="pr-logo${logoCls}">${logo}</div><div class="pr-school"><h2>${inst}</h2>${subHtml ? `<div class="sub">${subHtml}</div>` : ''}`
