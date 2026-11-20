@@ -481,6 +481,7 @@ function loadStudents(force) {
     STU_ALL = q.docs.map(x => {
       const d = x.data();
       return {
+        id: x.id,
         name: String(_pick(d, ['name', 'nameBn', 'name_bn', 'studentName', 'student_name', 'fullName', 'নাম'])).trim(),
         roll: num(_pick(d, ['roll', 'rollNo', 'roll_no', 'rollNumber', 'রোল', 'রোলনং', 'ক্রম', 'serial'])),
         cls: clsKey(_pick(d, ['class', 'cls', 'className', 'class_name', 'classId', 'grade', 'শ্রেণি', 'শ্রেণী'])),
@@ -501,10 +502,36 @@ function nameMap() {
   }
   return NM_CACHE[k];
 }
-function stuName(roll, sec) {
-  const l = nameMap().get(roll); if (!l) return '';
-  if (l.length > 1 && sec) { const h = l.find(x => x.sec && x.sec === String(sec).trim().toLowerCase()); if (h) return h.name; }
-  return l[0].name;
+function stuObj(roll, sec) {
+  const l = nameMap().get(roll); if (!l) return null;
+  if (l.length > 1 && sec) { const h = l.find(x => x.sec && x.sec === String(sec).trim().toLowerCase()); if (h) return h; }
+  return l[0];
+}
+function stuName(roll, sec) { const o = stuObj(roll, sec); return o ? o.name : ''; }
+
+/* ---------- উপস্থিতি (attendance কালেকশন থেকে; ট্রান্সক্রিপ্টের কার্যদিবস/উপস্থিত/অনুপস্থিত) ---------- */
+// ATT[শিক্ষার্থীর id] = [কার্যদিবস, উপস্থিত, অনুপস্থিত(ছুটি সহ)] — সাল: ট্রান্সক্রিপ্টের "সাল" ঘর, জানুয়ারি–ডিসেম্বর
+let ATT = {}, ATT_KEY = '';
+const sameCls = (a, b) => !!a && !!b && (a === b || a.endsWith(' ' + b) || a.startsWith(b + ' ') || b.endsWith(' ' + a) || b.startsWith(a + ' '));
+async function loadAtt() {
+  if (!fauth.currentUser || !GRID) return false;   // লগইন ছাড়া পড়া যায় না; তখন প্রকাশিত ফলাফলের সংরক্ষিত তথ্য ব্যবহার হয়
+  const k = clsKey($('cls').value), y = num($('yr').value) || new Date().getFullYear(), key = y + '|' + k;
+  if (!k || ATT_KEY === key) return false;
+  ATT_KEY = key;
+  try {
+    await loadStudents();
+    const q = await fdb.collection('attendance').where('date', '>=', y + '-01-01').where('date', '<=', y + '-12-31').get();
+    if (ATT_KEY !== key) return false;
+    const m = {}, add = (id, v) => { const x = m[id] = m[id] || [0, 0, 0]; x[0]++; if (v === 'p') x[1]++; else x[2]++; };
+    q.docs.forEach(d => {
+      const r = d.data(); if (!r.st) return;
+      const rc = clsKey(r.class); if (!sameCls(rc, k)) return;
+      if (r.v) Object.keys(r.st).forEach(id => { const v = r.st[id]; if (v === 'p' || v === 'a' || v === 'l') add(id, v); });
+      else (STU_ALL || []).filter(s => sameCls(s.cls, rc)).forEach(s => { const v = r.st[s.id]; add(s.id, v === 'a' || v === 'l' ? v : 'p'); });
+    });
+    if (Object.keys(m).length) { ATT = m; return true; }
+  } catch (e) { console.error(e); ATT_KEY = ''; }
+  return false;
 }
 function setCls(v) {
   const sel = $('cls'); v = clsKey(v);
@@ -1146,9 +1173,10 @@ function renderTranscript(R, subs) {
                   [T('Class', 'শ্রেণি'), cls], [T('Section', 'শাখা'), esc(secOf(st))], [T('Group', 'গ্রুপ'), esc(grpOf(st))], [T('Roll', 'রোল'), N(st.roll)]];
     const cell = r => `<td class="k">${r[0]}</td><td class="v">${r[1] || '&nbsp;'}</td>`;
     const infoHtml = `<table class="pr-info"><tr>${info.slice(0, 4).map(cell).join('')}</tr><tr>${info.slice(4).map(cell).join('')}</tr></table>`;
+    const so = stuObj(st.roll, secOf(st)), at = so ? ATT[so.id] : null;
     const merit = `<table class="pr-merit"><tr><th style="width:17%">${T('Class Merit', 'শ্রেণি মেধাক্রম')}</th><th style="width:17%">${T('Section Merit', 'শাখা মেধাক্রম')}</th><th style="width:17%">${T('Group Merit', 'গ্রুপ মেধাক্রম')}</th>`
       + `<th>${T('Working Days', 'কার্যদিবস')}</th><th>${T('Attend', 'উপস্থিত')}</th><th>${T('Absent', 'অনুপস্থিত')}</th><th>${T('Discipline', 'শৃঙ্খলা')}</th><th>${T('Cleanliness', 'পরিচ্ছন্নতা')}</th></tr>`
-      + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${LAYOUT.sectionCol ? rankIn(st, sKey) : '—'}</td><td>${LAYOUT.groupCol ? rankIn(st, gKey) : '—'}</td><td></td><td></td><td></td><td></td><td></td></tr></table>`;
+      + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${LAYOUT.sectionCol ? rankIn(st, sKey) : '—'}</td><td>${LAYOUT.groupCol ? rankIn(st, gKey) : '—'}</td><td>${at ? N(at[0]) : ''}</td><td>${at ? N(at[1]) : ''}</td><td>${at ? N(at[2]) : ''}</td><td></td><td></td></tr></table>`;
     const sg = en ? ['Signature of Teacher', 'Signature of Coordinator', 'Signature of ' + esc(signer)] : ['শিক্ষকের স্বাক্ষর', 'সমন্বয়কারীর স্বাক্ষর', esc(signer) + '-এর স্বাক্ষর'];
     return `<div class="tr${colMode ? ' col' : ''}" data-roll="${st.roll}" data-name="${esc(st.name)}" title="ক্লিক করলে এই শিক্ষার্থীর ট্রান্সক্রিপ্ট ডাউনলোড হবে">${wm}`
       + `<div class="pr-head"><div class="pr-left"><div class="pr-logo${logoCls}">${logo}</div><div class="pr-school"><h2>${inst}</h2>${subHtml ? `<div class="sub">${subHtml}</div>` : ''}`
@@ -1176,6 +1204,7 @@ async function loadSheet(path) {
   if (ym) $('yr').value = bn(ym[0].replace(/[০-৯]/g, d => BN.indexOf(d)));
   else if (!$('yr').value) $('yr').value = bn(new Date().getFullYear());
   buildTitle();
+  await loadAtt();
   renderCfg(); buildAdmitBox(); render();
 }
 
@@ -1191,7 +1220,7 @@ async function processBuffer(buf, st) {
     $('sheetBox').style.display = sheets.length > 1 ? 'inline' : 'none';
     $('opts').style.display = 'flex';
     await loadSheet(best.path);
-    if (st) applySettings(st);
+    if (st) { applySettings(st); if (await loadAtt()) render(); }
     if (!window.__results.count) $('err').textContent = 'কোনো পরীক্ষার্থী পাওয়া যায়নি। ক্রম/রোল কলামে সংখ্যা আছে কিনা দেখুন, বা অন্য শিট বেছে নিন।';
     if (typeof afterLoad === 'function') afterLoad();
   } catch (e) {
@@ -1238,7 +1267,7 @@ $('sorto').addEventListener('change', () => GRID && render());
 $('sheet').addEventListener('change', async e => { try { await loadSheet(e.target.value); } catch (x) { $('err').textContent = 'ত্রুটি: ' + x.message; } });
 $('view').addEventListener('change', () => GRID && render());
 $('cls').addEventListener('input', () => GRID && render());
-['cls','etype','yr'].forEach(id => $(id).addEventListener('input', () => { examEdited = false; buildTitle(); GRID && render(); }));
+['cls','etype','yr'].forEach(id => $(id).addEventListener('input', () => { examEdited = false; buildTitle(); if (GRID) { render(); loadAtt().then(ch => ch && render()); } }));
 $('exam').addEventListener('input', () => { examEdited = true; });
 $('skipabs').addEventListener('change', () => GRID && render());
 $('admitBox').addEventListener('input', e => {
@@ -1435,6 +1464,7 @@ async function loadPublished(id) {
     const q = await fdb.collection('results').doc(id).collection('parts').orderBy('i').get();
     const b64 = q.docs.map(x => x.data().data).join('');
     const buf = bufFromB64(b64);
+    try { ATT = d.attData ? JSON.parse(d.attData) : {}; } catch (e) { ATT = {}; } ATT_KEY = '';
     lastBuf = buf; curPubId = id;
     await processBuffer(buf, d.settings ? JSON.parse(d.settings) : null);
     $('pubTitle').value = d.title || '';
@@ -1464,7 +1494,7 @@ $('pubSave').addEventListener('click', async () => {
       await ref.collection('parts').doc(String(i).padStart(3, '0')).set({ i, data: b64.slice(i * SZ, (i + 1) * SZ) });
     }
     await ref.set({ title, cls: $('cls').value, exam: $('exam').textContent, yr: $('yr').value, size: lastBuf.byteLength, partCount: n,
-      settings: JSON.stringify(captureSettings()), by: (fauth.currentUser && fauth.currentUser.email) || '',
+      attData: JSON.stringify(ATT || {}), settings: JSON.stringify(captureSettings()), by: (fauth.currentUser && fauth.currentUser.email) || '',
       createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     curPubId = ref.id;
     msg('✅ ডাটাবেসে সেভ হয়েছে। এখন সবাই এই পেজে ফলাফল দেখতে পারবে।', true);
