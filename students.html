@@ -56,7 +56,7 @@ h3{margin:0 0 6px}
 .in b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .in .r1,.in .r2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .acts{display:flex;flex-direction:column;gap:4px;flex:none;align-items:stretch;text-align:center}
-.acts a{display:inline-flex;align-items:center;justify-content:center;gap:4px;border-radius:999px;padding:4px 14px;font-size:14px;font-weight:700;white-space:nowrap;color:#fff!important;text-decoration:none}
+.acts a{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff!important;text-decoration:none}
 .call:active{background:var(--pr2)}.wa:active{background:#1da851}
 .call{background:var(--pr)}.wa{background:#25d366}.off{background:var(--mu);opacity:.5;pointer-events:none}
 .bot{flex-basis:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px dashed var(--bd);padding-top:4px}
@@ -362,7 +362,7 @@ function render(){
         ${s.father ? '<div class="mu r2">পিতা: ' + esc(s.father) + '</div>' : ''}
       </div>
       <div class="acts">
-        <a class="call ${tel?'':'off'}" href="${tel ? 'tel:' + esc(tel) : '#'}" aria-label="কল করুন">📞 কল</a>
+        <a class="call ${tel?'':'off'}" href="${tel ? 'tel:' + esc(tel) : '#'}" title="কল">📞</a>
         <a class="wa ${wa?'':'off'}" href="${wa ? 'https://wa.me/' + wa : '#'}" target="_blank" rel="noopener" title="WhatsApp">💬</a>
       </div>
       <div class="bot">${tags(s.id)}</div>
