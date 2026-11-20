@@ -108,6 +108,7 @@ h3{margin:0 0 6px}
 .rcp-only{display:none}
 .pbtn{font:inherit;padding:10px;border-radius:10px;border:0;background:var(--pr);color:#fff;width:100%;margin-top:8px;cursor:pointer;font-weight:700}
 .rcbt{display:flex;gap:8px;margin-top:6px}
+.fbk{border:1px solid var(--bd);border-radius:8px;padding:6px 8px;font-size:13px;line-height:1.5;margin:4px 0 10px;background:rgba(15,122,74,.07);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
 @page{size:A4 portrait;margin:12mm 10mm}
 @media print{
@@ -392,6 +393,47 @@ function rcCalc(){
   if (!rcId) return;
   try { localStorage.setItem(rcKey(rcId), JSON.stringify({note: $('rcN').value})); } catch(e){}
 }
+// ===== স্বয়ংক্রিয় ফিডব্যাক: মূল্যায়ন ও হাজিরার পারফরম্যান্স থেকে =====
+function rcFeedback(al, x, tot, pct){
+  const done = al.filter(e => !e.ab && e.t > 0), absN = al.filter(e => e.ab).length, out = [];
+  let ap = null;
+  if (done.length) {
+    const G = done.reduce((a, e) => a + e.n, 0), T = done.reduce((a, e) => a + e.t, 0);
+    ap = T ? G * 100 / T : null;
+  }
+  if (ap != null) {
+    const lv = ap >= 80 ? 'ফলাফল অত্যন্ত চমৎকার, এই ধারা ধরে রাখতে হবে।'
+      : ap >= 70 ? 'ফলাফল খুব ভালো, আর একটু চেষ্টায় আরও ভালো করা সম্ভব।'
+      : ap >= 60 ? 'ফলাফল ভালো, নিয়মিত অনুশীলনে আরও উন্নতি হবে।'
+      : ap >= 50 ? 'ফলাফল মোটামুটি, পড়াশোনায় আরও মনোযোগ প্রয়োজন।'
+      : ap >= 33 ? 'ফলাফল দুর্বল, নিয়মিত পড়াশোনা ও শিক্ষকের সহায়তা নেওয়া দরকার।'
+      : 'ফলাফল খুবই দুর্বল, অভিভাবকের সহযোগিতায় বিশেষ যত্ন নেওয়া জরুরি।';
+    out.push('মূল্যায়নে গড় ' + bn(Math.round(ap)) + '% নম্বর পেয়েছে; ' + lv);
+    // বিষয়ভিত্তিক শক্তি ও দুর্বলতা
+    const by = {};
+    done.forEach(e => { const b = by[e.s] = by[e.s] || {g: 0, t: 0}; b.g += e.n; b.t += e.t; });
+    const subs = Object.keys(by).map(k => ({s: k, p: by[k].g * 100 / by[k].t})).sort((a, b) => b.p - a.p);
+    if (subs.length >= 2 && subs[0].p >= 70) out.push(subs[0].s + ' বিষয়ে বেশ ভালো করেছে (' + bn(Math.round(subs[0].p)) + '%)।');
+    const weak = subs.filter(v => v.p < 50).slice(-2).map(v => v.s);
+    if (weak.length) out.push(weak.join(' ও ') + ' বিষয়ে বিশেষ মনোযোগ দেওয়া প্রয়োজন।');
+    // সাম্প্রতিক ধারা (কমপক্ষে ৪টি মূল্যায়ন)
+    if (done.length >= 4) {
+      const h = Math.floor(done.length / 2), avg = arr => arr.reduce((a, e) => a + e.n * 100 / e.t, 0) / arr.length;
+      const d = avg(done.slice(-h)) - avg(done.slice(0, h));
+      if (d >= 8) out.push('সাম্প্রতিক মূল্যায়নগুলোতে উন্নতির ধারা দেখা যাচ্ছে।');
+      else if (d <= -8) out.push('সাম্প্রতিক মূল্যায়নে ফলাফল আগের তুলনায় কমেছে; কারণ খুঁজে ঠিক করা দরকার।');
+    }
+  }
+  if (absN) out.push(bn(absN) + 'টি মূল্যায়নে অনুপস্থিত ছিল; সব মূল্যায়নে অংশ নিতে হবে।');
+  if (tot) out.push(pct >= 90 ? 'উপস্থিতি অত্যন্ত নিয়মিত (' + bn(pct) + '%)।'
+    : pct >= 75 ? 'উপস্থিতি মোটামুটি (' + bn(pct) + '%); আরও নিয়মিত হওয়া দরকার।'
+    : 'উপস্থিতি কম (' + bn(pct) + '%); নিয়মিত স্কুলে এলে ফলাফলও ভালো হবে।');
+  if (out.length) {
+    if ((ap != null && ap < 50) || (tot && pct < 75)) out.push('অভিভাবককে শ্রেণি শিক্ষকের সাথে যোগাযোগ করার অনুরোধ করা হলো।');
+    else if (ap != null && ap >= 60) out.push('সব মিলিয়ে সন্তোষজনক; শুভকামনা রইল।');
+  }
+  return out.join(' ');
+}
 function openRC(id){
   if (attBlocked) { showMsg('🔒 রিপোর্ট কার্ড দেখতে লগইন করুন', 'err'); return; }
   const s = students.find(x => x.id === id); if (!s) return;
@@ -412,7 +454,8 @@ function openRC(id){
   const two = al.length > 22, rpc = two ? Math.ceil(al.length / 2) : al.length;
   const dens = rpc > 30 ? 'xxs' : rpc > 27 ? 'xs' : rpc > 24 ? 'sm' : '';
   // A4 এক পেজে রাখতে: সারির উচ্চতা (মিমি) ধরে আনুমানিক মোট উচ্চতা বেশি হলে পুরো কার্ড ছোট করা হয়
-  const est = 145 + rpc * ({'': 5.7, sm: 5.2, xs: 4.7, xxs: 4.2}[dens]);
+  const fb = rcFeedback(al, x, tot, pct);
+  const est = 145 + (fb ? 9 + Math.ceil(fb.length / 75) * 5.2 : 0) + rpc * ({'': 5.7, sm: 5.2, xs: 4.7, xxs: 4.2}[dens]);
   const zoom = est > 258 ? Math.max(0.45, +(258 / est).toFixed(3)) : 1;
   const head = '<thead><tr><th style="width:25%">তারিখ</th><th>বিষয়</th><th style="width:17%">নম্বর</th><th style="width:17%">মোট</th></tr></thead>';
   const tbl = (arr, df) => `<table class="fx ${dens}">${head}<tbody>${arr.map(e => `<tr><td>${df(e.d)}</td><td class="l">${esc(e.s)}</td><td>${e.ab ? 'অনু.' : fmt(e.n)}</td><td>${fmt(e.t)}</td></tr>`).join('')}</tbody></table>`;
@@ -436,6 +479,7 @@ function openRC(id){
     <tbody>${mm}<tr><th>মোট</th><th>${bn(x.tp)}</th><th>${bn(x.tl)}</th><th>${bn(x.ta)}</th><th colspan="4">উপস্থিতির হার: ${bn(pct)}%</th></tr></tbody></table>
     <b>মূল্যায়ন রিপোর্ট</b>
     ${asHtml}${asSum}
+    ${fb ? `<b>স্বয়ংক্রিয় ফিডব্যাক</b><div class="fbk">${esc(fb)}</div>` : ''}
     <b>মন্তব্য</b><textarea id="rcN" rows="2" oninput="rcCalc()">${esc(sv.note)}</textarea>
     <div class="sig"><span>শ্রেণি শিক্ষকের স্বাক্ষর</span></div>
     <div class="rcbt rcno"><button class="pbtn" onclick="downloadRC()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="doPrint()">🖨️ প্রিন্ট</button></div>
@@ -457,6 +501,7 @@ function downloadRC(){
     + 'body{font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;width:210mm;min-height:297mm;margin:0 auto;padding:12mm 10mm;background:#fff;color:#000;line-height:1.45;font-size:13px}'
     + '.rcp-only{display:block}.mu{font-size:12px;color:#444}.rcs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.rcs div{border:1px solid #000;text-align:center;padding:6px;border-radius:8px;font-size:12px}.rcs b{display:block;font-size:20px}'
     + 'table{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0 10px}th,td{border:1px solid #000;padding:4px;text-align:center}th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}td.l{text-align:left}table.fx{table-layout:fixed}td{word-break:break-word;overflow-wrap:anywhere}'
+    + '.fbk{border:1px solid #000;padding:4px 6px;font-size:12px;line-height:1.45;margin:4px 0 10px}'
     + '.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}.two table{margin:0}.asum{font-size:12px;margin:2px 0 8px}.sig{display:flex;justify-content:flex-end;margin-top:40px}.sig span{border-top:1px solid #000;padding-top:2px;min-width:100px;text-align:center}'
     + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}';
   const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>রিপোর্ট কার্ড - ' + esc(s.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
