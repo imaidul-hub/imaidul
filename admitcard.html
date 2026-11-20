@@ -91,6 +91,13 @@ details summary{cursor:pointer;color:var(--pr);font-size:14px;margin-top:8px}
 .bw .rt th,.bw .rt td{border-color:#000}
 .bw .rb{border-color:#000;border-left-width:4px;background:#fff}
 .bw .dr,.bw .inf span,.bw .sg div{color:#000}
+.sdet{margin-top:8px}
+.sbt{display:flex;gap:8px;margin:8px 0 6px}
+.sbt button{flex:1;font:inherit;font-size:13px;padding:7px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+.slist{max-height:240px;overflow:auto;border:1px solid var(--bd);border-radius:8px;padding:2px 6px}
+.ctl .slist label{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--tx);margin:0;padding:6px 2px;border-bottom:1px dashed var(--bd);cursor:pointer}
+.ctl .slist label:last-child{border-bottom:0}
+.ctl .slist input{width:auto;padding:0;flex:none;transform:scale(1.2)}
 .hide,.off{display:none!important}
 .who{font-size:13px;color:var(--mu);margin:2px 2px 8px}
 .empty{text-align:center;color:var(--mu);padding:30px 10px}
@@ -126,13 +133,14 @@ details summary{cursor:pointer;color:var(--pr);font-size:14px;margin-top:8px}
       <div><label for="cl">শ্রেণি</label><select id="cl"></select></div>
     </div>
     <div class="g2">
-      <div><label for="st">ছাত্র/ছাত্রী</label><select id="st"></select></div>
       <div><label for="pp">প্রতি পাতায়</label><select id="pp"><option value="two">২টি কার্ড</option><option value="one">১টি কার্ড</option></select></div>
-    </div>
-    <div class="g2">
       <div><label for="cm">ডিজাইন</label><select id="cm"><option value="color">🎨 রঙিন</option><option value="bw">⬛ সাদা-কালো</option></select></div>
-      <div></div>
     </div>
+    <details id="sd" class="sdet">
+      <summary id="ssum">👥 ছাত্র/ছাত্রী বাছাই করুন</summary>
+      <div class="sbt"><button type="button" onclick="selAll(true)">✅ সবাইকে বাছাই</button><button type="button" onclick="selAll(false)">❌ সব বাদ</button></div>
+      <div id="slist" class="slist"></div>
+    </details>
     <details>
       <summary>⚙️ প্রতিষ্ঠানের নাম, সাল, স্বাক্ষর ও নির্দেশনা</summary>
       <label for="inst">প্রতিষ্ঠানের নাম</label><input id="inst">
@@ -237,15 +245,27 @@ function fillClasses(){
   if (cls.includes(keep)) $('cl').value = keep;
   fillStudents();
 }
+var SEL = new Set();
+const classStu = cl => STU.filter(s => s.class === cl).sort((a, b) => (+a.roll || 0) - (+b.roll || 0));
+function sumSel(){
+  const tot = classStu($('cl').value).length;
+  $('ssum').textContent = tot ? '👥 ছাত্র/ছাত্রী: ' + bn(SEL.size) + '/' + bn(tot) + ' জন বাছাই করা' : '👥 ছাত্র/ছাত্রী';
+}
 function fillStudents(){
-  const cl = $('cl').value;
-  const list = STU.filter(s => s.class === cl).sort((a, b) => (+a.roll || 0) - (+b.roll || 0));
-  $('st').innerHTML = `<option value="">সব ছাত্র/ছাত্রী (${bn(list.length)} জন)</option>` + list.map(s => `<option value="${s.id}">${bn(s.roll || '–')} - ${esc(s.name)}</option>`).join('');
-  draw();
+  const list = classStu($('cl').value);
+  SEL = new Set(list.map(s => s.id));          // নতুন শ্রেণি বাছলে ডিফল্টে সবাই বাছাই
+  $('slist').innerHTML = list.length ? list.map(s => `<label><input type="checkbox" value="${s.id}" checked onchange="togS(this)"><span>${bn(s.roll || '–')} - ${esc(s.name)}</span></label>`).join('') : '<div class="info">এই শ্রেণিতে কেউ নেই</div>';
+  sumSel(); draw();
+}
+function togS(el){ if (el.checked) SEL.add(el.value); else SEL.delete(el.value); sumSel(); draw(); }
+function selAll(on){
+  const list = classStu($('cl').value);
+  SEL = new Set(on ? list.map(s => s.id) : []);
+  $('slist').querySelectorAll('input').forEach(x => x.checked = on);
+  sumSel(); draw();
 }
 $('ex').onchange = fillClasses;
 $('cl').onchange = fillStudents;
-$('st').onchange = draw;
 $('pp').onchange = () => { lsSet('pp', $('pp').value); draw(); };
 
 function tbl(list, off, pad){
@@ -302,11 +322,11 @@ function draw(){
   $('cards').className = (one ? 'one' : 'two') + ($('cm').value === 'bw' ? ' bw' : '');
   if (!ex || !cl) { $('cards').innerHTML = '<div class="empty">এখনো কোনো পরীক্ষার রুটিন নেই।<br>অ্যাডমিন → 📝 পরীক্ষা রুটিন থেকে বিষয় যোগ করুন।</div>'; $('info').textContent = ''; return; }
   const rows = EX.filter(e => e.exam === ex && e.class === cl).sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')) || String(a.start || '').localeCompare(String(b.start || '')));
-  let stus = STU.filter(s => s.class === cl).sort((a, b) => (+a.roll || 0) - (+b.roll || 0));
-  const sel = $('st').value; if (sel) stus = stus.filter(s => s.id === sel);
+  const allStu = classStu(cl);
+  const stus = allStu.filter(s => SEL.has(s.id));
   const t = TCH.find(x => x.classOf === cl);
   const ctx = {exam: ex, inst: $('inst').value.trim() || DEF.inst, yr: $('yr').value.trim(), sg: $('sg').value.trim(), dir: $('dir').value, teacher: t ? t.name : ''};
-  if (!stus.length) { $('cards').innerHTML = '<div class="empty">এই শ্রেণিতে কোনো ছাত্র/ছাত্রী পাওয়া যায়নি।</div>'; $('info').textContent = ''; return; }
+  if (!stus.length) { $('cards').innerHTML = '<div class="empty">' + (allStu.length ? 'কোনো ছাত্র/ছাত্রী বাছাই করা হয়নি। উপরের "👥 ছাত্র/ছাত্রী" থেকে বাছাই করুন।' : 'এই শ্রেণিতে কোনো ছাত্র/ছাত্রী পাওয়া যায়নি।') + '</div>'; $('info').textContent = ''; return; }
   $('info').textContent = ex + ' • ' + cl + ' • ' + bn(stus.length) + 'টি প্রবেশপত্র • ' + bn(rows.length) + 'টি বিষয়';
   $('cards').innerHTML = stus.map(s => card(s, rows, ctx)).join('');
   fit();

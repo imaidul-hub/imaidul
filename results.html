@@ -234,6 +234,26 @@
   .tr.fit .pr-tbl td { padding:5px 5px; } .tr.fit .pr-tbl td.gpa b { font-size:18px; } .tr.fit .pr-tbl tr.gt td { font-size:15px; }
   .tr.fit .pr-merit { margin-top:16px; font-size:14.5px; } .tr.fit .pr-merit th { font-size:14px; padding:6px; } .tr.fit .pr-merit td { height:52px; font-size:16px; }
   .tr.fit .pr-foot { padding-top:44px; padding-bottom:6px; } .tr.fit .pr-foot span { font-size:16px; }
+.tgl { display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
+  .tgl input { position:absolute; opacity:0; width:0; height:0; }
+  .tgl .sw { position:relative; width:46px; height:26px; border-radius:999px; background:#9aa3b5; transition:background .2s; flex:none; }
+  .tgl .sw::after { content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.35); transition:transform .2s; }
+  .tgl input:checked + .sw { background:#0f7a4a; }
+  .tgl input:checked + .sw::after { transform:translateX(20px); }
+  .tgl input:focus-visible + .sw { outline:2px solid #c9a227; outline-offset:2px; }
+  /* রঙিন ভার্সন (মাদ্রাসা থিম: সবুজ + সোনালি) */
+  .tr.col { background:#f6fbf8; border:2px solid #0b5c37; box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 4.5px #c9a227; color:#14231b; }
+  .tr.col .pr-logo { border-color:#c9a227; }
+  .tr.col .pr-school h2 { color:#0b5c37; }
+  .tr.col .pr-title { border-top-color:#c9a227; border-bottom-color:#0b5c37; color:#0b5c37; }
+  .tr.col .pr-photo { border-color:#0f7a4a; background:#e3f2e9; }
+  .tr.col .pr-info td, .tr.col .pr-scale td, .tr.col .pr-tbl td, .tr.col .pr-merit td { border-color:#9bbfab; }
+  .tr.col .pr-info td.k { background:#dcefe3; color:#0b5c37; }
+  .tr.col .pr-scale th, .tr.col .pr-tbl th, .tr.col .pr-merit th { background:#0f7a4a; color:#fff; border-color:#0b5c37; }
+  .tr.col .pr-tbl td.gpa, .tr.col .pr-tbl td.gpa b { color:#0b5c37; }
+  .tr.col .pr-tbl td.fl, .tr.col .pr-tbl td.fl b { color:#b00020; }
+  .tr.col .pr-tbl tr.gt td { border:none; color:#0b5c37; }
+  .tr.col .pr-foot span { border-top-color:#0b5c37; color:#0b5c37; }
   .pr-foot span { min-width:210px; text-align:center; border-top:1px solid #222; padding-top:3px; font-size:14px; font-weight:600; }
   #trBox input[type=text], #trBox input[type=date], #trBox textarea, #trBox select { font:inherit; padding:6px 8px; border:1px solid #9aa3b5; border-radius:8px; }
   .titles { display:flex; align-items:center; justify-content:center; gap:14px; }
@@ -276,8 +296,15 @@
   #tblc td.res-pass { color:#0a7a34; font-weight:700; }
   #tblc tbody tr.fail { background:#fff7f7; }
   #tblc tbody tr.absent { background:#f4f4f4; color:#777; }
-  @media screen { #trans .tr { cursor:pointer; } }
+  @media screen { #trans .tr { cursor:pointer; zoom:var(--trz,1); } }
   .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#17241c; color:#fff; padding:8px 16px; border-radius:999px; font-size:14px; z-index:99; display:none; max-width:90vw; text-align:center; }
+</style>
+<style id="pub-css">
+.pub-only{display:none}
+body.is-public .pub-only{display:block}
+body.is-public #pubBox,body.is-public #report,body.is-public #students,body.is-public #admit,body.is-public #nameHint,body.is-public #opts label,body.is-public #sheetBox{display:none !important}
+#lookBox .row{gap:8px;flex-wrap:wrap;align-items:center}
+#lookBox select,#lookBox input{font:inherit;padding:9px 10px;border:1px solid #9aa3b5;border-radius:8px;min-width:140px;flex:1 1 140px}
 </style>
 <style id="sl-css">
 #sl{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f4f8f5;transition:opacity .45s ease,visibility .45s ease}
@@ -298,6 +325,17 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
 <div id="sl" role="status" aria-live="polite"><div class="sl-ring"></div><div class="sl-txt">লোড হচ্ছে...</div></div><div id="sl-bar"></div>
 <div class="bar no-print"><b><img src="logo.jpg" alt="">📝 পরীক্ষার ফলাফল</b><span><a href="admin.html" id="admLink">🔐 অ্যাডমিন</a> <a href="index.html">হোম</a></span></div>
 <div class="wrap">
+
+  <div class="panel no-print pub-only" id="lookBox">
+    <h3>🔎 আপনার ফলাফল দেখুন</h3>
+    <div class="row" style="margin:0">
+      <select id="lkCls"><option value="">শ্রেণি নির্বাচন করুন</option></select>
+      <select id="lkExam" style="display:none"></select>
+      <input id="lkRoll" type="text" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="রোল নম্বর">
+      <button class="primary" id="lkGo">ফলাফল দেখুন</button>
+    </div>
+    <div class="hint" id="lkMsg"></div>
+  </div>
 
   <div class="panel no-print" id="pubBox">
     <h3>📊 প্রকাশিত ফলাফল</h3>
@@ -340,6 +378,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <label class="chk adm-only"><input type="checkbox" id="opttot"> মোট নম্বরে ঐচ্ছিক বিষয় (কৃষি/মানতিক) যোগ করুন</label>
       <label class="chk">দেখার ধরন:
         <select id="view"><option value="table">মেধা তালিকা (এক সারণি)</option><option value="transcript">ট্রান্সক্রিপ্ট / প্রগ্রেস রিপোর্ট (স্কুল ডিজাইন)</option></select></label>
+      <label class="chk tgl" id="tcolBox" style="display:none">⬛ সাদা-কালো <input type="checkbox" id="tcol"><span class="sw"></span> 🎨 রঙিন</label>
       <label class="chk" id="sortBox" style="display:none">মার্কশীটের ক্রম:
         <select id="sorto"><option value="roll">রোল অনুযায়ী</option><option value="merit">উত্তীর্ণ → Fail-1 → Fail-2 …</option></select></label>
       <label class="chk" id="skipBox" style="display:none"><input type="checkbox" id="skipabs" checked> অনুপস্থিতদের বাদ দিন</label>
@@ -949,6 +988,7 @@ function applyView() {
   $('trans').style.display = trn ? 'block' : 'none';
   $('trHint').style.display = trn ? 'block' : 'none';
   $('trBox').style.display = (trn && LAYOUT) ? 'block' : 'none';
+  $('tcolBox').style.display = trn ? 'inline-flex' : 'none';
   $('students').style.display = stu ? 'block' : 'none';
   $('admit').style.display = adm ? 'block' : 'none';
   $('admitBox').style.display = (adm && LAYOUT) ? 'block' : 'none';
@@ -1027,6 +1067,7 @@ function renderTranscript(R, subs) {
   const inst = esc($('inst').textContent.trim()), exam = esc($('exam').textContent.trim()), cls = esc($('cls').value.trim());
   const initial = esc(($('inst').textContent.trim() || 'S').charAt(0));
   const logo = LOGO ? `<img src="${LOGO}" alt="" onerror="this.style.display='none'">` : initial, logoCls = LOGO ? ' img' : '';
+  const colMode = !!($('tcol') && $('tcol').checked);
   const wm = LOGO ? `<img class="pr-wm" src="${LOGO}" alt="" onerror="this.style.display='none'">` : '';
   const subHtml = ($('tsub').value || '').split('\n').map(x => x.trim()).filter(Boolean).map(esc).join('<br>');
   const tmed = $('tmedium').value.trim(), tshift = $('tshift').value.trim(), tsec = $('tsection').value.trim(), tgrp = $('tgroup').value.trim();
@@ -1064,7 +1105,7 @@ function renderTranscript(R, subs) {
     const k = keyFn(st), g = R.rows.filter(x => keyFn(x) === k);
     return rankTxt(g.filter(x => x.status === 'pass').indexOf(st) + 1, g.filter(x => x.present).length);
   };
-  const list = ordered(R.rows.filter(st => st.status !== 'absent'));
+  const list = ordered(R.rows.filter(st => st.status !== 'absent' && (!isPublic || (PUB_ROLL != null && st.roll === PUB_ROLL))));
   const Nreg = R.reg.length || 1;
   const prio = sj => /বাংলা|বাঙলা|bangla|bengali/i.test(sj.name) ? 0 : /ইংরেজি|ইংরেজী|english/i.test(sj.name) ? 1 : /আরবি|আরবী|arabic/i.test(sj.name) ? 2
     : (/গণিত|গনিত|math/i.test(sj.name) && !/উচ্চতর|higher/i.test(sj.name)) ? 3 : 4;
@@ -1109,7 +1150,7 @@ function renderTranscript(R, subs) {
       + `<th>${T('Working Days', 'কার্যদিবস')}</th><th>${T('Attend', 'উপস্থিত')}</th><th>${T('Absent', 'অনুপস্থিত')}</th><th>${T('Discipline', 'শৃঙ্খলা')}</th><th>${T('Cleanliness', 'পরিচ্ছন্নতা')}</th></tr>`
       + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${LAYOUT.sectionCol ? rankIn(st, sKey) : '—'}</td><td>${LAYOUT.groupCol ? rankIn(st, gKey) : '—'}</td><td></td><td></td><td></td><td></td><td></td></tr></table>`;
     const sg = en ? ['Signature of Teacher', 'Signature of Coordinator', 'Signature of ' + esc(signer)] : ['শিক্ষকের স্বাক্ষর', 'সমন্বয়কারীর স্বাক্ষর', esc(signer) + '-এর স্বাক্ষর'];
-    return `<div class="tr" data-roll="${st.roll}" data-name="${esc(st.name)}" title="ক্লিক করলে এই শিক্ষার্থীর ট্রান্সক্রিপ্ট ডাউনলোড হবে">${wm}`
+    return `<div class="tr${colMode ? ' col' : ''}" data-roll="${st.roll}" data-name="${esc(st.name)}" title="ক্লিক করলে এই শিক্ষার্থীর ট্রান্সক্রিপ্ট ডাউনলোড হবে">${wm}`
       + `<div class="pr-head"><div class="pr-left"><div class="pr-logo${logoCls}">${logo}</div><div class="pr-school"><h2>${inst}</h2>${subHtml ? `<div class="sub">${subHtml}</div>` : ''}`
       + `<div class="pr-title">${T('Progress Report', 'প্রগ্রেস রিপোর্ট')} : ${exam}</div></div></div>`
       + `<div class="pr-right">${scaleHtml}</div></div>`
@@ -1167,7 +1208,7 @@ function captureSettings() {
   return { inst: $('inst').textContent, exam: $('exam').textContent, examEdited, cls: g('cls'), etype: g('etype'), yr: g('yr'),
     sheet: g('sheet'), opttot: $('opttot').checked, mergeqh: $('mergeqh').checked, sorto: g('sorto'), skipabs: $('skipabs').checked,
     view: g('view') === 'admit' ? 'table' : g('view'), cfgs: JSON.parse(JSON.stringify(LAYOUT.subjects.map(x => x.cfg))),
-    tgroup: g('tgroup'), tsign: g('tsign'), tlang: g('tlang'), tmedium: g('tmedium'), tshift: g('tshift'), tsection: g('tsection'), tsub: g('tsub') };
+    tgroup: g('tgroup'), tsign: g('tsign'), tlang: g('tlang'), tcol: !!$('tcol').checked, tmedium: g('tmedium'), tshift: g('tshift'), tsection: g('tsection'), tsub: g('tsub') };
 }
 function applySettings(st) {
   if (st.cls != null) setCls(st.cls);
@@ -1178,8 +1219,10 @@ function applySettings(st) {
   if (st.sorto) $('sorto').value = st.sorto;
   $('skipabs').checked = st.skipabs !== false;
   if (st.view && [...$('view').options].some(o => o.value === st.view)) $('view').value = st.view;
+  if (isPublic) $('view').value = 'transcript';
   (st.cfgs || []).forEach((c, i) => { if (LAYOUT.subjects[i]) Object.assign(LAYOUT.subjects[i].cfg, c); });
   ['tgroup', 'tsign', 'tlang', 'tmedium', 'tshift', 'tsection', 'tsub'].forEach(k => { if (st[k] != null && $(k)) $(k).value = st[k]; });
+  if ($('tcol')) $('tcol').checked = st.tcol === true || st.tcol === 'col';
   renderCfg(); buildAdmitBox(); render();
 }
 
@@ -1204,6 +1247,7 @@ $('admitBox').addEventListener('input', e => {
   if (t.id === 'alogo' && t.files[0]) { const fr = new FileReader(); fr.onload = () => { LOGO = fr.result; renderAdmit(); }; fr.readAsDataURL(t.files[0]); return; }
   renderAdmit();
 });
+$('tcol').addEventListener('change', () => GRID && render());
 $('trBox').addEventListener('input', e => {
   if (e.target.id === 'tlogo' && e.target.files[0]) { const fr = new FileReader(); fr.onload = () => { LOGO = fr.result; render(); }; fr.readAsDataURL(e.target.files[0]); return; }
   GRID && render();
@@ -1218,11 +1262,13 @@ const loadJs = src => new Promise((ok, no) => { const t = document.createElement
 async function pdfLibs() { if (!window.html2canvas) await loadJs(CDN.h2c); if (!(window.jspdf && window.jspdf.jsPDF)) await loadJs(CDN.pdf); }
 function stageClear() {
   let st = $('pdfstage');
-  if (!st) { st = document.createElement('div'); st.id = 'pdfstage'; st.style.cssText = 'position:fixed;left:-30000px;top:0;background:#fff;color:#111;'; document.body.appendChild(st); }
+  if (!st) { st = document.createElement('div'); st.id = 'pdfstage'; st.style.cssText = 'position:absolute;left:-30000px;top:0;background:#fff;color:#111;'; document.body.appendChild(st); }
   st.innerHTML = ''; return st;
 }
 const toast = t => { const e = $('toast'); e.textContent = t || ''; e.style.display = t ? 'block' : 'none'; };
-const snap = (el, sc) => html2canvas(el, { scale: sc, backgroundColor: '#fff', useCORS: true, logging: false });
+const snap = (el, sc) => html2canvas(el, { scale: sc, backgroundColor: '#fff', useCORS: true, logging: false,
+  windowWidth: Math.max(document.documentElement.clientWidth, el.scrollWidth + 60), windowHeight: Math.max(window.innerHeight, el.scrollHeight + 60),
+  width: el.scrollWidth, height: el.scrollHeight, x: 0, y: 0, scrollX: 0, scrollY: 0 });
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
 const fname = suffix => (($('exam').textContent || 'ফলাফল').trim().replace(/[\\/:*?"<>|\s]+/g, '_') || 'result') + '_' + suffix + '.pdf';
 
@@ -1319,6 +1365,15 @@ $('dl').addEventListener('click', () => {
     if (v === 'admit') return pdfCards([...$('admit').querySelectorAll('.adm')], { w: 780, per: +$('aper').value || 2, name: fname('এডমিট_কার্ড') });
   });
 });
+// ট্রান্সক্রিপ্ট প্রিভিউ: ডিভাইসের প্রস্থে ফিট (শুধু স্ক্রিনে; প্রিন্ট/PDF আগের মতোই)
+function fitTr(){
+  const t = $('trans'), w = t.clientWidth; if (!w) return;
+  t.style.setProperty('--trz', Math.min(1, w / 1100).toFixed(4));
+}
+{ let lw = 0; new ResizeObserver(en => { const w = Math.round(en[0].contentRect.width); if (w && w !== lw) { lw = w; fitTr(); } }).observe($('trans')); }
+window.addEventListener('orientationchange', () => setTimeout(fitTr, 250));
+window.addEventListener('load', fitTr);
+
 // একটি ট্রান্সক্রিপ্টে ক্লিক করলে শুধু সেটি ডাউনলোড
 $('trans').addEventListener('click', e => {
   const el = e.target.closest('.tr'); if (!el) return;
@@ -1353,13 +1408,14 @@ fdb.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 // অ্যাডমিনের ইমেইল জানা থাকলে এখানে লিখুন, যেমন ['admin@example.com']। ফাঁকা থাকলে মোবাইল-নম্বর ভিত্তিক শিক্ষক অ্যাকাউন্ট বাদে যেকোনো লগইন করা ব্যবহারকারী অ্যাডমিন ধরা হবে।
 const ADMIN_EMAILS = [];
 let isAdmin = false, pubDocs = [], curPubId = null, pubUnsub = null;
+let isPublic = true, PUB_ROLL = null;   // লগইন ছাড়া: শুধু শ্রেণি+রোল দিয়ে ১টি ট্রান্সক্রিপ্ট
 const PUB = id => $(id);
 const isAdminUser = u => {
   if (!u || !u.email) return false;
   if (ADMIN_EMAILS.length) return ADMIN_EMAILS.map(x => x.toLowerCase()).includes(u.email.toLowerCase());
   return !/^\+?\d{10,13}$/.test(u.email.split('@')[0]);
 };
-function msg(t, ok) { const m = $('pubMsg'); m.textContent = t || ''; m.className = 'hint' + (ok ? ' okmsg' : ''); }
+function msg(t, ok) { ['pubMsg', 'lkMsg'].forEach(id => { const m = $(id); if (!m) return; m.textContent = t || ''; m.className = 'hint' + (ok ? ' okmsg' : ''); }); }
 function updateCtrl() { $('ctrl').style.display = (isAdmin || GRID) ? '' : 'none'; }
 function afterLoad() { updateCtrl(); if (isAdmin && GRID) $('saveBox').style.display = 'block'; }
 
@@ -1373,7 +1429,7 @@ function fillSelect(selectId) {
   sel.value = selectId && pubDocs.some(d => d.id === selectId) ? selectId : (curPubId && pubDocs.some(d => d.id === curPubId) ? curPubId : '');
 }
 async function loadPublished(id) {
-  const d = pubDocs.find(x => x.id === id); if (!d) return;
+  const d = pubDocs.find(x => x.id === id); if (!d) return false;
   msg('ফলাফল লোড হচ্ছে...');
   try {
     const q = await fdb.collection('results').doc(id).collection('parts').orderBy('i').get();
@@ -1383,13 +1439,14 @@ async function loadPublished(id) {
     await processBuffer(buf, d.settings ? JSON.parse(d.settings) : null);
     $('pubTitle').value = d.title || '';
     msg('', true);
-  } catch (e) { console.error(e); msg('❌ ফলাফল লোড করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); }
+    return true;
+  } catch (e) { console.error(e); msg('❌ ফলাফল লোড করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); return false; }
 }
 function startList() {
   if (pubUnsub) pubUnsub();
   pubUnsub = fdb.collection('results').orderBy('createdAt', 'desc').onSnapshot(s => {
     pubDocs = s.docs.map(d => ({ id: d.id, ...d.data() }));
-    fillSelect();
+    fillSelect(); fillLookup();
   }, e => { console.error(e); $('pubSel').innerHTML = '<option value="">লোড করা যায়নি</option>'; msg('❌ তালিকা লোড করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); });
 }
 $('pubSel').addEventListener('change', e => e.target.value && loadPublished(e.target.value));
@@ -1429,8 +1486,57 @@ $('pubDel').addEventListener('click', async () => {
   } catch (e) { console.error(e); msg('❌ মুছতে পারেনি: ' + (e.code || '') + ' ' + (e.message || '')); }
 });
 
+/* ---------- লগইন ছাড়া: শ্রেণি + রোল দিয়ে ১টি ট্রান্সক্রিপ্ট ---------- */
+const docCls = d => { let c = d.cls; if (!c && d.settings) { try { c = JSON.parse(d.settings).cls; } catch (e) {} } return clsKey(c); };
+function clearLook() {
+  PUB_ROLL = null; $('trans').innerHTML = '';
+  $('opts').style.display = 'none'; $('trHint').style.display = 'none';
+}
+function fillLookup() {
+  const sel = $('lkCls'); if (!sel) return;
+  const keep = sel.value, seen = new Set(), order = [...$('cls').options].map(o => clsKey(o.value)).filter(Boolean);
+  pubDocs.forEach(d => { const c = docCls(d); if (c) seen.add(c); });
+  const cs = [...seen].sort((a, b) => { const x = order.indexOf(a), y = order.indexOf(b); return (x < 0 ? 999 : x) - (y < 0 ? 999 : y) || a.localeCompare(b, 'bn'); });
+  sel.innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + cs.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if (cs.includes(keep)) sel.value = keep;
+  if (!pubDocs.length) msg('এখনো কোনো ফলাফল প্রকাশ হয়নি।');
+  fillLookExam();
+}
+function fillLookExam() {
+  const c = $('lkCls').value, ex = $('lkExam'), ms = c ? pubDocs.filter(d => docCls(d) === c) : [];
+  const keep = ex.value;
+  ex.innerHTML = ms.map(d => `<option value="${esc(d.id)}">${esc(d.title || 'ফলাফল')}</option>`).join('');
+  if (ms.some(d => d.id === keep)) ex.value = keep;
+  ex.style.display = ms.length > 1 ? '' : 'none';   // একই শ্রেণির একাধিক পরীক্ষা থাকলেই দেখাবে
+}
+async function lookupResult() {
+  const c = $('lkCls').value, roll = num($('lkRoll').value);
+  if (!c) { msg('আগে শ্রেণি নির্বাচন করুন।'); return; }
+  if (roll == null || !Number.isInteger(roll) || roll <= 0) { msg('সঠিক রোল নম্বর দিন।'); return; }
+  const ms = pubDocs.filter(d => docCls(d) === c);
+  const d = ms.find(x => x.id === $('lkExam').value) || ms[0];
+  if (!d) { msg('এই শ্রেণির ফলাফল এখনো প্রকাশ হয়নি।'); return; }
+  const btn = $('lkGo'); btn.disabled = true;
+  clearLook(); PUB_ROLL = roll;
+  let ok;
+  if (curPubId === d.id && GRID) { msg(''); $('opts').style.display = 'flex'; render(); ok = true; }
+  else ok = await loadPublished(d.id);
+  if (ok) {
+    if ($('trans').querySelector('.tr')) { msg(''); $('trans').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    else { clearLook(); msg('এই শ্রেণিতে এই রোলের ফলাফল পাওয়া যায়নি। রোল নম্বর আবার দেখুন।'); }
+  } else clearLook();
+  btn.disabled = false;
+}
+$('lkCls').addEventListener('change', () => { fillLookExam(); clearLook(); msg(''); });
+$('lkExam').addEventListener('change', () => { clearLook(); msg(''); });
+$('lkRoll').addEventListener('input', () => { clearLook(); msg(''); });
+$('lkRoll').addEventListener('keydown', e => { if (e.key === 'Enter') lookupResult(); });
+$('lkGo').addEventListener('click', lookupResult);
+
 fauth.onAuthStateChanged(u => {
   isAdmin = isAdminUser(u);
+  isPublic = !u; document.body.classList.toggle('is-public', isPublic);
+  if (!isPublic) PUB_ROLL = null;
   document.body.classList.toggle('is-admin', isAdmin);
   $('admLink').style.display = u ? 'none' : '';
   [...$('view').options].forEach(o => { if (o.value === 'admit') { o.hidden = !isAdmin; o.disabled = !isAdmin; } });
