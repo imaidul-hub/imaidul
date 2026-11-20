@@ -52,6 +52,8 @@ h3{margin:0 0 6px}
 .roll{display:inline-block;min-width:30px;text-align:center;background:var(--pr);color:#fff;border-radius:8px;padding:0 6px;margin-right:6px;font-size:13px}
 .t{flex-wrap:wrap;display:flex;align-items:center;gap:4px 8px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:4px 8px;margin-bottom:4px}
 .av{width:38px;height:38px;border-radius:50%;background:var(--pr);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex:none;overflow:hidden;letter-spacing:-.5px}
+.av.ph0{background:var(--bd);color:var(--mu)}
+.av.ph0 svg{width:78%;height:78%;display:block;margin-top:14%}
 .in{flex:1;min-width:0;line-height:1.35}
 .in b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .in .r1,.in .r2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -354,10 +356,11 @@ function render(){
   list.forEach(s => {
     if (s.class !== cur) { cur = s.class; html += `<div class="gh"><span>${esc(cur||'শ্রেণি নেই')}</span><span class="mu">${bn(counts[cur])} জন</span></div>`; }
     const lg = !!auth.currentUser, tel = lg ? telNum(s.phone) : '', wa = lg ? waNum(s.phone) : '';
+    const ph = typeof s.photo === 'string' && s.photo.startsWith('data:image/');
     html += `<div class="t">
-      <div class="av">${s.roll ? bn(esc(s.roll)) : ''}</div>
+      ${ph ? `<img class="av" src="${s.photo}" alt="" style="object-fit:cover;background:none">` : `<div class="av ph0" aria-label="ছবি নেই"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 22c0-4.7 3.8-8 8.5-8s8.5 3.3 8.5 8z"/></svg></div>`}
       <div class="in">
-        <b>${esc(s.name)}</b>
+        <b>${s.roll ? '<span class="roll">' + bn(esc(s.roll)) + '</span>' : ''}${esc(s.name)}</b>
         ${auth.currentUser ? '<div class="mu r1">' + (s.phone ? bn(esc(s.phone)) : 'নম্বর নেই') + '</div>' : ''}
         ${s.father ? '<div class="mu r2">পিতা: ' + esc(s.father) + '</div>' : ''}
       </div>

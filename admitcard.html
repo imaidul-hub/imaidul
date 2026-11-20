@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>প্রবেশপত্র (এডমিট কার্ড)</title>
+<meta name="theme-color" content="#0f7a4a">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--bd:#dbe7df;--er:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center}
+.bar b{font-size:17px}
+.bar a,.bar button{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;margin-left:6px}
+.wrap{max-width:900px;margin:0 auto;padding:8px}
+.ctl{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;margin-bottom:10px}
+.ctl label{display:block;font-size:13px;color:var(--mu);margin:6px 0 2px}
+.ctl select,.ctl input,.ctl textarea{font:inherit;padding:9px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pbtn{width:100%;margin-top:10px;font:inherit;font-weight:700;padding:11px;border:0;border-radius:10px;background:var(--pr);color:#fff;cursor:pointer}
+.info{font-size:13px;color:var(--mu);margin:6px 2px}
+.err{color:var(--er);white-space:pre-wrap;font-size:13px;margin:6px 2px}
+details summary{cursor:pointer;color:var(--pr);font-size:14px;margin-top:8px}
+#cards{transform-origin:top center}
+
+/* ---------- প্রবেশপত্র কার্ড (মাদ্রাসা থিম: সবুজ + সোনালি) ---------- */
+.ac{--g1:#0b5c37;--g2:#0f7a4a;--g3:#eef6f1;--gold:#c9a227;--gd:#8a6d0a;--ln:#9bbfab;
+  position:relative;width:194mm;height:138mm;margin:0 auto 4mm;background:#fff;color:#14231b;
+  border:2.5px solid var(--g1);box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px var(--gold),0 1px 6px rgba(0,0,0,.12);
+  padding:3mm 5mm;overflow:hidden;font-size:12px;line-height:1.35;page-break-inside:avoid;break-inside:avoid;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif}
+.ac::before{content:"";position:absolute;inset:0;background-image:var(--logo,none);background-repeat:no-repeat;background-position:center 58%;background-size:62mm auto;opacity:.07;pointer-events:none}
+.ac>*{position:relative}
+.hd{display:grid;grid-template-columns:24mm 1fr 27mm;gap:3mm;align-items:center;padding:2mm 3mm;border-radius:3mm;
+  background:linear-gradient(135deg,#e3f2e9,#f7fbf8);border:1px solid var(--ln);border-bottom:2px solid var(--gold);color:var(--g1)}
+.lgw{width:23mm;height:23mm;border-radius:50%;background-color:#fff;background-image:var(--logo,none);background-repeat:no-repeat;background-position:center;background-size:contain;background-origin:content-box;padding:1.2mm;border:2px solid var(--gold)}
+.hd .tt{text-align:center}
+.hd h1{margin:0;font-size:20px;line-height:1.25;color:var(--g1)}
+.badge{display:inline-block;background:linear-gradient(180deg,#e3c04d,var(--gold));color:#3a2c00;padding:0 16px;border-radius:999px;font-weight:700;font-size:12.5px;margin-top:2px;letter-spacing:.2px}
+.et{font-weight:700;font-size:13.5px;margin-top:2px;color:var(--gd)}
+.ph{width:25mm;height:29mm;border:2px solid var(--g2);outline:1.5px solid var(--gold);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6b7c72;text-align:center;overflow:hidden;background:#fff;justify-self:end}
+.ph img{width:100%;height:100%;object-fit:cover}
+.mid{display:grid;grid-template-columns:1fr 52mm;gap:4mm;margin-top:2.5mm;align-items:start}
+.inf>div{display:flex;gap:4px;padding:1.5px 0;border-bottom:1px dotted var(--ln)}
+.inf span{display:inline-block;min-width:34mm;color:var(--g1);font-weight:600}
+.inf b{font-weight:700}
+.rb{border:1.5px solid var(--g2);border-left:4px solid var(--gold);border-radius:3px;padding:2px 8px;background:var(--g3)}
+.rb div{display:flex;justify-content:space-between;gap:6px}
+.rb b{font-size:15px;color:var(--g1)}
+.rtw{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:2.5mm;align-items:start}
+.rtw.c1{grid-template-columns:1fr}
+.rtw .rt+.rt{margin-left:-1px;width:calc(100% + 1px)}
+.rt{width:100%;border-collapse:collapse;font-size:11px;background:rgba(255,255,255,.75)}
+.rt th,.rt td{border:1px solid var(--ln);padding:1px 2px;line-height:1.25;text-align:center}
+.rt th{background:var(--g2);color:#fff;font-weight:700;border-color:var(--g1)}
+.rt tbody tr:nth-child(even) td{background:var(--g3)}
+.rt td.l{text-align:left;font-weight:600}
+.rt small{font-size:.86em;color:var(--g1)}
+.ac.dense{font-size:11px}.ac.dense .rt{font-size:10px}.ac.dense .rt th,.ac.dense .rt td{padding:0 2px;line-height:1.2}
+.ft{position:absolute!important;left:5mm;right:5mm;bottom:2.5mm}
+.sg{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1mm;min-height:11mm}
+.sg div{text-align:center;min-width:40mm;border-top:1.5px solid var(--g1);padding-top:1px;font-size:11.5px;color:var(--g1);font-weight:600}
+.dr{font-size:10px;color:#2b3a31;line-height:1.3;border-top:1.5px solid var(--gold);padding-top:1px}
+.dr b{color:var(--gd)}
+.dr ol{margin:0;padding-left:14px}
+.one .ac{height:276mm;font-size:15px}
+.one .ac .rt{font-size:12.5px}
+.one .ac .rt th,.one .ac .rt td{padding:3px 3px}
+.one .ac::before{background-size:100mm auto;background-position:center 55%}
+.one .hd h1{font-size:26px}
+.one .ac .ph{width:34mm;height:40mm}
+.one .ac .hd{grid-template-columns:30mm 1fr 34mm;padding:4mm}
+.one .ac .lgw{width:29mm;height:29mm}
+.one .ac .sg div{font-size:14px}
+.one .ac .dr{font-size:12.5px}
+
+/* ---------- সাদা-কালো ভার্সন ---------- */
+.bw .ac{--g1:#000;--g2:#000;--g3:#f1f1f1;--gold:#000;--gd:#000;--ln:#666;color:#000;
+  box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px #000}
+.bw .ac::before{filter:grayscale(1);opacity:.06}
+.bw .hd{background:#fff;color:#000;border:1.5px solid #000;border-bottom:4px double #000}
+.bw .hd h1{color:#000;text-shadow:none}
+.bw .badge{background:#000;color:#fff}
+.bw .et{color:#000}
+.bw .lgw{filter:grayscale(1);border-color:#000}
+.bw .ph{border-color:#000;outline:none;color:#444}
+.bw .rt th{background:#e4e4e4;color:#000;border-color:#000}
+.bw .rt th,.bw .rt td{border-color:#000}
+.bw .rb{border-color:#000;border-left-width:4px;background:#fff}
+.bw .dr,.bw .inf span,.bw .sg div{color:#000}
+.hide,.off{display:none!important}
+.who{font-size:13px;color:var(--mu);margin:2px 2px 8px}
+.empty{text-align:center;color:var(--mu);padding:30px 10px}
+
+@media print{
+  @page{size:A4 portrait;margin:6mm}
+  html,body{background:#fff!important}
+  .bar,.ctl,.info,.err,.empty.np,#gate,.who{display:none!important}
+  .wrap{max-width:none;padding:0}
+  #cards{zoom:1!important;transform:none!important}
+  .ac{margin:0 auto 4mm}
+  .two .ac:nth-child(2n){page-break-after:always;break-after:page}
+  .one .ac{page-break-after:always;break-after:page;margin-bottom:0}
+}
+</style>
+</head>
+<body>
+<div class="bar"><b>🪪 প্রবেশপত্র (এডমিট কার্ড)</b><div><a href="index.html">🏠 হোম</a><button id="out" class="hide" onclick="firebase.auth().signOut()">লগআউট</button></div></div>
+<div class="wrap">
+  <div class="ctl" id="gate">
+    <b>🔐 লগইন করুন</b>
+    <div class="info">প্রবেশপত্র শুধু অ্যাডমিন ও শ্রেণি শিক্ষক ডাউনলোড/প্রিন্ট করতে পারবেন।</div>
+    <label for="gid">ইমেইল (অ্যাডমিন) অথবা মোবাইল নম্বর (শিক্ষক)</label><input id="gid" autocomplete="username">
+    <label for="gpw">পাসওয়ার্ড</label><input id="gpw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')glogin()">
+    <button class="pbtn" onclick="glogin()">লগইন</button>
+    <div class="err" id="gmsg"></div>
+  </div>
+  <div id="app" class="off">
+  <div class="who" id="who"></div>
+  <div class="ctl">
+    <div class="g2">
+      <div><label for="ex">পরীক্ষা</label><select id="ex"></select></div>
+      <div><label for="cl">শ্রেণি</label><select id="cl"></select></div>
+    </div>
+    <div class="g2">
+      <div><label for="st">ছাত্র/ছাত্রী</label><select id="st"></select></div>
+      <div><label for="pp">প্রতি পাতায়</label><select id="pp"><option value="two">২টি কার্ড</option><option value="one">১টি কার্ড</option></select></div>
+    </div>
+    <div class="g2">
+      <div><label for="cm">ডিজাইন</label><select id="cm"><option value="color">🎨 রঙিন</option><option value="bw">⬛ সাদা-কালো</option></select></div>
+      <div></div>
+    </div>
+    <details>
+      <summary>⚙️ প্রতিষ্ঠানের নাম, সাল, স্বাক্ষর ও নির্দেশনা</summary>
+      <label for="inst">প্রতিষ্ঠানের নাম</label><input id="inst">
+      <div class="g2">
+        <div><label for="yr">সাল / সেশন</label><input id="yr"></div>
+        <div><label for="sg">স্বাক্ষরকারীর পদবি</label><input id="sg"></div>
+      </div>
+      <label for="dir">নির্দেশনা (প্রতি লাইনে একটি)</label><textarea id="dir" rows="4"></textarea>
+      <label for="lgf">মাদ্রাসার লোগো (ঐচ্ছিক — আপলোড করলে এই ডিভাইসে মনে রাখবে)</label>
+      <input type="file" id="lgf" accept="image/*">
+      <button type="button" class="pbtn" style="background:var(--mu);margin-top:6px" onclick="resetLogo()">লোগো রিসেট (ডিফল্ট ফাইল ব্যবহার)</button>
+    </details>
+    <button class="pbtn" onclick="doPrint()">🖨️ প্রিন্ট করুন</button>
+  </div>
+  <div class="info" id="info"></div>
+  <div class="err" id="err"></div>
+  <div class="err" id="lginfo"></div>
+  <div id="cards" class="two"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+function doPrint(){ if (!AUTH) return; if (window.AndroidPrint && typeof AndroidPrint.print === 'function') AndroidPrint.print(); else window.print(); }
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const db = firebase.firestore();
+try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) {}
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const okPhoto = u => typeof u === 'string' && u.startsWith('data:image/');
+
+// শ্রেণির ক্রম (অ্যাডমিন পেজের তালিকার মতো)
+const ALL_CLASSES = ['ইবতেদায়ী ১ম শ্রেণি','ইবতেদায়ী ২য় শ্রেণি','ইবতেদায়ী ৩য় শ্রেণি','ইবতেদায়ী ৪র্থ শ্রেণি','ইবতেদায়ী ৫ম শ্রেণি',
+  'দাখিল ৬ষ্ঠ শ্রেণি','দাখিল ৭ম শ্রেণি','দাখিল ৮ম শ্রেণি','দাখিল ৯ম শ্রেণি','দাখিল ১০ম শ্রেণি','আলিম ১ম বর্ষ','আলিম ২য় বর্ষ','ফাজিল ১ম বর্ষ','ফাজিল ২য় বর্ষ','ফাজিল ৩য় বর্ষ'];
+const cIdx = c => { const i = ALL_CLASSES.indexOf(c); return i < 0 ? 999 : i; };
+const WD = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const dfmt = d => d ? bn(d.slice(8,10) + '/' + d.slice(5,7) + '/' + d.slice(0,4)) : '';
+const wday = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? '' : WD[x.getDay()]; };
+const fmt = t => { if (!t) return ''; let [h,m] = String(t).split(':').map(Number); if (isNaN(h)) return ''; const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return bn(h + ':' + String(m||0).padStart(2,'0')) + ' ' + ap; };
+
+// সেটিংস (এই ডিভাইসে মনে রাখে)
+const DEF = {inst:'চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা', yr:String(new Date().getFullYear()), sg:'অধ্যক্ষ',
+  dir:'প্রবেশপত্র ছাড়া পরীক্ষা কক্ষে প্রবেশ করা যাবে না।\nপরীক্ষা শুরুর ১৫ মিনিট আগে আসন গ্রহণ করতে হবে।\nপরীক্ষা কক্ষে মোবাইল ফোন বা অনুমোদিত নয় এমন কোনো সামগ্রী আনা নিষেধ।'};
+const lsGet = k => { try { return localStorage.getItem('ac_' + k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem('ac_' + k, v); } catch (e) {} };
+['inst','yr','sg','dir'].forEach(k => { const v = lsGet(k); $(k).value = v != null ? v : DEF[k]; $(k).addEventListener('input', () => { lsSet(k, $(k).value); draw(); }); });
+{ const v = lsGet('pp'); if (v) $('pp').value = v; }
+{ const v = lsGet('cm'); if (v) $('cm').value = v; }
+$('cm').onchange = () => { lsSet('cm', $('cm').value); draw(); };
+
+// ---- লোগো: আপলোড করা → favicon.png → অন্যান্য সম্ভাব্য ফাইল → manifest.json-এর আইকন ----
+const LOGO_C = ['logo.jpg','logo.jpeg','logo.png','favicon.png','apple-touch-icon.png','logo.png','icon-192.png','icon-512.png','icons/icon-192.png','icons/icon-512.png'];
+const tryImg = u => new Promise(r => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = u; });
+async function findLogo(){
+  const up = lsGet('logo'); if (up && await tryImg(up)) return up;
+  const list = [...LOGO_C];
+  try { const m = await (await fetch('manifest.json')).json(); (m.icons || []).forEach(ic => { try { list.push(new URL(ic.src, new URL('manifest.json', location.href)).href); } catch (e) {} }); } catch (e) {}
+  for (const u of list) { if (await tryImg(u)) return u; }
+  return '';
+}
+function setLogo(u){
+  $('cards').style.setProperty('--logo', u ? 'url("' + u + '")' : 'none');
+  $('lginfo').textContent = u ? '' : '⚠️ লোগো ফাইল পাওয়া যায়নি। ⚙️ সেটিংস থেকে মাদ্রাসার লোগো আপলোড করুন।';
+}
+async function initLogo(){ setLogo(await findLogo()); }
+function resetLogo(){ lsSet('logo', ''); initLogo(); }
+$('lgf').onchange = function(){
+  const f = this.files && this.files[0]; if (!f) return;
+  const url = URL.createObjectURL(f), im = new Image();
+  im.onload = () => {
+    URL.revokeObjectURL(url);
+    const k = Math.min(1, 300 / Math.max(im.naturalWidth, im.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    const d = c.toDataURL('image/png'); lsSet('logo', d); setLogo(d);
+  };
+  im.onerror = () => { URL.revokeObjectURL(url); $('lginfo').textContent = '❌ ছবিটি পড়া যায়নি'; };
+  im.src = url;
+};
+
+var EX = [], STU = [], TCH = [];
+var AUTH = false, ALLOW = null;   // ALLOW = শ্রেণি শিক্ষকের জন্য নির্দিষ্ট শ্রেণি (অ্যাডমিনের জন্য null)
+function fillExams(){
+  const names = [...new Set(EX.map(e => e.exam).filter(Boolean))].sort();
+  $('ex').innerHTML = names.length ? names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('') : '<option value="">কোনো পরীক্ষা নেই</option>';
+  fillClasses();
+}
+function fillClasses(){
+  const ex = $('ex').value, keep = $('cl').value;
+  const cls = [...new Set(EX.filter(e => e.exam === ex).map(e => e.class).filter(Boolean))].filter(c => !ALLOW || c === ALLOW).sort((a, b) => cIdx(a) - cIdx(b));
+  $('cl').innerHTML = cls.length ? cls.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('') : '<option value="">শ্রেণি নেই</option>';
+  if (cls.includes(keep)) $('cl').value = keep;
+  fillStudents();
+}
+function fillStudents(){
+  const cl = $('cl').value;
+  const list = STU.filter(s => s.class === cl).sort((a, b) => (+a.roll || 0) - (+b.roll || 0));
+  $('st').innerHTML = `<option value="">সব ছাত্র/ছাত্রী (${bn(list.length)} জন)</option>` + list.map(s => `<option value="${s.id}">${bn(s.roll || '–')} - ${esc(s.name)}</option>`).join('');
+  draw();
+}
+$('ex').onchange = fillClasses;
+$('cl').onchange = fillStudents;
+$('st').onchange = draw;
+$('pp').onchange = () => { lsSet('pp', $('pp').value); draw(); };
+
+function tbl(list, off, pad){
+  return `<table class="rt"><thead><tr><th style="width:7mm">ক্রম</th><th>বিষয়</th><th style="width:21mm">তারিখ ও বার</th><th style="width:25mm">সময়</th></tr></thead><tbody>${
+    list.map((r, i) => `<tr><td>${bn(off + i + 1)}</td><td class="l">${esc(r.subject)}</td><td>${dfmt(r.date)}<br><small>${wday(r.date)}</small></td><td>${fmt(r.start)}${r.end ? '<br>– ' + fmt(r.end) : ''}</td></tr>`).join('')
+  }${'<tr><td>&nbsp;<br>&nbsp;</td><td></td><td></td><td></td></tr>'.repeat(pad || 0)}</tbody></table>`;
+}
+function card(s, rows, ctx){
+  const half = Math.ceil(rows.length / 2);
+  const dense = half > 5 ? ' dense' : '';
+  const cols = rows.length > 1 ? [rows.slice(0, half), rows.slice(half)] : [rows];
+  const body = `<div class="rtw${cols.length === 1 ? ' c1' : ''}">` + tbl(cols[0], 0) + (cols[1] ? tbl(cols[1], half, cols[0].length - cols[1].length) : '') + '</div>';
+  const dirs = ctx.dir.split('\n').map(x => x.trim()).filter(Boolean);
+  return `<div class="ac${dense}" data-wm="${esc(ctx.inst)}">
+    <div class="hd">
+      <div class="lgw"></div>
+      <div class="tt"><h1>${esc(ctx.inst)}</h1><div class="badge">প্রবেশপত্র (Admit Card)</div><div class="et">${esc(ctx.exam)}${ctx.yr ? ' - ' + bn(esc(ctx.yr)) : ''}</div></div>
+      <div class="ph">${okPhoto(s.photo) ? `<img src="${s.photo}" alt="">` : 'ছবি'}</div>
+    </div>
+    <div class="mid">
+      <div class="inf">
+        <div><span>পরীক্ষার্থীর নাম</span>: <b>${esc(s.name)}</b></div>
+        <div><span>পিতার নাম</span>: ${esc(s.father || '')}</div>
+        <div><span>শ্রেণি</span>: ${esc(s.class)}</div>
+      </div>
+      <div class="rb"><div>রোল নং <b>: ${bn(esc(s.roll || ''))}</b></div><div>সাল <span>: ${ctx.yr ? bn(esc(ctx.yr)) : ''}</span></div></div>
+    </div>
+    ${body}
+    <div class="ft">
+      <div class="sg"><div>শ্রেণি শিক্ষকের স্বাক্ষর</div><div>${esc(ctx.sg || 'অধ্যক্ষ')}</div></div>
+      ${dirs.length ? '<div class="dr"><b>নির্দেশনা:</b><ol>' + dirs.map(d => '<li>' + esc(d) + '</li>').join('') + '</ol></div>' : ''}
+    </div>
+  </div>`;
+}
+function fit(){
+  const w = window.innerWidth - 16, full = 194 * 3.7795 + 16;
+  $('cards').style.zoom = w < full ? (w / full) : 1;
+}
+function draw(){
+  const ex = $('ex').value, cl = $('cl').value, one = $('pp').value === 'one';
+  $('cards').className = (one ? 'one' : 'two') + ($('cm').value === 'bw' ? ' bw' : '');
+  if (!ex || !cl) { $('cards').innerHTML = '<div class="empty">এখনো কোনো পরীক্ষার রুটিন নেই।<br>অ্যাডমিন → 📝 পরীক্ষা রুটিন থেকে বিষয় যোগ করুন।</div>'; $('info').textContent = ''; return; }
+  const rows = EX.filter(e => e.exam === ex && e.class === cl).sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')) || String(a.start || '').localeCompare(String(b.start || '')));
+  let stus = STU.filter(s => s.class === cl).sort((a, b) => (+a.roll || 0) - (+b.roll || 0));
+  const sel = $('st').value; if (sel) stus = stus.filter(s => s.id === sel);
+  const t = TCH.find(x => x.classOf === cl);
+  const ctx = {exam: ex, inst: $('inst').value.trim() || DEF.inst, yr: $('yr').value.trim(), sg: $('sg').value.trim(), dir: $('dir').value, teacher: t ? t.name : ''};
+  if (!stus.length) { $('cards').innerHTML = '<div class="empty">এই শ্রেণিতে কোনো ছাত্র/ছাত্রী পাওয়া যায়নি।</div>'; $('info').textContent = ''; return; }
+  $('info').textContent = ex + ' • ' + cl + ' • ' + bn(stus.length) + 'টি প্রবেশপত্র • ' + bn(rows.length) + 'টি বিষয়';
+  $('cards').innerHTML = stus.map(s => card(s, rows, ctx)).join('');
+  fit();
+}
+window.addEventListener('resize', fit);
+window.addEventListener('beforeprint', () => { $('cards').style.zoom = 1; });
+window.addEventListener('afterprint', fit);
+
+async function boot(){
+  try {
+    const [a, b, c] = await Promise.all([
+      db.collection('examRoutines').get(),
+      db.collection('students').get(),
+      db.collection('teachers').get().catch(() => ({docs: []}))
+    ]);
+    EX = a.docs.map(d => ({id: d.id, ...d.data()}));
+    STU = b.docs.map(d => ({id: d.id, ...d.data()}));
+    TCH = c.docs.map(d => ({id: d.id, ...d.data()}));
+    fillExams();
+  } catch (e) {
+    console.error(e);
+    $('err').textContent = '❌ তথ্য আনা যায়নি [' + (e.code || 'error') + ']\n' + (e.code === 'permission-denied' ? 'Firestore Rules-এ examRoutines ও students কালেকশন পড়ার অনুমতি দিন।' : (e.message || ''));
+    $('ex').innerHTML = '<option value="">—</option>'; $('cl').innerHTML = '<option value="">—</option>';
+  }
+}
+initLogo();
+
+// ===== অ্যাক্সেস নিয়ন্ত্রণ: শুধু অ্যাডমিন ও শ্রেণি শিক্ষক =====
+const ADMIN_EMAIL = 'cfm@gmail.com';
+const normPhone = p => { let d = String(p||'').replace(/\D/g,''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };
+const gmsg = t => { $('gmsg').textContent = t || ''; };
+function lock(msg){
+  AUTH = false; ALLOW = null; EX = []; STU = []; TCH = [];
+  $('cards').innerHTML = ''; $('info').textContent = ''; $('err').textContent = '';
+  $('app').classList.add('off'); $('gate').classList.remove('hide');
+  gmsg(msg);
+}
+function unlock(who){
+  AUTH = true; gmsg('');
+  $('gate').classList.add('hide'); $('app').classList.remove('off'); $('who').textContent = who;
+  boot();
+}
+function glogin(){
+  const id = $('gid').value.trim(), pw = $('gpw').value;
+  if (!id || !pw) return gmsg('ইমেইল/মোবাইল ও পাসওয়ার্ড দিন');
+  gmsg('অপেক্ষা করুন...');
+  const email = id.includes('@') ? id : normPhone(id) + '@madrasa-teacher.app';
+  firebase.auth().signInWithEmailAndPassword(email, pw).catch(e => {
+    const bad = ['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-email'];
+    gmsg('❌ ' + (bad.includes(e.code) ? 'ইমেইল/মোবাইল বা পাসওয়ার্ড ভুল।' : e.code === 'auth/too-many-requests' ? 'অনেকবার ভুল চেষ্টা হয়েছে, কিছুক্ষণ পরে চেষ্টা করুন।' : e.code === 'auth/network-request-failed' ? 'ইন্টারনেট সংযোগে সমস্যা।' : (e.message || 'লগইন ব্যর্থ')));
+  });
+}
+firebase.auth().onAuthStateChanged(async u => {
+  $('out').classList.toggle('hide', !u);
+  if (!u) return lock('');
+  const em = (u.email || '').toLowerCase();
+  if (em === ADMIN_EMAIL) { ALLOW = null; return unlock('👤 অ্যাডমিন'); }
+  try {
+    let t = null;
+    const q = await db.collection('teachers').where('uid', '==', u.uid).get();
+    if (!q.empty) t = q.docs[0].data();
+    else {
+      const ph = em.split('@')[0], all = await db.collection('teachers').get();
+      const f = all.docs.find(d => normPhone(d.data().phone) === ph); if (f) t = f.data();
+    }
+    if (t && t.classOf) { ALLOW = t.classOf; return unlock('👤 ' + t.name + ' • শ্রেণি শিক্ষক: ' + t.classOf); }
+    lock('❌ শুধু অ্যাডমিন ও শ্রেণি শিক্ষক প্রবেশপত্র ডাউনলোড করতে পারবেন। এই অ্যাকাউন্টে সেই অনুমতি নেই — লগআউট করে সঠিক অ্যাকাউন্টে ঢুকুন।');
+  } catch (e) {
+    lock('❌ যাচাই করা যায়নি [' + (e.code || 'error') + ']');
+  }
+});
+</script>
+</body>
+</html>

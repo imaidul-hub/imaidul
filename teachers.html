@@ -268,7 +268,7 @@ function render(){
   const card = t => {
     const ph = normPhone(t.phone), ok = /^01\d{9}$/.test(ph), ix = idxOf(t), ds = desigOf(t);
     return `<div class="t">
-      <div class="av">${esc((t.name||'?').trim().charAt(0))}</div>
+      ${typeof t.photo === 'string' && t.photo.startsWith('data:image/') ? `<img class="av" src="${t.photo}" alt="" style="object-fit:cover;background:none">` : `<div class="av">${esc((t.name||'?').trim().charAt(0))}</div>`}
       <div class="in">
         <b>${esc(t.name)}</b>
         <div class="mu r1">${esc(ds || '—')} • ইন্ডেক্স: ${ix !== '' ? bn(esc(ix)) : '–'}</div>

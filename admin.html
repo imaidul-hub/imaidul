@@ -108,6 +108,8 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <button id="b3" onclick="tab(3)">🗓️ রুটিন</button>
       <button id="b4" onclick="tab(4)">🔁 প্রক্সি</button>
       <button id="b5" onclick="tab(5)">🎓 ছাত্র</button>
+      <button id="b6" onclick="tab(6)">📝 পরীক্ষা রুটিন</button>
+      <button id="b7" onclick="tab(7)">📚 বিষয়</button>
     </div>
     <div id="p1">
     <div class="stats">
@@ -122,6 +124,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <a class="m" href="#" onclick="tab(2);return false"><i>👨‍🏫</i>শিক্ষক</a>
       <a class="m" href="#" onclick="tab(3);return false"><i>🗓️</i>রুটিন</a>
       <a class="m" href="#" onclick="tab(4);return false"><i>🔁</i>প্রক্সি</a>
+      <a class="m" href="#" onclick="tab(6);return false"><i>📝</i>পরীক্ষা রুটিন</a>
       <a class="m" href="attendance.html"><i>✅</i>হাজিরা</a>
       <a class="m" href="fees.html"><i>💰</i>ফি ও বেতন</a>
       <a class="m" href="result-upload.html"><i>📝</i>ফলাফল</a>
@@ -193,6 +196,12 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
         <div class="mu">↑ শ্রেণি শিক্ষক (ঐচ্ছিক)</div>
         <div class="row2"><input id="ts" placeholder="বিষয়"><input id="tp" placeholder="মোবাইল"></div>
         <input id="ti" placeholder="ইনডেক্স নং (ঐচ্ছিক)">
+        <div class="mu">📷 ছবি (ঐচ্ছিক) — ঠিক ৩০০×৩০০ পিক্সেল, সর্বোচ্চ ৫০০ কেবি (JPG/PNG/WebP)</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <img id="tphv" class="hide" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid var(--bd);flex:none">
+          <input type="file" id="tph" accept="image/jpeg,image/png,image/webp" onchange="pickPhoto(this,'t')">
+          <button id="tphx" type="button" class="ed hide" style="white-space:nowrap" onclick="clearPhoto('t')">❌ সরান</button>
+        </div>
         <button id="tbtn" class="act" onclick="saveTeacher()">শিক্ষক সংরক্ষণ</button>
         <button id="tcan" class="act sec hide" onclick="cancelT()">বাতিল</button>
       </div>
@@ -248,6 +257,12 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
         <select id="sc"></select>
         <div class="row2"><input id="sr" type="number" min="1" placeholder="রোল নং"><input id="sp" placeholder="অভিভাবকের মোবাইল"></div>
         <input id="sf" placeholder="পিতার নাম (ঐচ্ছিক)">
+        <div class="mu">📷 ছবি (ঐচ্ছিক) — ঠিক ৩০০×৩০০ পিক্সেল, সর্বোচ্চ ১০০ কেবি (JPG/PNG/WebP)</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <img id="sphv" class="hide" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid var(--bd);flex:none">
+          <input type="file" id="sph" accept="image/jpeg,image/png,image/webp" onchange="pickPhoto(this,'s')">
+          <button id="sphx" type="button" class="ed hide" style="white-space:nowrap" onclick="clearPhoto('s')">❌ সরান</button>
+        </div>
         <button id="sbtn" class="act" onclick="saveStudent()">সংরক্ষণ করুন</button>
         <button id="scan" class="act sec hide" onclick="cancelS()">বাতিল</button>
       </div>
@@ -256,6 +271,53 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <input id="sq" placeholder="🔍 নাম, রোল বা মোবাইল দিয়ে খুঁজুন">
       <div class="card" id="slist"><div class="mu">লোড হচ্ছে...</div></div>
       <div class="mu" style="text-align:center"><a href="students.html" style="color:var(--pr)">📄 শ্রেণিভিত্তিক তালিকা (দেখার পেজ)</a></div>
+    </div>
+
+    <div id="p6" class="hide">
+      <div class="card">
+        <h3 id="xh" style="margin-top:0">পরীক্ষার রুটিনে বিষয় যোগ করুন</h3>
+        <input id="xe" list="xel" placeholder="পরীক্ষার নাম (যেমন: অর্ধবার্ষিক পরীক্ষা-২০২৬)"><datalist id="xel"></datalist>
+        <select id="xc"></select>
+        <div id="xhint" class="mu">↑ শ্রেণি বেছে নিলে ওই শ্রেণির সব বিষয় তারিখ ও সময়সহ একসাথে আসবে</div>
+        <div id="xbulk" class="hide"></div>
+        <div id="xsingle" class="hide">
+          <div id="xnosub" class="warn hide">এই শ্রেণিতে "📚 বিষয়" ট্যাবে কোনো বিষয় যোগ করা নেই, তাই একটি একটি করে যোগ করুন।</div>
+          <input id="xs" placeholder="বিষয়">
+          <div class="mu">তারিখ</div>
+          <input id="xd" type="date">
+          <div class="row2">
+            <div><div class="mu">শুরুর সময়</div><input id="xt" type="time"></div>
+            <div><div class="mu">শেষ সময় (ঐচ্ছিক)</div><input id="xt2" type="time"></div>
+          </div>
+        </div>
+        <button id="xbtn" class="act hide" onclick="saveExam()">বিষয় যোগ করুন</button>
+        <button id="xcan" class="act sec hide" onclick="cancelX()">বাতিল</button>
+        <div class="mu">শ্রেণি বেছে যে বিষয়গুলোর তারিখ ও শুরুর সময় দিবেন শুধু সেগুলোই সেভ হবে (ফাঁকা থাকলে বাদ)। আগে সেভ করা থাকলে তারিখ-সময় নিজেই দেখাবে, বদলে আবার সেভ করলে আপডেট হবে। এই তথ্য পরে এডমিট কার্ডে ব্যবহার করা যাবে।</div>
+      </div>
+      <h2>পরীক্ষার রুটিন <span id="xcnt" class="mu"></span></h2>
+      <select id="xfe"></select>
+      <select id="xfc"></select>
+      <div class="card" id="xlist"><div class="mu">লোড হচ্ছে...</div></div>
+    </div>
+
+    <!-- বিষয় -->
+    <div id="p7" class="hide">
+      <div class="card">
+        <h3 id="bh" style="margin-top:0">নতুন বিষয় যোগ করুন</h3>
+        <input id="bn" placeholder="বিষয়ের নাম (যেমন: গণিত)">
+        <div class="mu">শ্রেণি (একাধিক বেছে নিন)</div>
+        <div id="bcl"></div>
+        <div style="display:flex;gap:14px;margin:4px 0;flex-wrap:wrap">
+          <button type="button" class="ed" onclick="bAll(true)">সব শ্রেণি</button>
+          <button type="button" class="ed" onclick="bAll(false)">সব মুছুন</button>
+        </div>
+        <button id="bbtn" class="act" onclick="saveSubject()">বিষয় সংরক্ষণ</button>
+        <button id="bcan" class="act sec hide" onclick="cancelB()">বাতিল</button>
+        <div class="mu">একই বিষয় একসাথে একাধিক শ্রেণিতে যোগ হবে। যে শ্রেণিতে বিষয়টি আগে থেকেই আছে সেটি বাদ যাবে।</div>
+      </div>
+      <h2>বিষয়ের তালিকা <span id="bcnt" class="mu"></span></h2>
+      <select id="bfc"></select>
+      <div class="card" id="blist"><div class="mu">লোড হচ্ছে...</div></div>
     </div>
 
   </div>
@@ -399,7 +461,7 @@ $('lt').onchange = loadRoutines;
 $('rt').onchange = () => { $('lt').value = $('rt').value; loadRoutines(); };
 const fmt = t => { if (!t) return ''; let [h,m] = t.split(':').map(Number); const ap = h>=12?'PM':'AM'; h = h%12||12; return bn(h+':'+String(m).padStart(2,'0'))+' '+ap; };
 
-function tab(n){ [1,2,3,4,5].forEach(i => { $('p'+i).classList.toggle('hide', i!==n); $('b'+i).classList.toggle('on', i===n); }); }
+function tab(n){ [1,2,3,4,5,6,7].forEach(i => { $('p'+i).classList.toggle('hide', i!==n); $('b'+i).classList.toggle('on', i===n); }); }
 
 var unsubS = null;
 function stopData(){
@@ -407,10 +469,14 @@ function stopData(){
   if (unsubT) { unsubT(); unsubT = null; }
   if (unsubR) { unsubR(); unsubR = null; }
   if (unsubP) { unsubP(); unsubP = null; }
+  if (unsubX) { unsubX(); unsubX = null; }
+  if (unsubB) { unsubB(); unsubB = null; }
   tab(1);
 }
 function startData(){
   startStudents();
+  startExams();
+  startSubjects();
   unsubT = db.collection('teachers').orderBy('name').onSnapshot(s => {
     teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
     const opts = teachers.map(t => `<option value="${t.id}">${esc(t.name)}${t.subject?' ('+esc(t.subject)+')':''}</option>`).join('');
@@ -423,7 +489,7 @@ function startData(){
     loadProxies();
     $('tcount').textContent = '(মোট ' + bn(teachers.length) + ' জন)';
     $('tlist').innerHTML = teachers.map(t => `<div class="row" style="flex-direction:column;gap:2px">
-      <div><b>${esc(t.name)}</b>${t.desig ? ' <span class="tag-d">'+esc(t.desig)+'</span>' : ''}${t.classOf ? '<div class="mu">🏫 শ্রেণি শিক্ষক: '+esc(t.classOf)+'</div>' : ''}<div class="mu">${esc(t.subject||'')} ${esc(t.phone||'')}${t.index ? ' • ইনডেক্স: ' + bn(esc(t.index)) : ''}</div></div>
+      <div>${okPhoto(t.photo) ? `<img src="${t.photo}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px">` : ''}<b>${esc(t.name)}</b>${t.desig ? ' <span class="tag-d">'+esc(t.desig)+'</span>' : ''}${t.classOf ? '<div class="mu">🏫 শ্রেণি শিক্ষক: '+esc(t.classOf)+'</div>' : ''}<div class="mu">${esc(t.subject||'')} ${esc(t.phone||'')}${t.index ? ' • ইনডেক্স: ' + bn(esc(t.index)) : ''}</div></div>
       <div style="display:flex;flex-wrap:wrap;gap:12px">${t.uid ? '<span class="mu">🔑 লগইন আছে</span> ' : `<button class="ed" onclick="loginFor('${t.id}')">🔑 লগইন</button>`}<button class="ed" onclick="editTeacher('${t.id}')">✏️ এডিট</button><button class="del" onclick="delTeacher('${t.id}')">মুছুন</button></div></div>`).join('')
       || '<div class="mu">কোনো শিক্ষক নেই</div>';
     loadRoutines();
@@ -431,23 +497,54 @@ function startData(){
 }
 
 // --- শিক্ষক ---
+const PH = {t: {img: null, mode: 'keep', max: 500}, s: {img: null, mode: 'keep', max: 100}};   // mode: keep = বদল নেই, new = নতুন ছবি, remove = ছবি মুছবে
+const PH_SIZE = 300;
+const okPhoto = u => typeof u === 'string' && u.startsWith('data:image/');
+function showPhoto(k, src){
+  const im = $(k + 'phv'), x = $(k + 'phx');
+  if (src) { im.src = src; im.classList.remove('hide'); x.classList.remove('hide'); }
+  else { im.removeAttribute('src'); im.classList.add('hide'); x.classList.add('hide'); }
+}
+function resetPhoto(k, src){ PH[k].img = null; PH[k].mode = 'keep'; $(k + 'ph').value = ''; showPhoto(k, okPhoto(src) ? src : ''); }
+function clearPhoto(k){ PH[k].img = null; PH[k].mode = 'remove'; $(k + 'ph').value = ''; showPhoto(k, ''); }
+function pickPhoto(inp, k){
+  const f = inp.files && inp.files[0]; if (!f) return;
+  const maxKB = PH[k].max;
+  const bad = m => { inp.value = ''; showMsg('❌ ' + m); };
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type)) return bad('শুধু JPG, PNG বা WebP ছবি দিন');
+  if (f.size > maxKB * 1024) return bad('ছবির সাইজ ' + bn(Math.round(f.size / 1024)) + ' কেবি; সর্বোচ্চ ' + bn(maxKB) + ' কেবি হতে হবে');
+  const url = URL.createObjectURL(f), im = new Image();
+  im.onload = () => {
+    URL.revokeObjectURL(url);
+    if (im.naturalWidth !== PH_SIZE || im.naturalHeight !== PH_SIZE) return bad('ছবির মাপ ' + bn(im.naturalWidth) + '×' + bn(im.naturalHeight) + ' পিক্সেল; ঠিক ৩০০×৩০০ হতে হবে');
+    const c = document.createElement('canvas'); c.width = c.height = PH_SIZE;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, PH_SIZE, PH_SIZE); g.drawImage(im, 0, 0);
+    PH[k].img = c.toDataURL('image/jpeg', 0.9); PH[k].mode = 'new'; showPhoto(k, PH[k].img);
+    $('toast').classList.add('hide');
+  };
+  im.onerror = () => { URL.revokeObjectURL(url); bad('ছবিটি পড়া যায়নি'); };
+  im.src = url;
+}
+
 function saveTeacher(){
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
   const d = {name:$('tn').value.trim(), desig:$('td').value, classOf:$('tcl').value, subject:$('ts').value.trim(), phone:$('tp').value.trim(), index:$('ti').value.trim()};
   if (!d.name) return showMsg('শিক্ষকের নাম দিন');
   if (teachers.some(t => t.id !== editT && t.name === d.name && (t.phone||'') === d.phone)) return showMsg('এই নাম ও মোবাইলের শিক্ষক আগে থেকেই আছে');
   if (d.classOf) { const o = teachers.find(t => t.id !== editT && t.classOf === d.classOf); if (o) return showMsg(d.classOf + '-এর শ্রেণি শিক্ষক হিসেবে ' + o.name + ' আগে থেকেই আছেন'); }
+  if (PH.t.mode === 'new' && PH.t.img) d.photo = PH.t.img;
+  else if (PH.t.mode === 'remove' && editT) d.photo = firebase.firestore.FieldValue.delete();
   const p = editT ? db.collection('teachers').doc(editT).update(d) : db.collection('teachers').add(d);
   guard(p).then(() => { cancelT(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
 }
 function editTeacher(id){
   const t = teachers.find(x => x.id === id); if (!t) return;
-  editT = id; $('tn').value = t.name||''; $('td').value = t.desig||''; $('tcl').value = t.classOf||''; $('ts').value = t.subject||''; $('tp').value = t.phone||''; $('ti').value = t.index||'';
+  editT = id; $('tn').value = t.name||''; $('td').value = t.desig||''; $('tcl').value = t.classOf||''; $('ts').value = t.subject||''; $('tp').value = t.phone||''; $('ti').value = t.index||''; resetPhoto('t', t.photo);
   $('th').textContent = '✏️ শিক্ষকের তথ্য এডিট'; $('tbtn').textContent = '✅ আপডেট করুন'; $('tcan').classList.remove('hide');
   $('tn').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function cancelT(){
-  editT = null; $('tn').value = $('ts').value = $('tp').value = $('ti').value = ''; $('td').value = ''; $('tcl').value = '';
+  editT = null; $('tn').value = $('ts').value = $('tp').value = $('ti').value = ''; $('td').value = ''; $('tcl').value = ''; resetPhoto('t');
   $('th').textContent = 'নতুন শিক্ষক যোগ করুন'; $('tbtn').textContent = 'শিক্ষক সংরক্ষণ'; $('tcan').classList.add('hide');
 }
 function delTeacher(id){
@@ -595,7 +692,7 @@ function renderStudents(){
   let html = '', cur = null;
   list.forEach(s => {
     if (s.class !== cur) { cur = s.class; html += `<div class="gh"><span>${esc(cur||'শ্রেণি নেই')}</span><span class="mu">${bn(counts[cur])} জন</span></div>`; }
-    html += `<div class="row"><div><span class="roll">${bn(s.roll||'–')}</span><b>${esc(s.name)}</b>
+    html += `<div class="row"><div><span class="roll">${bn(s.roll||'–')}</span>${okPhoto(s.photo) ? `<img src="${s.photo}" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px">` : ''}<b>${esc(s.name)}</b>
       <div class="mu">${s.father ? 'পিতা: ' + esc(s.father) : ''}${s.father && s.phone ? ' • ' : ''}${s.phone ? bn(esc(s.phone)) : ''}</div></div>
       <div style="white-space:nowrap"><button class="ed" onclick="editStudent('${s.id}')">✏️</button><button class="del" onclick="delStudent('${s.id}')">✕</button></div></div>`;
   });
@@ -609,6 +706,8 @@ function saveStudent(){
   const d = {name:$('sn').value.trim(), class:$('sc').value, roll:+$('sr').value, phone:$('sp').value.trim(), father:$('sf').value.trim()};
   if (!d.name || !d.class || !d.roll) return showMsg('নাম, শ্রেণি ও রোল নং দিন');
   if (students.some(s => s.id !== editS && s.class === d.class && +s.roll === d.roll)) return showMsg('এই শ্রেণিতে ' + bn(d.roll) + ' নং রোল আগে থেকেই আছে');
+  if (PH.s.mode === 'new' && PH.s.img) d.photo = PH.s.img;
+  else if (PH.s.mode === 'remove' && editS) d.photo = firebase.firestore.FieldValue.delete();
   const wasEdit = !!editS;
   const p = editS ? db.collection('students').doc(editS).update(d) : db.collection('students').add(d);
   guard(p).then(() => {
@@ -619,16 +718,200 @@ function saveStudent(){
 }
 function editStudent(id){
   const s = students.find(x => x.id === id); if (!s) return;
-  editS = id; $('sn').value = s.name||''; $('sc').value = s.class||''; $('sr').value = s.roll||''; $('sp').value = s.phone||''; $('sf').value = s.father||'';
+  editS = id; $('sn').value = s.name||''; $('sc').value = s.class||''; $('sr').value = s.roll||''; $('sp').value = s.phone||''; $('sf').value = s.father||''; resetPhoto('s', s.photo);
   $('sh').textContent = '✏️ তথ্য এডিট'; $('sbtn').textContent = '✅ আপডেট করুন'; $('scan').classList.remove('hide');
   $('sn').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function cancelS(){
-  editS = null; $('sn').value = $('sr').value = $('sp').value = $('sf').value = ''; $('sc').value = '';
+  editS = null; $('sn').value = $('sr').value = $('sp').value = $('sf').value = ''; $('sc').value = ''; resetPhoto('s');
   $('sh').textContent = 'নতুন ছাত্র/ছাত্রী যোগ করুন'; $('sbtn').textContent = 'সংরক্ষণ করুন'; $('scan').classList.add('hide');
 }
 function delStudent(id){
   if (confirm('এই ছাত্র/ছাত্রীর তথ্য মুছবেন?')) db.collection('students').doc(id).delete().then(() => { if (editS === id) cancelS(); loadStats(); }).catch(fail);
+}
+
+// ===== পরীক্ষার রুটিন (examRoutines কালেকশন: exam, class, subject, date, start, end) =====
+var exs = [], editX = null, unsubX = null;
+const WD = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const dfmt = d => d ? bn(d.slice(8,10) + '/' + d.slice(5,7) + '/' + d.slice(0,4)) : '';
+const wday = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? '' : WD[x.getDay()]; };
+$('xc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
+$('xfc').innerHTML = '<option value="">সব শ্রেণি</option>' + optGroups;
+$('xfe').innerHTML = '<option value="">সব পরীক্ষা</option>';
+function startExams(){
+  unsubX = db.collection('examRoutines').onSnapshot(s => {
+    exs = s.docs.map(d => ({id: d.id, ...d.data()}));
+    const names = [...new Set(exs.map(e => e.exam).filter(Boolean))].sort();
+    $('xel').innerHTML = names.map(n => `<option value="${esc(n)}"></option>`).join('');
+    const kf = $('xfe').value;
+    $('xfe').innerHTML = '<option value="">সব পরীক্ষা</option>' + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+    $('xfe').value = names.includes(kf) ? kf : '';
+    renderExams();
+    renderXBulk();
+  }, fail);
+}
+function renderExams(){
+  const fe = $('xfe').value, fc = $('xfc').value;
+  const list = exs.filter(e => (!fe || e.exam === fe) && (!fc || e.class === fc));
+  list.sort((a,b) => String(a.exam||'').localeCompare(String(b.exam||'')) || (ALL_CLASSES.indexOf(a.class) - ALL_CLASSES.indexOf(b.class)) || String(a.date||'').localeCompare(String(b.date||'')) || String(a.start||'').localeCompare(String(b.start||'')));
+  $('xcnt').textContent = '(' + bn(list.length) + 'টি বিষয়' + (fe || fc ? ' / মোট ' + bn(exs.length) + 'টি' : '') + ')';
+  if (!list.length) { $('xlist').innerHTML = '<div class="mu">কোনো বিষয় যোগ করা হয়নি</div>'; return; }
+  let html = '', cur = null;
+  list.forEach(e => {
+    const k = (e.exam||'') + '|' + (e.class||'');
+    if (k !== cur) { cur = k; html += `<div class="gh"><span>${esc(e.exam||'—')}</span><span class="mu">${esc(e.class||'শ্রেণি নেই')}</span></div>`; }
+    html += `<div class="row"><div><b>${esc(e.subject)}</b>
+      <div class="mu">📅 ${dfmt(e.date)}${e.date ? ' (' + wday(e.date) + ')' : ''} • ⏰ ${fmt(e.start)}${e.end ? ' – ' + fmt(e.end) : ''}</div></div>
+      <div style="white-space:nowrap"><button class="ed" onclick="editExam('${e.id}')">✏️</button><button class="del" onclick="delExam('${e.id}')">✕</button></div></div>`;
+  });
+  $('xlist').innerHTML = html;
+}
+$('xfe').onchange = renderExams;
+$('xfc').onchange = renderExams;
+const xLines = () => [...$('xbulk').querySelectorAll('.xl')];
+function xFind(exam, cls, sub){ return exs.find(e => e.exam === exam && e.class === cls && e.subject === sub); }
+function renderXBulk(){
+  const cls = $('xc').value, exam = $('xe').value.trim();
+  const subs = cls ? [...new Set(sbs.filter(b => b.class === cls).map(b => b.name))].sort((a,b) => a.localeCompare(b)) : [];
+  const single = !!editX || (cls && !subs.length);
+  const bulk = !editX && subs.length > 0;
+  $('xhint').classList.toggle('hide', !!cls);
+  $('xsingle').classList.toggle('hide', !single);
+  $('xnosub').classList.toggle('hide', !(cls && !subs.length && !editX));
+  $('xbulk').classList.toggle('hide', !bulk);
+  $('xbtn').classList.toggle('hide', !(single || bulk));
+  if (!bulk) { $('xbulk').innerHTML = ''; return; }
+  // টাইপ করা মান ধরে রাখা
+  const keep = {};
+  xLines().forEach(r => { keep[r.dataset.s] = {d: r.querySelector('.xd').value, t: r.querySelector('.xt').value, t2: r.querySelector('.xt2').value}; });
+  $('xbulk').innerHTML = `<div class="mu">${esc(cls)} — ${bn(subs.length)}টি বিষয় (তারিখ ও শুরুর সময় দিন)</div>` + subs.map(sb => {
+    const k = keep[sb], ex = xFind(exam, cls, sb);
+    const v = k && (k.d || k.t || k.t2) ? k : {d: ex ? ex.date||'' : '', t: ex ? ex.start||'' : '', t2: ex ? ex.end||'' : ''};
+    return `<div class="xl" data-s="${esc(sb)}" style="border-bottom:1px solid var(--bd);padding:8px 0">
+      <b>${esc(sb)}</b>${ex ? ' <span class="tag-d">সেভ করা</span>' : ''}
+      <input class="xd" type="date" value="${v.d}">
+      <div class="row2"><div><div class="mu">শুরু</div><input class="xt" type="time" value="${v.t}"></div><div><div class="mu">শেষ (ঐচ্ছিক)</div><input class="xt2" type="time" value="${v.t2}"></div></div>
+    </div>`;
+  }).join('');
+}
+$('xc').onchange = renderXBulk;
+$('xe').oninput = renderXBulk;
+function saveExam(){
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  if (!$('xbulk').classList.contains('hide')) return saveExamBulk();
+  const d = {exam:$('xe').value.trim(), class:$('xc').value, subject:$('xs').value.trim(), date:$('xd').value, start:$('xt').value, end:$('xt2').value};
+  if (!d.exam || !d.class || !d.subject || !d.date || !d.start) return showMsg('পরীক্ষার নাম, শ্রেণি, বিষয়, তারিখ ও সময় দিন');
+  if (d.end && d.end <= d.start) return showMsg('শেষ সময় শুরুর সময়ের পরে হতে হবে');
+  if (exs.some(e => e.id !== editX && e.exam === d.exam && e.class === d.class && e.subject === d.subject)) return showMsg('এই পরীক্ষায় ' + d.class + '-এর "' + d.subject + '" বিষয় আগে থেকেই আছে');
+  const wasEdit = !!editX;
+  const p = editX ? db.collection('examRoutines').doc(editX).update(d) : db.collection('examRoutines').add(d);
+  guard(p).then(() => {
+    const ke = d.exam, kc = d.class;
+    cancelX(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok');
+    if (!wasEdit) { $('xe').value = ke; $('xc').value = kc; renderXBulk(); $('xs').focus(); }
+  }).catch(fail);
+}
+function saveExamBulk(){
+  const exam = $('xe').value.trim(), cls = $('xc').value;
+  if (!exam || !cls) return showMsg('পরীক্ষার নাম ও শ্রেণি দিন');
+  const rows = [];
+  for (const r of xLines()) {
+    const sb = r.dataset.s, date = r.querySelector('.xd').value, start = r.querySelector('.xt').value, end = r.querySelector('.xt2').value;
+    if (!date && !start && !end) continue;
+    if (!date || !start) return showMsg('"' + sb + '" বিষয়ের তারিখ ও শুরুর সময় দুটোই দিন (অথবা দুটোই ফাঁকা রাখুন)');
+    if (end && end <= start) return showMsg('"' + sb + '": শেষ সময় শুরুর সময়ের পরে হতে হবে');
+    rows.push({subject: sb, date, start, end});
+  }
+  if (!rows.length) return showMsg('কমপক্ষে একটি বিষয়ের তারিখ ও সময় দিন');
+  const batch = db.batch(); let nu = 0, up = 0;
+  rows.forEach(r => {
+    const d = {exam, class: cls, subject: r.subject, date: r.date, start: r.start, end: r.end}, ex = xFind(exam, cls, r.subject);
+    if (ex) { batch.update(db.collection('examRoutines').doc(ex.id), d); up++; } else { batch.set(db.collection('examRoutines').doc(), d); nu++; }
+  });
+  guard(batch.commit()).then(() => {
+    showMsg('✅ ' + bn(nu + up) + 'টি বিষয় সংরক্ষিত হয়েছে' + (up ? ' (নতুন ' + bn(nu) + ', আপডেট ' + bn(up) + ')' : ''), 'ok');
+  }).catch(fail);
+}
+function editExam(id){
+  const e = exs.find(x => x.id === id); if (!e) return;
+  editX = id; $('xe').value = e.exam||''; setCls('xc', e.class); $('xs').value = e.subject||''; $('xd').value = e.date||''; $('xt').value = e.start||''; $('xt2').value = e.end||'';
+  $('xh').textContent = '✏️ বিষয় এডিট'; $('xbtn').textContent = '✅ আপডেট করুন'; $('xcan').classList.remove('hide');
+  renderXBulk();
+  $('xe').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelX(){
+  editX = null; $('xe').value = $('xs').value = $('xd').value = $('xt').value = $('xt2').value = ''; $('xc').value = '';
+  $('xh').textContent = 'পরীক্ষার রুটিনে বিষয় যোগ করুন'; $('xbtn').textContent = 'বিষয় যোগ করুন'; $('xcan').classList.add('hide');
+  renderXBulk();
+}
+function delExam(id){
+  if (confirm('এই বিষয়টি পরীক্ষার রুটিন থেকে মুছবেন?')) db.collection('examRoutines').doc(id).delete().then(() => { if (editX === id) cancelX(); }).catch(fail);
+}
+
+// ===== বিষয় (subjects কালেকশন: name, class) =====
+var sbs = [], editB = null, unsubB = null;
+$('bfc').innerHTML = '<option value="">সব শ্রেণি</option>' + optGroups;
+$('bcl').innerHTML = GROUPS.map(x => `<div class="mu" style="margin-top:6px">${x.g}</div><div class="dchips">` +
+  x.items.map(c => `<label><input type="checkbox" value="${c}"><span>${c}</span></label>`).join('') + '</div>').join('');
+const bSel = () => [...$('bcl').querySelectorAll('input:checked')].map(x => x.value);
+const bSet = arr => $('bcl').querySelectorAll('input').forEach(x => x.checked = arr.includes(x.value));
+function bAll(on){ bSet(on ? ALL_CLASSES : []); }
+function startSubjects(){
+  unsubB = db.collection('subjects').onSnapshot(s => {
+    sbs = s.docs.map(d => ({id: d.id, ...d.data()}));
+    renderSubjects();
+    renderXBulk();
+  }, fail);
+}
+function renderSubjects(){
+  const fc = $('bfc').value;
+  const list = sbs.filter(b => !fc || b.class === fc);
+  list.sort((a,b) => (ALL_CLASSES.indexOf(a.class) - ALL_CLASSES.indexOf(b.class)) || String(a.name||'').localeCompare(String(b.name||'')));
+  $('bcnt').textContent = '(' + bn(list.length) + 'টি' + (fc ? ' / মোট ' + bn(sbs.length) + 'টি' : '') + ')';
+  if (!list.length) { $('blist').innerHTML = '<div class="mu">কোনো বিষয় যোগ করা হয়নি</div>'; return; }
+  const counts = {}; list.forEach(b => counts[b.class] = (counts[b.class]||0) + 1);
+  let html = '', cur = null;
+  list.forEach(b => {
+    if (b.class !== cur) { cur = b.class; html += `<div class="gh"><span>${esc(cur||'শ্রেণি নেই')}</span><span class="mu">${bn(counts[cur])}টি বিষয়</span></div>`; }
+    html += `<div class="row"><div><b>${esc(b.name)}</b></div>
+      <div style="white-space:nowrap"><button class="ed" onclick="editSubject('${b.id}')">✏️</button><button class="del" onclick="delSubject('${b.id}')">✕</button></div></div>`;
+  });
+  $('blist').innerHTML = html;
+}
+$('bfc').onchange = renderSubjects;
+function saveSubject(){
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  const name = $('bn').value.trim(), cls = bSel();
+  if (!name) return showMsg('বিষয়ের নাম দিন');
+  if (!cls.length) return showMsg('কমপক্ষে একটি শ্রেণি বেছে নিন');
+  if (editB) {
+    if (cls.length > 1) return showMsg('এডিটের সময় একটি শ্রেণিই বেছে নিন। একাধিক শ্রেণিতে যোগ করতে নতুন করে যোগ করুন।');
+    if (sbs.some(b => b.id !== editB && b.class === cls[0] && b.name === name)) return showMsg(cls[0] + '-এ "' + name + '" আগে থেকেই আছে');
+    guard(db.collection('subjects').doc(editB).update({name, class: cls[0]})).then(() => { cancelB(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
+    return;
+  }
+  const fresh = cls.filter(c => !sbs.some(b => b.class === c && b.name === name));
+  const skip = cls.length - fresh.length;
+  if (!fresh.length) return showMsg('"' + name + '" বিষয়টি বেছে নেওয়া সব শ্রেণিতে আগে থেকেই আছে');
+  const batch = db.batch();
+  fresh.forEach(c => batch.set(db.collection('subjects').doc(), {name, class: c}));
+  guard(batch.commit()).then(() => {
+    cancelB();
+    showMsg('✅ ' + bn(fresh.length) + 'টি শ্রেণিতে "' + name + '" যোগ হয়েছে' + (skip ? '\n(' + bn(skip) + 'টি শ্রেণিতে আগে থেকেই ছিল, বাদ গেছে)' : ''), 'ok');
+  }).catch(fail);
+}
+function editSubject(id){
+  const b = sbs.find(x => x.id === id); if (!b) return;
+  editB = id; $('bn').value = b.name||''; bSet([b.class]);
+  $('bh').textContent = '✏️ বিষয় এডিট'; $('bbtn').textContent = '✅ আপডেট করুন'; $('bcan').classList.remove('hide');
+  $('bn').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelB(){
+  editB = null; $('bn').value = ''; bSet([]);
+  $('bh').textContent = 'নতুন বিষয় যোগ করুন'; $('bbtn').textContent = 'বিষয় সংরক্ষণ'; $('bcan').classList.add('hide');
+}
+function delSubject(id){
+  if (confirm('এই বিষয়টি মুছবেন?')) db.collection('subjects').doc(id).delete().then(() => { if (editB === id) cancelB(); }).catch(fail);
 }
 
 // ===== শিক্ষকদের মোবাইল লগইন তৈরি =====
