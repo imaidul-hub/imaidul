@@ -211,7 +211,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
         <div style="display:flex;gap:14px;margin-bottom:4px"><button type="button" class="ed" onclick="setDays([6,0,1,2,3,4])">শনি–বৃহস্পতি</button><button type="button" class="ed" onclick="setDays([])">সব মুছুন</button></div>
         <input id="rp" type="number" min="1" placeholder="পিরিয়ড নং">
         <div class="row2"><input id="rs" type="time"><input id="re" type="time"></div>
-        <div class="row2"><input id="rc" placeholder="শ্রেণি"><input id="rj" placeholder="বিষয়"></div>
+        <div class="row2"><select id="rc"></select><input id="rj" placeholder="বিষয়"></div>
         <input id="rr" placeholder="রুম (ঐচ্ছিক)">
         <button id="rbtn" class="act" onclick="saveRoutine()">রুটিন সংরক্ষণ</button>
         <button id="rcan" class="act sec hide" onclick="cancelR()">বাতিল</button>
@@ -231,7 +231,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
         <select id="ps"></select>
         <div class="mu">↑ যিনি প্রক্সি নিবেন</div>
         <div class="row2"><input id="pp" type="number" min="1" placeholder="পিরিয়ড নং"><input id="pr" placeholder="রুম (ঐচ্ছিক)"></div>
-        <div class="row2"><input id="pc" placeholder="শ্রেণি"><input id="pj" placeholder="বিষয়"></div>
+        <div class="row2"><select id="pc"></select><input id="pj" placeholder="বিষয়"></div>
         <button id="pbtn" class="act" onclick="saveProxy()">প্রক্সি সংরক্ষণ</button>
         <button id="pcan" class="act sec hide" onclick="cancelP()">বাতিল</button>
       </div>
@@ -484,7 +484,7 @@ function saveRoutine(){
 function editRoutine(id){
   const r = rts.find(x => x.id === id); if (!r) return;
   editR = id; $('rt').value = r.teacherId; setDays([r.day]); $('rp').value = r.period;
-  $('rs').value = r.start||''; $('re').value = r.end||''; $('rc').value = r.class||''; $('rj').value = r.subject||''; $('rr').value = r.room||'';
+  $('rs').value = r.start||''; $('re').value = r.end||''; setCls('rc', r.class); $('rj').value = r.subject||''; $('rr').value = r.room||'';
   $('rh').textContent = '✏️ রুটিন এডিট'; $('rbtn').textContent = '✅ আপডেট করুন'; $('rcan').classList.remove('hide');
   $('rt').scrollIntoView({behavior:'smooth', block:'center'});
 }
@@ -544,7 +544,7 @@ function saveProxy(){
 function editProxy(id){
   const p = pxs.find(x => x.id === id); if (!p) return;
   editP = id; $('pd').value = p.date; $('pa').value = p.absentId||''; $('ps').value = p.subId; $('pp').value = p.period;
-  $('pc').value = p.class||''; $('pj').value = p.subject||''; $('pr').value = p.room||'';
+  setCls('pc', p.class); $('pj').value = p.subject||''; $('pr').value = p.room||'';
   $('ph').textContent = '✏️ প্রক্সি এডিট'; $('pbtn').textContent = '✅ আপডেট করুন'; $('pcan').classList.remove('hide');
   $('pd').scrollIntoView({behavior:'smooth', block:'center'});
 }
@@ -572,6 +572,10 @@ const optGroups = GROUPS.map(x => `<optgroup label="${x.g}">${x.items.map(c => `
 $('sc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
 $('sfc').innerHTML = '<option value="">সব শ্রেণি</option>' + optGroups;
 $('tcl').innerHTML = '<option value="">-- শ্রেণি শিক্ষক নন --</option>' + optGroups;
+$('rc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
+$('pc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
+// পুরনো ডাটার শ্রেণি তালিকায় না থাকলে সেটিও অপশন হিসেবে যোগ করে সিলেক্ট করে
+function setCls(id, v){ v = v||''; const el = $(id); if (v && !Array.from(el.options).some(o => o.value === v)) { const o = document.createElement('option'); o.textContent = v; el.appendChild(o); } el.value = v; }
 
 var students = [], editS = null;
 function startStudents(){

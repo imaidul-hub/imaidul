@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>শিক্ষকবৃন্দ</title>
@@ -23,8 +20,8 @@ input{font:inherit;padding:12px;border-radius:10px;border:1px solid var(--bd);ba
 .in{flex:1;min-width:0}
 .in b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mu{color:var(--mu);font-size:13px}
-.acts{display:flex;gap:6px;flex:none}
-.acts a{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff}
+.acts{display:flex;flex-direction:column;gap:6px;flex:none}
+.acts a{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;text-decoration:none}
 .call{background:var(--pr)}.wa{background:#25d366}.off{background:var(--mu);opacity:.5;pointer-events:none}
 .ab{display:inline-block;margin-top:2px;padding:0 8px;border-radius:999px;font-size:12px;background:rgba(220,38,38,.12);color:#dc2626;border:1px solid rgba(220,38,38,.35)}
 .ab.p{background:rgba(15,122,74,.12);color:var(--pr);border-color:rgba(15,122,74,.35)}
@@ -76,8 +73,9 @@ body{background:#fff;color:#000;font-size:12px;line-height:1.35}
 #ptbl thead{display:table-header-group}
 #ptbl th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:11px}
 #ptbl tr{page-break-inside:avoid}
-#ptbl tr.sh td{background:#cfe3d6;font-weight:700;text-align:left;font-size:12.5px;padding:5px 6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;break-after:avoid;page-break-after:avoid}}
+#ptbl tr.sh td{background:#d9d9d9;font-weight:700;text-align:left;font-size:12.5px;padding:5px 6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;break-after:avoid;page-break-after:avoid}}
 .hide{display:none!important}
+.guest .ctl .yr,.guest .ctl .pbtn{display:none!important}
 .rcb{flex-basis:100%;font:inherit;font-size:14px;font-weight:700;padding:9px;border-radius:10px;border:1px solid var(--pr);background:transparent;color:var(--pr);cursor:pointer}
 #rcm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;overflow:auto;padding:10px}
 #rcm.show{display:block}
@@ -109,38 +107,45 @@ body.rcp .rt th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-
 body.rcp .rt tr{page-break-inside:avoid}
 body.rcp .rcs div{border:1px solid #000;background:none;color:#000}
 }
-</style>
-<style id="sl-css">
-#sl{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f4f8f5;transition:opacity .45s ease,visibility .45s ease}
-#sl.sl-out{opacity:0;visibility:hidden;pointer-events:none}
-#sl .sl-ring{width:54px;height:54px;border-radius:50%;border:4px solid rgba(15,122,74,.18);border-top-color:#0f7a4a;border-right-color:#c9a227;animation:sl-spin .9s cubic-bezier(.5,.1,.5,.9) infinite}
-#sl .sl-txt{font:600 14px "Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;color:#0f7a4a;animation:sl-pulse 1.4s ease-in-out infinite}
-#sl-bar{position:fixed;top:0;left:0;height:3px;width:0;z-index:100000;background:linear-gradient(90deg,#0f7a4a,#c9a227);box-shadow:0 0 8px rgba(15,122,74,.5);transition:width .35s ease,opacity .3s ease}
-body{animation:sl-fade .5s ease both}
-body.sl-leave{opacity:0;transition:opacity .18s ease}
-@keyframes sl-spin{to{transform:rotate(360deg)}}
-@keyframes sl-pulse{0%,100%{opacity:.45}50%{opacity:1}}
-@keyframes sl-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@media(prefers-color-scheme:dark){#sl{background:#0e1712}#sl .sl-ring{border-color:rgba(52,181,122,.2);border-top-color:#34b57a}#sl .sl-txt{color:#34b57a}}
-@media(prefers-reduced-motion:reduce){#sl .sl-ring,#sl .sl-txt,body{animation:none}}
+
+/* ===== শিক্ষকের রুটিন ===== */
+#rtm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;overflow:auto;padding:10px}
+#rtm.show{display:block}
+.rtw{overflow-x:auto}
+.rt.g{min-width:100%}
+.rt.g th small{display:block;font-weight:400;color:var(--mu);font-size:11px;white-space:nowrap}
+.rt.g td{min-width:84px;line-height:1.3}
+.rt.g td small{display:block;color:var(--mu);font-size:11px}
+.rt.g td.dn{font-weight:700;white-space:nowrap;background:rgba(15,122,74,.08)}
+.rt.g tr.today td{background:rgba(201,162,39,.16)}
+@page rtl{size:A4 landscape;margin:10mm}
+@media print{
+#rtm{display:none!important}
+body.rtp,html:has(body.rtp){width:auto!important}
+body.rtp .bar,body.rtp .wrap,body.rtp #ptbl,body.rtp .rcno{display:none!important}
+body.rtp #rtm{display:block!important;position:static;background:none;padding:0;overflow:visible}
+body.rtp #rtc{page:rtl;border:0;border-radius:0;padding:0;background:#fff;color:#000;max-width:none}
+body.rtp .rch h3{color:#000}
+body.rtp .rcp-only{display:block!important}
+body.rtp .rtw{overflow:visible}
+body.rtp .rt th,body.rtp .rt td{border:1px solid #000;color:#000}
+body.rtp .rt th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.rtp .rt.g td.dn,body.rtp .rt.g tr.today td{background:none}
+body.rtp .rt.g td small,body.rtp .rt.g th small{color:#333}
+body.rtp .rcs div{border:1px solid #000;background:none;color:#000}
+}
+@media print{html{-webkit-filter:grayscale(1);filter:grayscale(1)}*,*::before,*::after{color:#000!important;text-shadow:none!important;box-shadow:none!important}.rt small,.mu{color:#333!important}}
 </style>
 </head>
 <body>
-<div id="sl" role="status" aria-live="polite"><div class="sl-ring"></div><div class="sl-txt">লোড হচ্ছে...</div></div><div id="sl-bar"></div>
 <div class="bar"><b>👨‍🏫 শিক্ষকবৃন্দ</b><a href="index.html">হোম</a></div>
 
 <div class="wrap">
-  <div id="need" class="hide" style="background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:30px 0;text-align:center">
-    <b>🔐 এই পেজ দেখতে লগইন করুন</b>
-    <div style="color:var(--mu);font-size:13px;margin:4px 0 12px">শিক্ষক বা অ্যাডমিন হিসেবে লগইন করলে তথ্য দেখা যাবে</div>
-    <a href="teacher.html" style="display:inline-block;background:var(--pr);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">👨‍🏫 শিক্ষক লগইন</a>
-    <a href="admin.html" style="display:inline-block;background:var(--mu);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">🔐 অ্যাডমিন</a>
-  </div>
-  <div id="main" class="hide">
+  <div id="main">
   <div class="ctl">
   <div class="yr"><button onclick="shiftY(-1)">◀</button><b id="yl"></b><button onclick="shiftY(1)">▶</button></div>
   <input id="q" type="search" placeholder="🔍 নাম, বিষয় বা মোবাইল দিয়ে খুঁজুন" oninput="render()">
-  <button class="pbtn" onclick="document.body.classList.remove('rcp');doPrint()">🖨️ সব শিক্ষকের তথ্য প্রিন্ট করুন</button>
+  <button class="pbtn" onclick="document.body.classList.remove('rcp','rtp');doPrint()">🖨️ সব শিক্ষকের তথ্য প্রিন্ট করুন</button>
   </div>
   <div class="cnt" id="cnt"></div>
   <div id="ptbl"></div>
@@ -149,6 +154,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
 </div>
 
 <div id="rcm" onclick="if(event.target===this)closeRC()"><div class="rcc" id="rcc"></div></div>
+<div id="rtm" onclick="if(event.target===this)closeRT()"><div class="rcc" id="rtc"></div></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -164,9 +170,6 @@ firebase.initializeApp({
   appId: "1:1001193607775:web:c4539574a49cddf59341ea"
 });
 const db = firebase.firestore(), auth = firebase.auth();
-// ⚡ দ্রুত ও স্থিতিশীল লোডিং: ধীর/ব্লকড নেটওয়ার্কে স্বয়ংক্রিয় long-polling + অফলাইন ক্যাশ
-try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) {}
-db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 const $ = id => document.getElementById(id);
 const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
 const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -176,8 +179,9 @@ const MONTHS = ['জানুয়ারি','ফেব্রুয়ারি
 
 // মোট ক্লাস মিস (অনুপস্থিত থাকায়) ও মোট প্রক্সি (অন্যের ক্লাস নেওয়ায়)
 function absTag(id){
+  if (!auth.currentUser) return `<div class="tgs"><span class="ab p" onclick="openRT('${id}')">📅 রুটিন</span></div>`;
   const a = missed[id], cls = a ? a.total : 0, px = a ? a.ptotal : 0;
-  return `<div class="tgs"><span class="ab ${cls ? '' : 'z'}" onclick="openRC('${id}')">মিস: ${bn(cls)}টি</span><span class="ab p" onclick="openRC('${id}')">প্রক্সি: ${bn(px)}টি</span><span class="ab p" onclick="openRC('${id}')">📋 রিপোর্ট</span></div>`;
+  return `<div class="tgs"><span class="ab ${cls ? '' : 'z'}" onclick="openRC('${id}')">মিস: ${bn(cls)}টি</span><span class="ab p" onclick="openRC('${id}')">প্রক্সি: ${bn(px)}টি</span><span class="ab p" onclick="openRC('${id}')">📋 রিপোর্ট</span><span class="ab p" onclick="openRT('${id}')">📅 রুটিন</span></div>`;
 }
 function shiftY(n){ Y += n; loadMissed(); }
 // ইনডেক্স নম্বরের সম্ভাব্য ফিল্ড
@@ -245,6 +249,7 @@ function groupByCat(arr){
   return g;
 }
 function printTable(){
+  if (!auth.currentUser) { $('ptbl').innerHTML = ''; return; }
   const row = t => {
     const x = missed[t.id] || {total:0, ptotal:0}, ph = normPhone(t.phone), ix = idxOf(t);
     return `<tr><td class="l">${esc(t.name)}</td><td>${ix !== '' ? bn(esc(ix)) : '–'}</td><td>${ph ? bn(ph) : '–'}</td><td>${bn(x.total)}</td><td>${bn(x.ptotal)}</td></tr>`;
@@ -269,12 +274,12 @@ function render(){
         <div class="mu r1">${esc(ds || '—')} • ইন্ডেক্স: ${ix !== '' ? bn(esc(ix)) : '–'}</div>
         <div class="mu r2">${ok ? bn(ph) : 'নম্বর নেই'}</div>
       </div>
+      <div class="acts">
+        <a class="call ${ok?'':'off'}" href="${ok ? 'tel:+88' + ph : '#'}" title="কল">📞</a>
+        <a class="wa ${ok?'':'off'}" href="${ok ? 'https://wa.me/88' + ph : '#'}" target="_blank" rel="noopener" title="WhatsApp">💬</a>
+      </div>
       <div class="bot">
         ${absTag(t.id)}
-        <div class="acts">
-          <a class="call ${ok?'':'off'}" href="${ok ? 'tel:+88' + ph : '#'}" title="কল">📞</a>
-          <a class="wa ${ok?'':'off'}" href="${ok ? 'https://wa.me/88' + ph : '#'}" target="_blank" rel="noopener" title="WhatsApp">💬</a>
-        </div>
       </div></div>`;
   };
   $('list').innerHTML = list.length ? groupByCat(list).map((arr, i) => arr.length
@@ -310,12 +315,13 @@ const perOf = p => pick(p, ['period','periodNo','periodNumber','slot']);
 var rcId = null;
 const tName = id => { const x = teachers.find(z => z.id === id); return x ? x.name : (id ? String(id) : '–'); };
 function openRC(id){
+  if (!auth.currentUser) return;
   rcId = id;
   drawRC(); $('rcm').classList.add('show'); document.body.style.overflow = 'hidden';
 }
 function closeRC(){ rcId = null; $('rcm').classList.remove('show'); document.body.classList.remove('rcp'); document.body.style.overflow = ''; }
 function printRC(){ document.body.classList.add('rcp'); doPrint(); }
-window.addEventListener('afterprint', () => document.body.classList.remove('rcp'));
+window.addEventListener('afterprint', () => document.body.classList.remove('rcp', 'rtp'));
 function downloadRC(){
   const t = teachers.find(x => x.id === rcId); if (!t) return;
   const c = $('rcc').cloneNode(true);
@@ -327,7 +333,8 @@ function downloadRC(){
     + '.sec{display:flex;justify-content:space-between;border-bottom:2px solid #000;margin:14px 0 8px;font-weight:700;font-size:14px}.sec span{font-weight:400;font-size:12px}'
     + '.rt{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}.rt th,.rt td{border:1px solid #000;padding:5px 3px;text-align:center;word-break:break-word;overflow-wrap:anywhere}.rt th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     + '.rt th:nth-child(1){width:28%}.rt th:nth-child(2){width:18%}.rt th:nth-child(3){width:22%}.rt thead{display:table-header-group}.rt tr{page-break-inside:avoid}.empty{text-align:center;padding:10px;font-size:12px}'
-    + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}';
+    + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}'
+    + '@media print{html{-webkit-filter:grayscale(1);filter:grayscale(1)}*{color:#000!important}.rt small,.mu{color:#333!important}}';
   const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>রিপোর্ট কার্ড - ' + esc(t.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
   const nm = String(t.name || 'শিক্ষক').replace(/[\\\/:*?"<>|]/g, '').trim();
   const fname = 'রিপোর্ট-কার্ড-' + nm + '-' + Y + '.html';
@@ -360,53 +367,91 @@ function drawRC(){
     <div class="sec">✅ প্রক্সি <span>${bn(Y)} সাল</span></div>${tbl(pl)}
     <div class="rcno" style="display:flex;gap:8px"><button class="pbtn" onclick="downloadRC()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="printRC()">🖨️ প্রিন্ট</button></div>`;
 }
-var unsubT = null;
-function startT(){
-  loadMissed();
-  unsubT = db.collection('teachers').orderBy('name').onSnapshot(s => {
-  teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
-  render();
-}, e => $('list').innerHTML = '<div class="empty">লোড করা যায়নি<br><span class="mu">' + esc(e.code || '') + ' ' + esc(e.message) + '</span></div>');
+
+// ===== শিক্ষকের সাপ্তাহিক রুটিন (routines কালেকশন) =====
+var rtId = null, rtRows = [], rtLoading = false;
+const RT_DAYS = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const RT_ORDER = [6,0,1,2,3,4,5];   // শনি থেকে শুরু
+const rtFmt = t => { if (!t) return ''; const p = String(t).split(':').map(Number); if (isNaN(p[0])) return ''; let h = p[0], m = p[1] || 0; const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return bn(h + ':' + String(m).padStart(2, '0')) + ' ' + ap; };
+function openRT(id){
+  rtId = id; rtRows = []; rtLoading = true;
+  drawRT(); $('rtm').classList.add('show'); document.body.style.overflow = 'hidden';
+  db.collection('routines').where('teacherId', '==', id).get().then(q => {
+    if (rtId !== id) return;
+    rtRows = q.docs.map(d => ({id: d.id, ...d.data()})); rtLoading = false; drawRT();
+  }).catch(e => { if (rtId !== id) return; rtLoading = false; $('rtc').querySelector('.rtbody').innerHTML = '<div class="empty">লোড করা যায়নি<br><span class="mu">' + esc(e.code || '') + ' ' + esc(e.message) + '</span></div>'; });
 }
+function closeRT(){ rtId = null; $('rtm').classList.remove('show'); document.body.classList.remove('rtp'); document.body.style.overflow = ''; }
+function printRT(){ document.body.classList.add('rtp'); doPrint(); }
+function rtTable(){
+  const rows = rtRows.filter(r => r.period != null);
+  if (!rows.length) return '<div class="empty">এই শিক্ষকের কোনো রুটিন নেই</div>';
+  const periods = [...new Set(rows.map(r => +r.period))].sort((a, b) => a - b);
+  const time = {};   // পিরিয়ডের সময়: প্রথম যে এন্ট্রিতে আছে
+  rows.forEach(r => { if (!time[r.period] && r.start) time[r.period] = rtFmt(r.start) + (r.end ? ' – ' + rtFmt(r.end) : ''); });
+  const today = new Date().getDay();
+  const days = RT_ORDER.filter(d => rows.some(r => r.day === d));
+  const head = '<tr><th>বার</th>' + periods.map(p => `<th>${bn(p)}ম পিরিয়ড${time[p] ? '<small>' + time[p] + '</small>' : ''}</th>`).join('') + '</tr>';
+  const body = days.map(d => '<tr' + (d === today ? ' class="today"' : '') + `><td class="dn">${RT_DAYS[d]}</td>` + periods.map(p => {
+    const it = rows.filter(r => r.day === d && +r.period === p);
+    return '<td>' + (it.length ? it.map(r => `${esc(r.class)}<small>${esc(r.subject)}${r.room ? ' • রুম ' + esc(r.room) : ''}</small>`).join('<hr style="border:0;border-top:1px dashed var(--bd);margin:3px 0">') : '–') + '</td>';
+  }).join('') + '</tr>').join('');
+  return `<div class="rtw"><table class="rt g"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+}
+function drawRT(){
+  const t = teachers.find(x => x.id === rtId); if (!t) return;
+  const ix = idxOf(t), ds = desigOf(t), n = rtRows.length;
+  const days = new Set(rtRows.map(r => r.day)).size;
+  $('rtc').innerHTML = `<div class="rch"><div><h3>📅 ${esc(t.name)} — সাপ্তাহিক রুটিন</h3><div class="mu">${esc(ds || '—')} • ইন্ডেক্স: ${ix !== '' ? bn(esc(ix)) : '–'}</div></div><button class="rcx rcno" onclick="closeRT()">✕</button></div>
+    <div class="rcs"><div class="b"><b>${rtLoading ? '…' : bn(n)}</b>সাপ্তাহিক ক্লাস</div><div class="b"><b>${rtLoading ? '…' : bn(days)}</b>ক্লাসের দিন</div></div>
+    <div class="rtbody">${rtLoading ? '<div class="empty">লোড হচ্ছে...</div>' : rtTable()}</div>
+    <div class="rcno" style="display:flex;gap:8px"><button class="pbtn" onclick="downloadRT()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="printRT()">🖨️ প্রিন্ট</button></div>`;
+}
+function downloadRT(){
+  const t = teachers.find(x => x.id === rtId); if (!t) return;
+  const c = $('rtc').cloneNode(true);
+  c.querySelectorAll('.rcno').forEach(e => e.remove());
+  const css = '@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}html{background:#ddd}'
+    + 'body{font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;width:297mm;min-height:210mm;margin:0 auto;padding:10mm;background:#fff;color:#000;line-height:1.45;font-size:13px}'
+    + '.rch h3{margin:0 0 4px;font-size:18px}.mu{font-size:12px;color:#444}.rcs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.rcs div{border:1px solid #000;text-align:center;padding:6px;border-radius:8px;font-size:12px}.rcs b{display:block;font-size:20px}'
+    + '.rt{width:100%;border-collapse:collapse;font-size:12px}.rt th,.rt td{border:1px solid #000;padding:5px 4px;text-align:center}.rt th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}.rt small{display:block;font-size:11px;font-weight:400;color:#333}.rt td.dn{font-weight:700;white-space:nowrap}.empty{text-align:center;padding:10px}'
+    + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}'
+    + '@media print{html{-webkit-filter:grayscale(1);filter:grayscale(1)}*{color:#000!important}.rt small,.mu{color:#333!important}}';
+  const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=1123"><title>রুটিন - ' + esc(t.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
+  const nm = String(t.name || 'শিক্ষক').replace(/[\\\/:*?"<>|]/g, '').trim();
+  const fname = 'রুটিন-' + nm + '.html';
+  if (window.AndroidPrint && typeof AndroidPrint.saveFile !== 'undefined') { AndroidPrint.saveFile(fname, html, 'text/html'); return; }
+  if (window.AndroidPrint) { alert('ডাউনলোডের জন্য অ্যাপটি নতুন ভার্সনে আপডেট করুন (MainActivity.java নতুন করে বিল্ড করুন)।'); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
+  a.download = fname;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+var unsubT = null;
+// শিক্ষক তালিকা: আগে ক্যাশ (localStorage) থেকে দ্রুত দেখানো, তারপর সার্ভার থেকে আপডেট
+const TC_KEY = 'teachersCache_v1';
+function readTC(){ try { const c = JSON.parse(localStorage.getItem(TC_KEY) || 'null'); return Array.isArray(c) ? c : null; } catch (e) { return null; } }
+function saveTC(arr){ try { localStorage.setItem(TC_KEY, JSON.stringify(arr)); } catch (e) {} }
+function startT(){
+  if (auth.currentUser) loadMissed();
+  const c = readTC();
+  if (c && c.length) { teachers = c; render(); }
+  unsubT = db.collection('teachers').orderBy('name').onSnapshot(s => {
+    teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
+    if (!s.metadata.fromCache) saveTC(teachers);   // সার্ভার থেকে আসা ডাটাই ক্যাশে রাখা
+    render(); if (rtId) drawRT();
+  }, e => { if (!teachers.length) $('list').innerHTML = '<div class="empty">লোড করা যায়নি<br><span class="mu">' + esc(e.code || '') + ' ' + esc(e.message) + '</span></div>'; });
+}
+// পেজ খুলেই ক্যাশ থেকে দেখানো (লগইন যাচাইয়ের অপেক্ষা না করে)
+{ const c = readTC(); if (c && c.length) { teachers = c; render(); } }
 auth.onAuthStateChanged(u => {
   if (unsubT) { unsubT(); unsubT = null; }
   teachers = []; missed = {};
-  $('need').classList.toggle('hide', !!u);
-  $('main').classList.toggle('hide', !u);
-  if (u) startT();
+  closeRC();
+  document.body.classList.toggle('guest', !u);
+  startT();
 });
-</script>
-<script id="sl-js">
-(function(){
-  var sl=document.getElementById('sl'),bar=document.getElementById('sl-bar'),done=false,w=8,t0=Date.now();
-  if(!sl)return;
-  bar.style.width=w+'%';
-  var iv=setInterval(function(){w+=(90-w)*.08;bar.style.width=w+'%';},250);
-  function hide(){
-    if(done)return;done=true;clearInterval(iv);
-    var wait=Math.max(0,350-(Date.now()-t0));
-    setTimeout(function(){
-      bar.style.width='100%';
-      sl.classList.add('sl-out');
-      setTimeout(function(){bar.style.opacity='0';},250);
-      setTimeout(function(){sl.remove();bar.remove();},700);
-    },wait);
-  }
-  var loaded=document.readyState==='complete',authed=false;
-  function check(){if(loaded&&authed)hide();}
-  window.addEventListener('load',function(){loaded=true;check();});
-  try{firebase.auth().onAuthStateChanged(function(){authed=true;check();},function(){authed=true;check();});}catch(e){authed=true;}
-  setTimeout(hide,6000);
-  document.addEventListener('click',function(e){
-    var a=e.target.closest&&e.target.closest('a[href]');
-    if(!a||a.target==='_blank'||e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey)return;
-    var h=a.getAttribute('href');
-    if(!h||h.charAt(0)==='#'||/^(javascript|mailto|tel|blob|data):/i.test(h)||a.hasAttribute('download'))return;
-    if(a.origin&&a.origin!==location.origin)return;
-    document.body.classList.add('sl-leave');
-  });
-  window.addEventListener('pageshow',function(e){if(e.persisted)document.body.classList.remove('sl-leave');});
-})();
 </script>
 </body>
 </html>

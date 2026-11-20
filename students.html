@@ -23,8 +23,8 @@ a{color:inherit;text-decoration:none}
 .bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center}
 .bar b{font-size:17px}
 .bar a,.bar button{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;margin-left:6px}
-.wrap{max-width:900px;margin:0 auto;padding:12px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px}
+.wrap{max-width:900px;margin:0 auto;padding:6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;margin-bottom:8px}
 input,select,button.act{font:inherit;padding:10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin:4px 0}
 button.act{background:var(--pr);color:#fff;border:0;cursor:pointer;font-weight:700}
 .sec{background:var(--mu)!important}
@@ -45,42 +45,43 @@ h3{margin:0 0 6px}
 .mg div span{display:block;font-size:13px;color:var(--mu)}
 .mg div span i{font-style:normal}
 .mg div.on{border-color:var(--bd);background:rgba(220,38,38,.06)}
+.mg div.on.l{background:rgba(183,121,31,.1)}
 .mg .ca{color:#dc2626;font-weight:700}.mg .cl{color:#b7791f;font-weight:700}
 .row:last-child{border-bottom:0}
 .info{flex:1;min-width:0}
 .roll{display:inline-block;min-width:30px;text-align:center;background:var(--pr);color:#fff;border-radius:8px;padding:0 6px;margin-right:6px;font-size:13px}
-.call{flex:none;display:inline-flex;align-items:center;gap:4px;background:var(--pr);color:#fff!important;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700;white-space:nowrap}
-.call:active{background:var(--pr2)}
-.acts{flex:none;display:flex;flex-direction:column;gap:6px;align-items:stretch;text-align:center}
-.call.wa{background:#25d366;color:#fff!important}
-.call.wa:active{background:#1da851}
-.acts .call{justify-content:center}
+.t{flex-wrap:wrap;display:flex;align-items:center;gap:4px 8px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:4px 8px;margin-bottom:4px}
+.av{width:38px;height:38px;border-radius:50%;background:var(--pr);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex:none;overflow:hidden;letter-spacing:-.5px}
+.in{flex:1;min-width:0;line-height:1.35}
+.in b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.in .r1,.in .r2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acts{display:flex;flex-direction:column;gap:4px;flex:none;align-items:stretch;text-align:center}
+.acts a{display:inline-flex;align-items:center;justify-content:center;gap:4px;border-radius:999px;padding:4px 14px;font-size:14px;font-weight:700;white-space:nowrap;color:#fff!important;text-decoration:none}
+.call:active{background:var(--pr2)}.wa:active{background:#1da851}
+.call{background:var(--pr)}.wa{background:#25d366}.off{background:var(--mu);opacity:.5;pointer-events:none}
+.bot{flex-basis:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px dashed var(--bd);padding-top:4px}
+.bot .tags{flex:1;min-width:0;margin:0;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.bot .tg{display:flex;align-items:center;justify-content:center;height:24px;padding:0 2px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.tg.p{background:rgba(15,122,74,.12);color:var(--pr);border-color:rgba(15,122,74,.35)}
 .del{background:none;border:0;color:var(--er);cursor:pointer;font:inherit}
 .ed{background:none;border:0;color:var(--pr);cursor:pointer;font:inherit;margin-right:6px}
 .row2{display:flex;gap:8px}.row2>*{flex:1;min-width:0}
-.gh{font-weight:700;color:var(--pr);margin:12px 0 2px;display:flex;justify-content:space-between}
+.gh{font-weight:700;color:var(--pr);margin:10px 2px 6px;padding:0 0 3px;border-bottom:2px solid var(--pr);display:flex;justify-content:space-between;font-size:16px}
 .hide{display:none}
 #toast{position:fixed;left:10px;right:10px;top:calc(58px + env(safe-area-inset-top,0px));z-index:99;max-width:640px;margin:0 auto;padding:12px 40px 12px 14px;border-radius:12px;color:#fff;font-size:14px;white-space:pre-wrap;word-break:break-word;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 #toast.err{background:#b42318}#toast.ok{background:#0f7a4a}
 #toast button{position:absolute;right:8px;top:6px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
 #ptbl{display:none}
 
-/* এক লাইনে: অনুপস্থিত, ছুটি, রিপোর্ট কার্ড, কল */
-.ln{display:flex;flex-wrap:nowrap;align-items:center;gap:4px;margin-top:4px;overflow-x:auto;white-space:nowrap}
-.ln .tags{flex-wrap:nowrap;margin:0;flex:none}
-.ln .tg{font-size:11px;padding:0 6px}
-.ln .rcb{margin:0;padding:2px 8px;font-size:11px;flex:none;white-space:nowrap}
-.ln .call{padding:2px 9px;font-size:11px}
-
 /* ===== রিপোর্ট কার্ড ===== */
 .rcb{background:none;border:1px solid var(--pr);color:var(--pr);border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;cursor:pointer;margin-top:4px}
-#rcm{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;overflow:auto;padding:12px;padding-top:calc(12px + env(safe-area-inset-top,0px))}
-#rcm .sheet{background:#fff;color:#000;max-width:800px;margin:0 auto;border-radius:12px;padding:16px}
+#rcm{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;overflow:auto;padding:6px;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+#rcm .sheet{background:var(--card);color:var(--tx);border:1px solid var(--bd);max-width:720px;margin:0 auto;border-radius:14px;padding:8px}
 #rcm table{width:100%;border-collapse:collapse;font-size:13px;margin:4px 0 10px}
-#rcm th,#rcm td{border:1px solid #000;padding:4px;text-align:center}
-#rcm th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-#rcm textarea{border:0;margin:0;padding:2px;background:transparent;color:#000;font:inherit;width:100%;border-radius:0}
-#rcm textarea{border:1px solid #000}
+#rcm th,#rcm td{border:1px solid var(--bd);padding:4px;text-align:center}
+#rcm th{background:rgba(15,122,74,.12);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#rcm textarea{border:0;margin:0;padding:2px;background:transparent;color:var(--tx);font:inherit;width:100%;border-radius:0}
+#rcm textarea{border:1px solid var(--bd)}
 .rcact{display:flex;gap:8px;margin-bottom:10px}
 #rcm td.l{text-align:left}
 #rcm table.fx{table-layout:fixed}
@@ -94,7 +95,17 @@ h3{margin:0 0 6px}
 #rcm table.att th,#rcm table.att td{font-size:12px;padding:3px 3px}
 .rcact button{flex:1;margin:0}
 .sig{display:flex;justify-content:flex-end;margin-top:40px;font-size:13px}
-.sig span{border-top:1px solid #000;padding-top:2px;min-width:100px;text-align:center}
+.sig span{border-top:1px solid var(--tx);padding-top:2px;min-width:100px;text-align:center}
+.rch{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.rch h3{margin:0;font-size:18px;color:var(--pr)}
+.rcx{border:0;background:var(--bd);color:var(--tx);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;flex:none}
+.rcs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 6px}
+.rcs div{text-align:center;border-radius:10px;padding:8px;font-size:13px}
+.rcs b{display:block;font-size:22px}
+.rcs .a{background:rgba(220,38,38,.1);color:#dc2626}.rcs .b{background:rgba(15,122,74,.12);color:var(--pr)}.rcs .l{background:rgba(183,121,31,.15);color:#b7791f}
+.rcp-only{display:none}
+.pbtn{font:inherit;padding:10px;border-radius:10px;border:0;background:var(--pr);color:#fff;width:100%;margin-top:8px;cursor:pointer;font-weight:700}
+.rcbt{display:flex;gap:8px;margin-top:6px}
 
 @page{size:A4 portrait;margin:12mm 10mm}
 @media print{
@@ -131,7 +142,14 @@ body.rc-open #rcm .two table{margin:0}
 body.rc-open #rcm .asum{margin:3px 0 4px;font-size:11.5px}
 body.rc-open #rcm .sheet{zoom:var(--z,1)}
 body.rc-open #rcm .sig{margin-top:24px}
-.rcact{display:none!important}
+.rcact,.rcno{display:none!important}
+body.rc-open #rcm .sheet{background:#fff;color:#000;border:0}
+body.rc-open .rcp-only{display:block!important}
+body.rc-open #rcm th,body.rc-open #rcm td{border:1px solid #000;color:#000}
+body.rc-open #rcm th{background:#e8e8e8}
+body.rc-open #rcm textarea{border:1px solid #000;color:#000}
+body.rc-open #rcm .sig span{border-top-color:#000}
+body.rc-open #rcm .rcs div{border:1px solid #000;background:none;color:#000}
 }
 </style>
 <style id="sl-css">
@@ -159,14 +177,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
 <div id="toast" class="hide"><span id="tmsg"></span><button onclick="$('toast').classList.add('hide')">×</button></div>
 
 <div class="wrap">
-  <div id="need" class="card hide" style="text-align:center">
-    <b>🔐 তালিকা দেখতে লগইন করুন</b>
-    <div class="mu" style="margin:4px 0 10px">শিক্ষক বা অ্যাডমিন হিসেবে লগইন করলে তালিকা দেখা যাবে</div>
-    <a class="act" href="teacher.html" style="display:inline-block;background:var(--pr);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">👨‍🏫 শিক্ষক লগইন</a>
-    <a class="act" href="admin.html" style="display:inline-block;background:var(--mu);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">🔐 অ্যাডমিন</a>
-  </div>
-
-  <div id="main" class="hide">
+  <div id="main">
     <h2>শ্রেণিভিত্তিক তালিকা <span id="cnt" class="mu"></span></h2>
     <div class="card noprint">
       <div class="yr"><button onclick="shiftY(-1)">◀</button><b id="yl"></b><button onclick="shiftY(1)">▶</button></div>
@@ -175,7 +186,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <button class="act sec" onclick="doPrint()">🖨️ প্রিন্ট করুন</button>
     </div>
     <div id="ptbl"></div>
-    <div class="card" id="list"><div class="mu" style="text-align:center;padding:14px">👆 তালিকা দেখতে উপর থেকে শ্রেণি বেছে নিন</div></div>
+    <div id="list"><div class="mu" style="text-align:center;padding:14px">👆 তালিকা দেখতে উপর থেকে শ্রেণি বেছে নিন</div></div>
   </div>
 </div>
 
@@ -245,19 +256,19 @@ function fail(e){
 }
 
 // ===== ডাটা =====
+var rawS = [], attBlocked = false;
 var asDocs = [], asErr = false, students = [], unsubS = null, att = {}, attDocs = [], attDirty = false, openId = {}, Y = new Date().getFullYear();
 const MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
 
 // att[studentId] = {a:[১২ মাস], l:[১২ মাস], p:[১২ মাস], ta, tl, tp}
 function loadAtt(){
   $('yl').textContent = bn(Y) + ' সাল (জানুয়ারি – ডিসেম্বর)';
-  if (!auth.currentUser) return;
   const yy = Y;
   db.collection('attendance').where('date', '>=', yy + '-01-01').where('date', '<=', yy + '-12-31').get().then(q => {
     if (yy !== Y) return;
     attDocs = q.docs.map(d => d.data()); attDirty = true;
-    render();
-  }).catch(fail);
+    attBlocked = false; render(); if (rcId) openRC(rcId);
+  }).catch(e => { if (!auth.currentUser && e && e.code === 'permission-denied') { attBlocked = true; render(); } else fail(e); });
   // মূল্যায়নের নম্বর (asses.html থেকে সেভ করা)
   db.collection('assessments').where('date', '>=', yy + '-01-01').where('date', '<=', yy + '-12-31').get().then(q => {
     if (yy !== Y) return;
@@ -296,32 +307,35 @@ function buildAtt(){
     }
   });
 }
-function shiftY(n){ Y += n; att = {}; attDocs = []; asDocs = []; attDirty = true; closeRC(); render(); loadAtt(); }
-function tg(id){ openId[id] = !openId[id]; render(); }
+function shiftY(n){ Y += n; att = {}; attDocs = []; asDocs = []; attDirty = true; render(); if (rcId) openRC(rcId); loadAtt(); }
+function tg(id, t){ openId[id] = openId[id] === t ? null : t; render(); }
 function tags(id){
-  const x = att[id], ta = x ? x.ta : 0, tl = x ? x.tl : 0, ar = openId[id] ? '▴' : '▾';
-  if (!ta && !tl) return `<div class="tags"><span class="tg z" onclick="tg('${id}')">অনুপস্থিত ০ • ছুটি ০ ${ar}</span></div>`;
-  return `<div class="tags"><span class="tg a" onclick="tg('${id}')">অনুপস্থিত: ${bn(ta)} দিন ${ar}</span><span class="tg l" onclick="tg('${id}')">ছুটি: ${bn(tl)} দিন ${ar}</span></div>`;
+  const x = att[id], ta = x ? x.ta : 0, tl = x ? x.tl : 0, o = openId[id];
+  if (attBlocked) return `<div class="tags"><span class="tg z">অনুপস্থিত: –</span><span class="tg z">ছুটি: –</span><span class="tg p" onclick="openRC('${id}')">📋 রিপোর্ট</span></div>`;
+  return `<div class="tags"><span class="tg ${ta ? 'a' : 'z'}" onclick="tg('${id}','a')">অনুপস্থিত: ${bn(ta)} ${o === 'a' ? '▴' : '▾'}</span><span class="tg ${tl ? 'l' : 'z'}" onclick="tg('${id}','l')">ছুটি: ${bn(tl)} ${o === 'l' ? '▴' : '▾'}</span><span class="tg p" onclick="openRC('${id}')">📋 রিপোর্ট</span></div>`;
 }
 function monthsGrid(id){
-  const x = att[id];
-  return '<div class="mg">' + MONTHS.map((m, i) => {
-    const a = x ? x.a[i] : 0, l = x ? x.l[i] : 0;
-    return `<div class="${a || l ? 'on' : ''}">${m}<span><i class="ca">অ ${bn(a)}</i> • <i class="cl">ছু ${bn(l)}</i></span></div>`;
+  const x = att[id], t = openId[id], k = t === 'l' ? 'l' : 'a', c = k === 'l' ? 'cl' : 'ca';
+  return `<div class="mg">` + MONTHS.map((m, i) => {
+    const n = x ? x[k][i] : 0;
+    return `<div class="${n ? 'on ' + k : ''}">${m}<span class="${n ? c : ''}">${bn(n)} দিন</span></div>`;
   }).join('') + '</div>';
 }
 
+function mergeS(){
+  const u = !!auth.currentUser;
+  students = rawS.map(s => ({...s, phone: u ? (s.phone || '') : ''}));
+  render();
+}
 auth.onAuthStateChanged(u => {
   if (unsubS) { unsubS(); unsubS = null; }
-  students = []; att = {}; attDocs = []; asDocs = []; attDirty = true;
+  rawS = []; students = []; att = {}; attDocs = []; asDocs = []; attDirty = true; attBlocked = false;
   closeRC();
-  $('need').classList.toggle('hide', !!u);
-  $('main').classList.toggle('hide', !u);
-  if (!u) return;
+  $('q').placeholder = u ? '🔍 এই শ্রেণিতে নাম, রোল বা মোবাইল দিয়ে খুঁজুন' : '🔍 এই শ্রেণিতে নাম বা রোল দিয়ে খুঁজুন';
   loadAtt();
   unsubS = db.collection('students').onSnapshot(s => {
-    students = s.docs.map(d => ({id:d.id, ...d.data()}));
-    render();
+    rawS = s.docs.map(d => ({id:d.id, ...d.data()}));
+    mergeS();
   }, e => { $('list').innerHTML = '<div class="mu">তালিকা লোড করা যায়নি</div>'; fail(e); });
 });
 
@@ -339,10 +353,19 @@ function render(){
   const counts = {}; list.forEach(s => counts[s.class] = (counts[s.class]||0) + 1);
   list.forEach(s => {
     if (s.class !== cur) { cur = s.class; html += `<div class="gh"><span>${esc(cur||'শ্রেণি নেই')}</span><span class="mu">${bn(counts[cur])} জন</span></div>`; }
-    const tel = telNum(s.phone);
-    html += `<div class="row"><div class="info"><span class="roll">${bn(s.roll||'–')}</span><b>${esc(s.name)}</b>
-      <div class="mu">${s.father ? 'পিতা: ' + esc(s.father) : ''}${s.father && s.phone ? ' • ' : ''}${s.phone ? bn(esc(s.phone)) : ''}</div>
-      <div class="ln">${tags(s.id)}<button class="rcb" onclick="openRC('${s.id}')">📄 রিপোর্ট কার্ড</button>${tel ? `<a class="call" href="tel:${esc(tel)}" aria-label="কল করুন">📞 কল</a>${waNum(s.phone) ? `<a class="call wa" href="https://wa.me/${waNum(s.phone)}" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>` : ''}` : ''}</div></div>
+    const lg = !!auth.currentUser, tel = lg ? telNum(s.phone) : '', wa = lg ? waNum(s.phone) : '';
+    html += `<div class="t">
+      <div class="av">${s.roll ? bn(esc(s.roll)) : ''}</div>
+      <div class="in">
+        <b>${esc(s.name)}</b>
+        ${auth.currentUser ? '<div class="mu r1">' + (s.phone ? bn(esc(s.phone)) : 'নম্বর নেই') + '</div>' : ''}
+        ${s.father ? '<div class="mu r2">পিতা: ' + esc(s.father) + '</div>' : ''}
+      </div>
+      <div class="acts">
+        <a class="call ${tel?'':'off'}" href="${tel ? 'tel:' + esc(tel) : '#'}" aria-label="কল করুন">📞 কল</a>
+        <a class="wa ${wa?'':'off'}" href="${wa ? 'https://wa.me/' + wa : '#'}" target="_blank" rel="noopener" title="WhatsApp">💬</a>
+      </div>
+      <div class="bot">${tags(s.id)}</div>
       ${openId[s.id] ? monthsGrid(s.id) : ''}</div>`;
   });
   $('list').innerHTML = html;
@@ -367,8 +390,10 @@ function rcCalc(){
   try { localStorage.setItem(rcKey(rcId), JSON.stringify({note: $('rcN').value})); } catch(e){}
 }
 function openRC(id){
+  if (attBlocked) { showMsg('🔒 রিপোর্ট কার্ড দেখতে লগইন করুন', 'err'); return; }
   const s = students.find(x => x.id === id); if (!s) return;
   if (attDirty) buildAtt();
+  const keep = $('rcm').classList.contains('hide') ? 0 : $('rcm').scrollTop;
   rcId = id;
   const x = att[id] || {a:Array(12).fill(0), l:Array(12).fill(0), p:Array(12).fill(0), ta:0, tl:0, tp:0};
   const tot = x.tp + x.tl + x.ta, pct = tot ? Math.round(x.tp * 100 / tot) : 0;
@@ -384,7 +409,7 @@ function openRC(id){
   const two = al.length > 22, rpc = two ? Math.ceil(al.length / 2) : al.length;
   const dens = rpc > 30 ? 'xxs' : rpc > 27 ? 'xs' : rpc > 24 ? 'sm' : '';
   // A4 এক পেজে রাখতে: সারির উচ্চতা (মিমি) ধরে আনুমানিক মোট উচ্চতা বেশি হলে পুরো কার্ড ছোট করা হয়
-  const est = 130 + rpc * ({'': 5.7, sm: 5.2, xs: 4.7, xxs: 4.2}[dens]);
+  const est = 145 + rpc * ({'': 5.7, sm: 5.2, xs: 4.7, xxs: 4.2}[dens]);
   const zoom = est > 258 ? Math.max(0.45, +(258 / est).toFixed(3)) : 1;
   const head = '<thead><tr><th style="width:25%">তারিখ</th><th>বিষয়</th><th style="width:17%">নম্বর</th><th style="width:17%">মোট</th></tr></thead>';
   const tbl = (arr, df) => `<table class="fx ${dens}">${head}<tbody>${arr.map(e => `<tr><td>${df(e.d)}</td><td class="l">${esc(e.s)}</td><td>${e.ab ? 'অনু.' : fmt(e.n)}</td><td>${fmt(e.t)}</td></tr>`).join('')}</tbody></table>`;
@@ -393,14 +418,16 @@ function openRC(id){
   else if (!two) asHtml = tbl(al, dFull);
   else { const h = Math.ceil(al.length / 2); asHtml = `<div class="two">${tbl(al.slice(0, h), dShort)}${tbl(al.slice(h), dShort)}</div>`; }
   const asSum = al.length ? `<div class="asum">মোট প্রাপ্ত নম্বর: ${fmt(G)} / ${fmt(T)} (${T ? bn(Math.round(G * 100 / T)) + '%' : '–'}) • অনুপস্থিত: ${bn(A)}টি</div>` : '';
-  $('rcm').innerHTML = `<div class="sheet" style="--z:${zoom}">
-    <div class="rcact"><button class="act" onclick="doPrint()">🖨️ প্রিন্ট</button><button class="act sec" onclick="closeRC()">✖ বন্ধ</button></div>
-    <h2 style="text-align:center;margin:0 0 2px;font-size:20px;color:#000;border:0;padding:0">চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h2>
+  $('rcm').innerHTML = `<div class="sheet rcc" style="--z:${zoom}">
+    <div class="rch rcno"><div><h3>📋 ${esc(s.name)}</h3><div class="mu">${esc(s.class||'—')} • রোল: ${bn(s.roll||'–')}</div></div><button class="rcx" onclick="closeRC()">✕</button></div>
+    <div class="yr rcno"><button onclick="shiftY(-1)">◀</button><b>${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</b><button onclick="shiftY(1)">▶</button></div>
+    <div class="rcp-only"><h2 style="text-align:center;margin:0 0 2px;font-size:20px;color:#000;border:0;padding:0">চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h2>
     <h3 style="text-align:center;margin:0">রিপোর্ট কার্ড</h3>
     <div style="text-align:center;margin-bottom:8px">${bn(Y)} সাল</div>
     <table><tr><th>নাম</th><td>${esc(s.name)}</td><th>রোল</th><td>${bn(s.roll||'–')}</td></tr>
     <tr><th>শ্রেণি</th><td>${esc(s.class)}</td><th>মোবাইল</th><td>${s.phone ? bn(esc(s.phone)) : '–'}</td></tr>
-    <tr><th>পিতা</th><td colspan="3">${esc(s.father||'–')}</td></tr></table>
+    <tr><th>পিতা</th><td colspan="3">${esc(s.father||'–')}</td></tr></table></div>
+    <div class="rcs"><div class="b"><b>${bn(x.tp)}</b>উপস্থিত</div><div class="l"><b>${bn(x.tl)}</b>ছুটি</div><div class="a"><b>${bn(x.ta)}</b>অনুপস্থিত</div></div>
     <b>হাজিরা</b>
     <table class="att"><thead><tr><th>মাস</th><th>উপস্থিত</th><th>ছুটি</th><th>অনুপস্থিত</th><th>মাস</th><th>উপস্থিত</th><th>ছুটি</th><th>অনুপস্থিত</th></tr></thead>
     <tbody>${mm}<tr><th>মোট</th><th>${bn(x.tp)}</th><th>${bn(x.tl)}</th><th>${bn(x.ta)}</th><th colspan="4">উপস্থিতির হার: ${bn(pct)}%</th></tr></tbody></table>
@@ -408,13 +435,38 @@ function openRC(id){
     ${asHtml}${asSum}
     <b>মন্তব্য</b><textarea id="rcN" rows="2" oninput="rcCalc()">${esc(sv.note)}</textarea>
     <div class="sig"><span>শ্রেণি শিক্ষকের স্বাক্ষর</span></div>
+    <div class="rcbt rcno"><button class="pbtn" onclick="downloadRC()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="doPrint()">🖨️ প্রিন্ট</button></div>
   </div>`;
   $('rcm').classList.remove('hide');
   document.body.classList.add('rc-open');
-  $('rcm').scrollTop = 0;
+  $('rcm').scrollTop = keep;
   rcCalc();
 }
 
+$('rcm').onclick = e => { if (e.target === $('rcm')) closeRC(); };
+function downloadRC(){
+  const s = students.find(x => x.id === rcId); if (!s) return;
+  const c = $('rcm').querySelector('.sheet').cloneNode(true);
+  c.querySelectorAll('.rcno').forEach(e => e.remove());
+  const ta = c.querySelector('textarea');
+  if (ta) { const d = document.createElement('div'); d.style.cssText = 'border:1px solid #000;padding:4px;min-height:34px;white-space:pre-wrap'; d.textContent = $('rcN').value; ta.replaceWith(d); }
+  const css = '@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html{background:#ddd}'
+    + 'body{font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;width:210mm;min-height:297mm;margin:0 auto;padding:12mm 10mm;background:#fff;color:#000;line-height:1.45;font-size:13px}'
+    + '.rcp-only{display:block}.mu{font-size:12px;color:#444}.rcs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.rcs div{border:1px solid #000;text-align:center;padding:6px;border-radius:8px;font-size:12px}.rcs b{display:block;font-size:20px}'
+    + 'table{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0 10px}th,td{border:1px solid #000;padding:4px;text-align:center}th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}td.l{text-align:left}table.fx{table-layout:fixed}td{word-break:break-word;overflow-wrap:anywhere}'
+    + '.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}.two table{margin:0}.asum{font-size:12px;margin:2px 0 8px}.sig{display:flex;justify-content:flex-end;margin-top:40px}.sig span{border-top:1px solid #000;padding-top:2px;min-width:100px;text-align:center}'
+    + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}';
+  const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>রিপোর্ট কার্ড - ' + esc(s.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
+  const nm = String(s.name || 'ছাত্র').replace(/[\\\/:*?"<>|]/g, '').trim();
+  const fname = 'রিপোর্ট-কার্ড-' + nm + '-' + Y + '.html';
+  if (window.AndroidPrint && typeof AndroidPrint.saveFile !== 'undefined') { AndroidPrint.saveFile(fname, html, 'text/html'); return; }
+  if (window.AndroidPrint) { alert('ডাউনলোডের জন্য অ্যাপটি নতুন ভার্সনে আপডেট করুন (MainActivity.java নতুন করে বিল্ড করুন)।'); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
+  a.download = fname;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
 $('fc').onchange = render;
 $('q').oninput = render;
 

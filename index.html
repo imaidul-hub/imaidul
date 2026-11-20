@@ -72,7 +72,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <img class="logo" src="logo.jpg" alt="লোগো">
     <div><div class="bis">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><h1>চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h1></div>
   </div>
-  <div class="btns"><a class="login" href="teacher.html">👨‍🏫 শিক্ষক লগইন</a><a class="login" href="admin.html" style="background:#fff;color:#0b5c37">🔐 অ্যাডমিন</a></div>
+  <div class="btns"><a class="login" id="tLoginBtn" href="teacher.html">👨‍🏫 শিক্ষক লগইন</a><a class="login" href="admin.html" style="background:#fff;color:#0b5c37">🔐 অ্যাডমিন</a></div>
 </div>
 
 <div class="wrap">
@@ -238,6 +238,7 @@ function pickMe(){
 }
 
 auth.onAuthStateChanged(u => {
+  const tb = document.getElementById('tLoginBtn'); if (tb) tb.textContent = u ? '👨‍🏫 শিক্ষক পোর্টাল' : '👨‍🏫 শিক্ষক লগইন';
   [uT, uP].forEach(f => f && f()); uT = uP = null; if (uR) { uR(); uR = null; } curMe = null; myR = []; todayP = [];
   renderMy();
   if (!u) return;

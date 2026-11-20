@@ -34,18 +34,22 @@ h2{font-size:17px;margin:16px 0 8px;color:var(--pr);border-right:4px solid var(-
 #toast.err{background:#b42318}#toast.ok{background:#0f7a4a}
 #toast button{position:absolute;right:8px;top:6px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
 .hide{display:none}
-.dtabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
-.dtabs::-webkit-scrollbar{display:none}
-.dchip{flex:none;display:flex;flex-direction:column;align-items:center;min-width:56px;padding:6px 8px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;font-size:13px;line-height:1.35;cursor:pointer;transition:background .2s,transform .15s}
-.dchip:active{transform:scale(.95)}
-.dchip small{color:var(--mu);font-size:11px}
-.dchip.on{background:var(--pr);color:#fff;border-color:var(--pr)}
-.dchip.on small{color:#fff;opacity:.9}
-.dchip.td:not(.on){border-color:var(--gd);box-shadow:inset 0 -3px 0 var(--gd)}
-.rthead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
-.rtday{animation:rtin .25s ease both}
+.tblw{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid var(--bd)}
+.rtt{border-collapse:collapse;width:100%;min-width:0;font-size:11.5px;text-align:center;animation:rtin .3s ease both}
+.rtt th,.rtt td{border:1px solid var(--bd);padding:3px 2px;vertical-align:middle;line-height:1.35}
+.rtt thead th{background:var(--pr);color:#fff;font-weight:700;white-space:nowrap}
+.rtt thead th:first-child{position:sticky;left:0;z-index:1}
+.rtt thead th.td{background:var(--gd);color:#2b2200}
+.rtt tbody th{background:var(--bg);color:var(--pr);position:sticky;left:0;white-space:nowrap;min-width:0}
+.rtt thead th small{display:block;font-weight:400;font-size:9.5px;opacity:.9}
+.rtt tbody th.td{background:var(--gd);color:#2b2200}
+.rtt tbody th small{display:block;color:var(--mu);font-weight:400;font-size:10.5px}
+.rtt td.td{background:rgba(201,162,39,.14)}
+.rtt td b{display:block;color:var(--tx)}
+.rtt td span{color:var(--mu);font-size:10.5px}
+.rtt td.e{color:var(--mu)}
+.rtmeta{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}
 @keyframes rtin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.it:last-child{border-bottom:0}
 </style>
 <style id="sl-css">
 #sl{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f4f8f5;transition:opacity .45s ease,visibility .45s ease}
@@ -81,9 +85,10 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
   <div id="home" class="hide">
     <div class="hello"><b id="hi">স্বাগতম</b><div id="dt"></div></div>
 
-    <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <div><b>🔔 পুশ নোটিফিকেশন</b><div class="mu" id="pushSt"></div></div>
-      <button class="act" style="width:auto;padding:9px 14px" onclick="enablePush()">চালু করুন</button>
+    <h2>📅 আপনার সাপ্তাহিক ক্লাস রুটিন</h2>
+    <div class="card">
+      <div class="rtmeta mu"><span>রবিবার থেকে বৃহস্পতিবার</span><span id="rtCount"></span></div>
+      <div class="tblw"><table class="rtt" id="rtT"></table></div>
     </div>
 
     <h2>🔁 আপনার আজকের প্রক্সি</h2>
@@ -91,12 +96,6 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
 
     <h2>আজকের সব প্রক্সি তালিকা</h2>
     <div class="card" id="all"></div>
-
-    <h2>📅 আপনার সাপ্তাহিক ক্লাস রুটিন</h2>
-    <div class="card">
-      <div class="dtabs" id="rtTabs"></div>
-      <div id="rtBox"></div>
-    </div>
 
     <div class="card">
       <a href="proxy.html" style="color:var(--pr)">📄 সপ্তাহের প্রক্সি রিপোর্ট দেখুন</a>
@@ -113,7 +112,6 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
@@ -184,7 +182,7 @@ function item(p, mine){
     <div class="mu">${mine ? '' : esc(tName(p.subId)) + ' • '}${p.absentId ? esc(tName(p.absentId)) + '-এর পরিবর্তে' : 'প্রক্সি'}${p.room ? ' • রুম ' + esc(p.room) : ''}</div></div></div>`;
 }
 function render(){
-  findMe(); updPushUi(); watchRoutine(); renderRt();
+  findMe(); watchRoutine(); renderRt();
   const d = new Date();
   $('dt').textContent = DAYS[d.getDay()] + ', ' + bn(ds(d));
   $('hi').textContent = me ? 'আসসালামু আলাইকুম, ' + me.name : 'আসসালামু আলাইকুম';
@@ -202,9 +200,9 @@ function startData(){
 }
 function stopData(){ if (unsubT) { unsubT(); unsubT = null; } if (unsubP) { unsubP(); unsubP = null; } if (unsubR) { unsubR(); unsubR = null; } rtFor = null; myRt = []; }
 
-// ---- সাপ্তাহিক ক্লাস রুটিন ----
-var myRt = [], unsubR = null, rtFor = null, selDay = new Date().getDay();
-const WEEK = [6,0,1,2,3,4,5];   // শনি থেকে শুক্র
+// ---- সাপ্তাহিক ক্লাস রুটিন (প্রথম কলামে রবি → বৃহস্পতি) ----
+var myRt = [], unsubR = null, rtFor = null;
+const WEEK = [0,1,2,3,4];
 const fmtT = t => { if (!t) return ''; const a = String(t).split(':').map(Number); let h = a[0], m = a[1] || 0; const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return bn(h + ':' + String(m).padStart(2,'0')) + ' ' + ap; };
 function watchRoutine(){
   if (!me || rtFor === me.id) return;
@@ -214,50 +212,25 @@ function watchRoutine(){
     myRt = s.docs.map(d => ({id:d.id, ...d.data()})); renderRt();
   }, fail);
 }
-function pickDay(d){ selDay = d; renderRt(); }
 function renderRt(){
-  const tabs = $('rtTabs'), box = $('rtBox'); if (!tabs || !box) return;
-  if (!me) { tabs.innerHTML = ''; box.innerHTML = '<div class="empty">এই নম্বর শিক্ষক তালিকায় পাওয়া যায়নি</div>'; return; }
+  const t = $('rtT'); if (!t) return;
+  if (!me) { t.innerHTML = '<tbody><tr><td class="e" style="padding:14px">এই নম্বর শিক্ষক তালিকায় পাওয়া যায়নি</td></tr></tbody>'; $('rtCount').textContent = ''; return; }
+  $('rtCount').textContent = 'মোট ' + bn(myRt.length) + 'টি ক্লাস';
+  if (!myRt.length) { t.innerHTML = '<tbody><tr><td class="e" style="padding:14px">আপনার কোনো ক্লাস রুটিন এখনো দেওয়া হয়নি</td></tr></tbody>'; return; }
   const today = new Date().getDay();
-  tabs.innerHTML = WEEK.map(d => {
-    const n = myRt.filter(r => r.day === d).length;
-    return '<button class="dchip' + (d === selDay ? ' on' : '') + (d === today ? ' td' : '') + '" onclick="pickDay(' + d + ')">' + DAYS[d].replace('বার','') + '<small>' + (n ? bn(n) + 'টি' : '–') + '</small></button>';
-  }).join('');
-  const rows = myRt.filter(r => r.day === selDay).sort((a,b) => a.period - b.period);
-  const head = '<div class="rthead"><b>' + DAYS[selDay] + (selDay === today ? ' (আজ)' : '') + '</b><span class="mu">সপ্তাহে মোট ' + bn(myRt.length) + 'টি ক্লাস</span></div>';
-  const list = rows.length ? rows.map(r => {
-    const tm = r.start ? fmtT(r.start) + (r.end ? ' – ' + fmtT(r.end) : '') : '';
-    const meta = [tm, r.room ? 'রুম ' + esc(r.room) : ''].filter(Boolean).join(' • ');
-    return '<div class="it"><div class="pn">' + bn(r.period) + '</div><div><b>' + esc(r.class) + '</b> — ' + esc(r.subject) + (meta ? '<div class="mu">' + meta + '</div>' : '') + '</div></div>';
-  }).join('') : '<div class="empty">এই দিনে আপনার কোনো ক্লাস নেই</div>';
-  box.innerHTML = '<div class="rtday" key="' + selDay + '">' + head + list + '</div>';
+  const periods = [1,2,3,4,5,6,7,8];
+  const pinfo = pr => { const any = myRt.find(r => r.period === pr && r.start); return any ? '<small>' + fmtT(any.start) + (any.end ? '–' + fmtT(any.end) : '') + '</small>' : ''; };
+  const thead = '<thead><tr><th>বার</th>' + periods.map(pr => '<th>' + bn(pr) + '<small>পিরিয়ড</small>' + pinfo(pr) + '</th>').join('') + '</tr></thead>';
+  const tbody = '<tbody>' + WEEK.map(d => {
+    const isT = d === today;
+    const cells = periods.map(pr => {
+      const rs = myRt.filter(r => r.day === d && r.period === pr);
+      return rs.length ? '<td' + (isT ? ' class="td"' : '') + '>' + rs.map(r => '<b>' + esc(r.class) + '</b><span>' + esc(r.subject) + (r.room ? ' • রুম ' + esc(r.room) : '') + '</span>').join('<hr style="border:0;border-top:1px dashed var(--bd);margin:4px 0">') + '</td>' : '<td class="e' + (isT ? ' td' : '') + '">–</td>';
+    }).join('');
+    return '<tr><th' + (isT ? ' class="td"' : '') + '>' + DAYS[d] + '</th>' + cells + '</tr>';
+  }).join('') + '</tbody>';
+  t.innerHTML = thead + tbody;
 }
-
-// ---- পুশ নোটিফিকেশন (FCM) ----
-const VAPID_KEY = 'YOUR_VAPID_KEY';   // Firebase Console > Project settings > Cloud Messaging > Web Push certificates
-function updPushUi(){
-  const on = window.Notification && Notification.permission === 'granted' && localStorage.getItem('push') === '1';
-  $('pushSt').textContent = on ? '✅ এই ফোনে চালু আছে' : 'এই ফোনে চালু নেই';
-}
-async function enablePush(){
-  try {
-    if (!('Notification' in window) || !('serviceWorker' in navigator) || !(await firebase.messaging.isSupported()))
-      return showMsg('এই ব্রাউজারে নোটিফিকেশন সমর্থিত নয়।\nআইফোনে আগে Share → "Add to Home Screen" করে সেখান থেকে খুলুন।');
-    if (!me) return showMsg('আপনার নম্বর শিক্ষক তালিকায় পাওয়া যায়নি');
-    if (VAPID_KEY.startsWith('YOUR')) return showMsg('VAPID key বসানো হয়নি (teacher.html এ VAPID_KEY দেখুন)');
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') return showMsg('অনুমতি দেওয়া হয়নি। ব্রাউজার সেটিংস থেকে এই সাইটের Notification "Allow" করুন।');
-    const reg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
-    const token = await firebase.messaging().getToken({vapidKey: VAPID_KEY, serviceWorkerRegistration: reg});
-    if (!token) throw new Error('টোকেন পাওয়া যায়নি');
-    await db.collection('tokens').doc(token).set({uid: auth.currentUser.uid, teacherId: me.id, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
-    localStorage.setItem('push', '1'); updPushUi();
-    showMsg('✅ নোটিফিকেশন চালু হয়েছে', 'ok');
-  } catch(e){ fail(e); }
-}
-// পেজ খোলা অবস্থায় নোটিফিকেশন এলে
-(async () => { try { if (await firebase.messaging.isSupported()) firebase.messaging().onMessage(p => {
-  const n = p.notification || {}; showMsg('🔔 ' + (n.title || '') + '\n' + (n.body || ''), 'ok'); }); } catch(e){} })();
 
 auth.onAuthStateChanged(u => {
   $('login').classList.toggle('hide', !!u); $('home').classList.toggle('hide', !u); $('out').classList.toggle('hide', !u);
