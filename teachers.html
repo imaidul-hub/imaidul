@@ -181,7 +181,7 @@ const MONTHS = ['জানুয়ারি','ফেব্রুয়ারি
 function absTag(id){
   if (!auth.currentUser) return `<div class="tgs"><span class="ab p" onclick="openRT('${id}')">📅 রুটিন</span></div>`;
   const a = missed[id], cls = a ? a.total : 0, px = a ? a.ptotal : 0;
-  return `<div class="tgs"><span class="ab ${cls ? '' : 'z'}" onclick="openRC('${id}')">মিস: ${bn(cls)}টি</span><span class="ab p" onclick="openRC('${id}')">প্রক্সি: ${bn(px)}টি</span><span class="ab p" onclick="openRC('${id}')">📋 রিপোর্ট</span><span class="ab p" onclick="openRT('${id}')">📅 রুটিন</span></div>`;
+  return `<div class="tgs"><span class="ab ${cls ? '' : 'z'}" onclick="openRC('${id}','m')">মিস: ${bn(cls)}টি</span><span class="ab p" onclick="openRC('${id}','p')">প্রক্সি: ${bn(px)}টি</span><span class="ab p" onclick="openRC('${id}','all')">📋 রিপোর্ট</span><span class="ab p" onclick="openRT('${id}')">📅 রুটিন</span></div>`;
 }
 function shiftY(n){ Y += n; loadMissed(); }
 // ইনডেক্স নম্বরের সম্ভাব্য ফিল্ড
@@ -312,14 +312,15 @@ const clsOf = p => pick(p, ['className','class','cls','classId','classNo','class
 const subOf = p => pick(p, ['subject','subjectName','sub','subjectId']);
 const perOf = p => pick(p, ['period','periodNo','periodNumber','slot']);
 
-var rcId = null;
+var rcId = null, rcMode = 'all';   // m = শুধু ক্লাস মিস, p = শুধু প্রক্সি, all = দুটোই
 const tName = id => { const x = teachers.find(z => z.id === id); return x ? x.name : (id ? String(id) : '–'); };
-function openRC(id){
+function openRC(id, mode){
   if (!auth.currentUser) return;
-  rcId = id;
+  rcId = id; rcMode = mode || 'all';
   drawRC(); $('rcm').classList.add('show'); document.body.style.overflow = 'hidden';
 }
 function closeRC(){ rcId = null; $('rcm').classList.remove('show'); document.body.classList.remove('rcp'); document.body.style.overflow = ''; }
+const rcLabel = () => rcMode === 'm' ? 'ক্লাস মিসের তালিকা' : rcMode === 'p' ? 'প্রক্সির তালিকা' : 'রিপোর্ট কার্ড';
 function printRC(){ document.body.classList.add('rcp'); doPrint(); }
 window.addEventListener('afterprint', () => document.body.classList.remove('rcp', 'rtp'));
 function downloadRC(){
@@ -335,9 +336,9 @@ function downloadRC(){
     + '.rt th:nth-child(1){width:28%}.rt th:nth-child(2){width:18%}.rt th:nth-child(3){width:22%}.rt thead{display:table-header-group}.rt tr{page-break-inside:avoid}.empty{text-align:center;padding:10px;font-size:12px}'
     + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}'
     + '@media print{html{-webkit-filter:grayscale(1);filter:grayscale(1)}*{color:#000!important}.rt small,.mu{color:#333!important}}';
-  const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>রিপোর্ট কার্ড - ' + esc(t.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
+  const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>' + rcLabel() + ' - ' + esc(t.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
   const nm = String(t.name || 'শিক্ষক').replace(/[\\\/:*?"<>|]/g, '').trim();
-  const fname = 'রিপোর্ট-কার্ড-' + nm + '-' + Y + '.html';
+  const fname = rcLabel().replace(/ /g, '-') + '-' + nm + '-' + Y + '.html';
   // অ্যান্ড্রয়েড অ্যাপ: সরাসরি Downloads ফোল্ডারে সেভ
   if (window.AndroidPrint && typeof AndroidPrint.saveFile !== 'undefined') { AndroidPrint.saveFile(fname, html, 'text/html'); return; }
   // অ্যাপের ভেতরে আছে কিন্তু অ্যাপে ডাউনলোড সুবিধা নেই (পুরনো অ্যাপ ভার্সন)
@@ -358,13 +359,13 @@ function drawRC(){
     ? '<table class="rt"><thead><tr><th>তারিখ</th><th>পিরিয়ড</th><th>শ্রেণী</th><th>বিষয়</th></tr></thead><tbody>' +
       rows.map(e => `<tr><td>${dt(e)}</td><td>${e.pr ? bn(esc(e.pr)) : '–'}</td><td>${e.c ? bn(esc(e.c)) : '–'}</td><td>${e.s ? esc(e.s) : '–'}</td></tr>`).join('') + '</tbody></table>'
     : '<div class="empty">এই বছরে কোনো তথ্য নেই</div>';
-  const ix = idxOf(t), ds = desigOf(t);
-  $('rcc').innerHTML = `<div class="rch"><div><h3>📋 ${esc(t.name)}</h3><div class="mu">${esc(ds || '—')} • ইন্ডেক্স: ${ix !== '' ? bn(esc(ix)) : '–'}</div></div><button class="rcx rcno" onclick="closeRC()">✕</button></div>
+  const ix = idxOf(t), ds = desigOf(t), showM = rcMode !== 'p', showP = rcMode !== 'm';
+  $('rcc').innerHTML = `<div class="rch"><div><h3>${rcMode === 'm' ? '❌' : rcMode === 'p' ? '✅' : '📋'} ${esc(t.name)}</h3><div class="mu">${esc(ds || '—')} • ইন্ডেক্স: ${ix !== '' ? bn(esc(ix)) : '–'}</div></div><button class="rcx rcno" onclick="closeRC()">✕</button></div>
     <div class="yr rcno"><button onclick="shiftY(-1)">◀</button><b>${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</b><button onclick="shiftY(1)">▶</button></div>
     <div style="text-align:center;font-weight:700;margin:8px 0;display:none" class="rcp-only">${bn(Y)} সাল</div>
-    <div class="rcs"><div class="a"><b>${bn(ml.length)}</b>ক্লাস মিস</div><div class="b"><b>${bn(pl.length)}</b>প্রক্সি নিয়েছেন</div></div>
-    <div class="sec">❌ ক্লাস মিস <span>${bn(Y)} সাল</span></div>${tbl(ml)}
-    <div class="sec">✅ প্রক্সি <span>${bn(Y)} সাল</span></div>${tbl(pl)}
+    <div class="rcs"${rcMode === 'all' ? '' : ' style="grid-template-columns:1fr"'}>${showM ? `<div class="a"><b>${bn(ml.length)}</b>ক্লাস মিস</div>` : ''}${showP ? `<div class="b"><b>${bn(pl.length)}</b>প্রক্সি নিয়েছেন</div>` : ''}</div>
+    ${showM ? `<div class="sec">❌ ক্লাস মিসের তালিকা <span>${bn(Y)} সাল</span></div>${tbl(ml)}` : ''}
+    ${showP ? `<div class="sec">✅ প্রক্সির তালিকা <span>${bn(Y)} সাল</span></div>${tbl(pl)}` : ''}
     <div class="rcno" style="display:flex;gap:8px"><button class="pbtn" onclick="downloadRC()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="printRC()">🖨️ প্রিন্ট</button></div>`;
 }
 
