@@ -344,6 +344,13 @@ function share() {
   c.toBlob(async blob => {
     if (!blob) return smsg('ছবি তৈরি করা যায়নি');
     const file = new File([blob], 'exam-' + shareData.fname + '.png', { type: 'image/png' });
+    // অ্যান্ড্রয়েড অ্যাপের ওয়েবভিউতে navigator.share চলে না — তাই অ্যাপের নিজস্ব শেয়ার ব্রিজ ব্যবহার
+    if (window.AndroidPrint && typeof AndroidPrint.shareImage === 'function') {
+      const r = new FileReader();
+      r.onloadend = () => { try { AndroidPrint.shareImage(file.name, r.result); smsg(''); } catch (e) { console.error(e); smsg('শেয়ার করা যায়নি'); } };
+      r.readAsDataURL(blob);
+      return;
+    }
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try { await navigator.share({ files: [file], title: 'পরীক্ষা' }); smsg(''); return; }
       catch (e) { if (e && e.name === 'AbortError') return; console.error(e); }

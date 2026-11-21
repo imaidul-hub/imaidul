@@ -148,23 +148,40 @@ document.addEventListener('click', () => {
 
 function renderMy(){
   const u = auth.currentUser;
-  if (!u) { MY().innerHTML = '<div class="card" style="text-align:center"><b>📅 আপনার আজকের ক্লাস</b><div class="mu" style="margin:4px 0 10px">টেবিল দেখতে শিক্ষক লগইন করুন</div><a class="login" href="teacher.html" style="background:var(--pr);color:#fff;display:inline-block;padding:8px 20px;border-radius:999px;font-weight:700">👨‍🏫 শিক্ষক লগইন</a></div>'; return; }
+  if (!u) { MY().innerHTML = ''; return; }
   if (!curMe) { MY().innerHTML = '<div class="card mu">এই অ্যাকাউন্টটি কোনো শিক্ষকের মোবাইল নম্বরের সাথে মেলেনি, তাই ক্লাসের টেবিল দেখানো যাচ্ছে না। <button style="background:none;border:0;color:var(--pr);font:inherit;cursor:pointer" onclick="auth.signOut()">লগআউট</button></div>'; return; }
-  const dow = new Date().getDay();
-  const myPx = todayP.filter(p => p.subId === curMe.id);
+  const now = new Date();
+  const dow = now.getDay();
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const toMin = t => { if (!t) return null; const a = String(t).split(':').map(Number); return a[0]*60 + (a[1]||0); };
+  const periodStart = {};
+  myR.forEach(r => { if (r.start && !periodStart[r.period]) periodStart[r.period] = r.start; });
   const absentPeriods = new Set(todayP.filter(p => p.absentId === curMe.id).map(p => p.period));
-  const rows = [
-    ...myR.filter(r => r.day === dow).map(r => ({period:r.period, time: fmtT(r.start) + (r.end ? ' – ' + fmtT(r.end) : ''), cls:r.class, sub:r.subject, room:r.room, startRaw: r.start, kind: absentPeriods.has(r.period) ? 'gone' : ''})),
-    ...myPx.map(p => ({period:p.period, time:'—', cls:p.class, sub:p.subject, room:p.room, startRaw: p.time || '', kind:'px'}))
-  ].sort((a,b) => a.period - b.period);
+  const mk = (r, kind) => ({period:r.period, time: r.start ? fmtT(r.start) + (r.end ? ' – ' + fmtT(r.end) : '') : '—', cls:r.class, sub:r.subject, room:r.room, startMin: toMin(r.start || periodStart[r.period]), kind});
 
-  const tr = rows.map(r => `<tr class="${r.kind}"><td style="white-space:nowrap"><b>${ordBn(r.period)}</b></td><td>${r.time || '—'}</td>
-    <td><b>${esc(r.cls)}</b> — ${esc(r.sub)}${r.kind==='px' ? '<span class="tag">🔁 প্রক্সি</span>' : ''}${r.kind==='gone' ? '<span class="tag o">অন্য শিক্ষক নিচ্ছেন</span>' : ''}</td></tr>`).join('');
+  // আজকের বাকি ক্লাস (শুরুর সময় এখনকার পরে), প্রক্সি সহ
+  const todayRows = [
+    ...myR.filter(r => r.day === dow && !absentPeriods.has(r.period)).map(r => mk(r, '')),
+    ...todayP.filter(p => p.subId === curMe.id).map(p => mk({period:p.period, start:p.time, class:p.class, subject:p.subject, room:p.room}, 'px'))
+  ].filter(r => r.startMin === null || r.startMin > nowMin).sort((a,b) => a.period - b.period);
+
+  let nextRow = todayRows[0] || null, whenLbl = 'আজ';
+  if (!nextRow) {
+    for (let i = 1; i <= 7 && !nextRow; i++) {
+      const d = (dow + i) % 7;
+      const list = myR.filter(r => r.day === d).sort((a,b) => a.period - b.period);
+      if (list.length) { nextRow = mk(list[0], ''); whenLbl = i === 1 ? 'আগামীকাল' : DAYS[d]; }
+    }
+  }
+
+  const body = nextRow ? `<div class="tw"><table class="tb"><thead><tr><th>দিন</th><th>পিরিয়ড</th><th>সময়</th><th>শ্রেণি ও বিষয়</th></tr></thead><tbody>
+    <tr class="${nextRow.kind}"><td style="white-space:nowrap"><b>${whenLbl}</b></td><td style="white-space:nowrap"><b>${ordBn(nextRow.period)}</b></td><td>${nextRow.time}</td>
+    <td><b>${esc(nextRow.cls)}</b> — ${esc(nextRow.sub)}${nextRow.room ? ' (' + esc(nextRow.room) + ')' : ''}${nextRow.kind==='px' ? '<span class="tag">🔁 প্রক্সি</span>' : ''}</td></tr></tbody></table></div>`
+    : '<div class="mu" style="text-align:center;padding:14px">আপনার পরবর্তী কোনো ক্লাস পাওয়া যায়নি 🎉</div>';
 
   MY().innerHTML = `<div class="card">
-    <div class="myh"><b>📅 আপনার আজকের ক্লাস</b></div>
-    ${rows.length ? `<div class="tw"><table class="tb"><thead><tr><th>পিরিয়ড</th><th>সময়</th><th>শ্রেণি ও বিষয়</th></tr></thead><tbody>${tr}</tbody></table></div>`
-      : '<div class="mu" style="text-align:center;padding:14px">আজ আপনার কোনো ক্লাস নেই 🎉</div>'}</div>`;
+    <div class="myh"><b>📅 আপনার পরবর্তী ক্লাস</b></div>
+    ${body}</div>`;
 }
 
 // প্রতি ১ সেকেন্ড পর পর বর্তমান সময় চেক করা এবং অ্যালার্ম বাজানো
@@ -240,6 +257,7 @@ auth.onAuthStateChanged(u => {
 
 // প্রতি ১ সেকেন্ড পরপর সময় ও অ্যালার্ম চেক করা
 setInterval(checkRoutineAlarms, 1000);
+setInterval(renderMy, 60000); // পরবর্তী ক্লাস হালনাগাদ
 
 // তারিখ বদলালে পেজ রিফ্রেশ
 setInterval(() => { if (ds(new Date()) !== todayStr) location.reload(); }, 60000);
