@@ -93,8 +93,8 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
 <div class="wrap">
   <!-- ডিউটি ট্যাব শুধু লগইন করা শিক্ষক/অ্যাডমিনের জন্য; অন্যরা শুধু রুটিন দেখেন -->
   <div class="tabs hide" id="tabs">
-    <button id="v1" class="on" onclick="setView('r')">📋 পরীক্ষার রুটিন</button>
     <button id="v2" onclick="setView('d')">🧑‍🏫 পরীক্ষার ডিউটি</button>
+    <button id="v1" class="on" onclick="setView('r')">📋 পরীক্ষার রুটিন</button>
   </div>
 
   <!-- পরীক্ষার রুটিন (সবার জন্য) -->
@@ -173,7 +173,7 @@ const dNum = d => d ? bn(d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0,
 const fmt = t => { if (!t) return ''; let [h, m] = String(t).split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return bn(h + ':' + String(m).padStart(2, '0')) + ' ' + ap; };
 const tRange = e => e.end ? fmt(e.start) + ' –\n' + fmt(e.end) : fmt(e.start);
 
-let view = 'r', shareData = null;
+let view = 'r', shareData = null, dutyAuto = false;
 // রুটিন
 let exs = [], gotR = false, exErr = false, rcls = '', rexam = '';
 // ডিউটি
@@ -221,7 +221,7 @@ function renderR() {
 // ===== ডিউটি: শুধু লগইন করা শিক্ষক/অ্যাডমিন =====
 auth.onAuthStateChanged(u => {
   unsubs.forEach(f => f()); unsubs = []; duties = []; teachers = []; gotD = gotT = false; errMsg = ''; sel = '';
-  user = u; isAdmin = !!u && (u.email || '').toLowerCase() === ADMIN_EMAIL;
+  dutyAuto = false; user = u; isAdmin = !!u && (u.email || '').toLowerCase() === ADMIN_EMAIL;
   if (u) {
     unsubs.push(db.collection('teachers').onSnapshot(s => { teachers = s.docs.map(d => ({ id: d.id, ...d.data() })); gotT = true; render(); }, fail));
     unsubs.push(db.collection('examDuties').onSnapshot(s => { duties = s.docs.map(d => ({ id: d.id, ...d.data() })); gotD = true; render(); }, fail));
@@ -285,6 +285,8 @@ function setView(v) { view = v; render(); }
 function render() {
   const cd = canDuty();
   $('tabs').classList.toggle('hide', !cd);
+  // লগইন করা শিক্ষক/অ্যাডমিন প্রথমবার ঢুকলে ডিউটি সেকশন আগে দেখাবে (পরে রুটিন ট্যাবে গেলে জোর করে ফেরাবে না)
+  if (cd && !dutyAuto) { dutyAuto = true; view = 'd'; }
   if (view === 'd' && !cd) view = 'r';
   $('v1').classList.toggle('on', view === 'r'); $('v2').classList.toggle('on', view === 'd');
   $('rv').classList.toggle('hide', view !== 'r'); $('dv').classList.toggle('hide', view !== 'd');
