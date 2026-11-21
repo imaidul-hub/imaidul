@@ -141,23 +141,10 @@ details summary{cursor:pointer;color:var(--pr);font-size:14px;margin-top:8px}
       <div class="sbt"><button type="button" onclick="selAll(true)">✅ সবাইকে বাছাই</button><button type="button" onclick="selAll(false)">❌ সব বাদ</button></div>
       <div id="slist" class="slist"></div>
     </details>
-    <details>
-      <summary>⚙️ প্রতিষ্ঠানের নাম, সাল, স্বাক্ষর ও নির্দেশনা</summary>
-      <label for="inst">প্রতিষ্ঠানের নাম</label><input id="inst">
-      <div class="g2">
-        <div><label for="yr">সাল / সেশন</label><input id="yr"></div>
-        <div><label for="sg">স্বাক্ষরকারীর পদবি</label><input id="sg"></div>
-      </div>
-      <label for="dir">নির্দেশনা (প্রতি লাইনে একটি)</label><textarea id="dir" rows="4"></textarea>
-      <label for="lgf">মাদ্রাসার লোগো (ঐচ্ছিক — আপলোড করলে এই ডিভাইসে মনে রাখবে)</label>
-      <input type="file" id="lgf" accept="image/*">
-      <button type="button" class="pbtn" style="background:var(--mu);margin-top:6px" onclick="resetLogo()">লোগো রিসেট (ডিফল্ট ফাইল ব্যবহার)</button>
-    </details>
     <button class="pbtn" onclick="doPrint()">🖨️ প্রিন্ট করুন</button>
   </div>
   <div class="info" id="info"></div>
   <div class="err" id="err"></div>
-  <div class="err" id="lginfo"></div>
   <div id="cards" class="two"></div>
   </div>
 </div>
@@ -191,21 +178,19 @@ const dfmt = d => d ? bn(d.slice(8,10) + '/' + d.slice(5,7) + '/' + d.slice(0,4)
 const wday = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? '' : WD[x.getDay()]; };
 const fmt = t => { if (!t) return ''; let [h,m] = String(t).split(':').map(Number); if (isNaN(h)) return ''; const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return bn(h + ':' + String(m||0).padStart(2,'0')) + ' ' + ap; };
 
-// সেটিংস (এই ডিভাইসে মনে রাখে)
+// ডিফল্ট তথ্য
 const DEF = {inst:'চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা', yr:String(new Date().getFullYear()), sg:'অধ্যক্ষ',
   dir:'প্রবেশপত্র ছাড়া পরীক্ষা কক্ষে প্রবেশ করা যাবে না।\nপরীক্ষা শুরুর ১৫ মিনিট আগে আসন গ্রহণ করতে হবে।\nপরীক্ষা কক্ষে মোবাইল ফোন বা অনুমোদিত নয় এমন কোনো সামগ্রী আনা নিষেধ।'};
 const lsGet = k => { try { return localStorage.getItem('ac_' + k); } catch (e) { return null; } };
 const lsSet = (k, v) => { try { localStorage.setItem('ac_' + k, v); } catch (e) {} };
-['inst','yr','sg','dir'].forEach(k => { const v = lsGet(k); $(k).value = v != null ? v : DEF[k]; $(k).addEventListener('input', () => { lsSet(k, $(k).value); draw(); }); });
 { const v = lsGet('pp'); if (v) $('pp').value = v; }
 { const v = lsGet('cm'); if (v) $('cm').value = v; }
 $('cm').onchange = () => { lsSet('cm', $('cm').value); draw(); };
 
-// ---- লোগো: আপলোড করা → favicon.png → অন্যান্য সম্ভাব্য ফাইল → manifest.json-এর আইকন ----
+// ---- লোগো: favicon.png → অন্যান্য সম্ভাব্য ফাইল → manifest.json-এর আইকন ----
 const LOGO_C = ['logo.jpg','logo.jpeg','logo.png','favicon.png','apple-touch-icon.png','logo.png','icon-192.png','icon-512.png','icons/icon-192.png','icons/icon-512.png'];
 const tryImg = u => new Promise(r => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = u; });
 async function findLogo(){
-  const up = lsGet('logo'); if (up && await tryImg(up)) return up;
   const list = [...LOGO_C];
   try { const m = await (await fetch('manifest.json')).json(); (m.icons || []).forEach(ic => { try { list.push(new URL(ic.src, new URL('manifest.json', location.href)).href); } catch (e) {} }); } catch (e) {}
   for (const u of list) { if (await tryImg(u)) return u; }
@@ -213,23 +198,8 @@ async function findLogo(){
 }
 function setLogo(u){
   $('cards').style.setProperty('--logo', u ? 'url("' + u + '")' : 'none');
-  $('lginfo').textContent = u ? '' : '⚠️ লোগো ফাইল পাওয়া যায়নি। ⚙️ সেটিংস থেকে মাদ্রাসার লোগো আপলোড করুন।';
 }
 async function initLogo(){ setLogo(await findLogo()); }
-function resetLogo(){ lsSet('logo', ''); initLogo(); }
-$('lgf').onchange = function(){
-  const f = this.files && this.files[0]; if (!f) return;
-  const url = URL.createObjectURL(f), im = new Image();
-  im.onload = () => {
-    URL.revokeObjectURL(url);
-    const k = Math.min(1, 300 / Math.max(im.naturalWidth, im.naturalHeight));
-    const c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
-    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-    const d = c.toDataURL('image/png'); lsSet('logo', d); setLogo(d);
-  };
-  im.onerror = () => { URL.revokeObjectURL(url); $('lginfo').textContent = '❌ ছবিটি পড়া যায়নি'; };
-  im.src = url;
-};
 
 var EX = [], STU = [], TCH = [];
 var AUTH = false, ALLOW = null;   // ALLOW = শ্রেণি শিক্ষকের জন্য নির্দিষ্ট শ্রেণি (অ্যাডমিনের জন্য null)
@@ -325,7 +295,7 @@ function draw(){
   const allStu = classStu(cl);
   const stus = allStu.filter(s => SEL.has(s.id));
   const t = TCH.find(x => x.classOf === cl);
-  const ctx = {exam: ex, inst: $('inst').value.trim() || DEF.inst, yr: $('yr').value.trim(), sg: $('sg').value.trim(), dir: $('dir').value, teacher: t ? t.name : ''};
+  const ctx = {exam: ex, inst: DEF.inst, yr: DEF.yr, sg: DEF.sg, dir: DEF.dir, teacher: t ? t.name : ''};
   if (!stus.length) { $('cards').innerHTML = '<div class="empty">' + (allStu.length ? 'কোনো ছাত্র/ছাত্রী বাছাই করা হয়নি। উপরের "👥 ছাত্র/ছাত্রী" থেকে বাছাই করুন।' : 'এই শ্রেণিতে কোনো ছাত্র/ছাত্রী পাওয়া যায়নি।') + '</div>'; $('info').textContent = ''; return; }
   $('info').textContent = ex + ' • ' + cl + ' • ' + bn(stus.length) + 'টি প্রবেশপত্র • ' + bn(rows.length) + 'টি বিষয়';
   $('cards').innerHTML = stus.map(s => card(s, rows, ctx)).join('');
