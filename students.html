@@ -106,6 +106,8 @@ h3{margin:0 0 6px}
 .rcs b{display:block;font-size:22px}
 .rcs .a{background:rgba(220,38,38,.1);color:#dc2626}.rcs .b{background:rgba(15,122,74,.12);color:var(--pr)}.rcs .l{background:rgba(183,121,31,.15);color:#b7791f}
 .rcp-only{display:none}
+#rcm .rc-pub .rcp-only{display:block}
+#rcm .rc-pub textarea{resize:none;border:1px solid var(--bd);cursor:default}
 #rcm .rh{display:flex;align-items:center;gap:10px;margin:0 0 10px;background:#e8eee9;border:1px solid #9fb0a5;border-radius:8px;padding:8px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #rcm .rh .lg{width:72px;height:72px;flex:none;object-fit:contain}
 #rcm .rh .ph{width:72px;height:72px;flex:none;object-fit:cover;border:1px solid #888;border-radius:6px;background:#fff}
@@ -191,7 +193,10 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <div class="yr"><button onclick="shiftY(-1)">◀</button><b id="yl"></b><button onclick="shiftY(1)">▶</button></div>
       <select id="fc"></select>
       <input id="q" placeholder="🔍 এই শ্রেণিতে নাম, রোল বা মোবাইল দিয়ে খুঁজুন">
-      <button class="act sec" onclick="doPrint()">🖨️ প্রিন্ট করুন</button>
+      <div class="row2">
+        <button class="act sec" onclick="doPrint()">🖨️ প্রিন্ট করুন</button>
+        <button class="act sec" onclick="shareClassImg()">🖼️ ছবি শেয়ার</button>
+      </div>
     </div>
     <div id="ptbl"></div>
     <div id="list"><div class="mu" style="text-align:center;padding:14px">👆 তালিকা দেখতে উপর থেকে শ্রেণি বেছে নিন</div></div>
@@ -315,7 +320,7 @@ function buildAtt(){
     }
   });
 }
-function shiftY(n){ Y += n; att = {}; attDocs = []; asDocs = []; attDirty = true; render(); if (rcId) openRC(rcId); loadAtt(); }
+function shiftY(n){ if (rcId && !auth.currentUser) return; Y += n; att = {}; attDocs = []; asDocs = []; attDirty = true; render(); if (rcId) openRC(rcId); loadAtt(); }
 function tg(id, t){ openId[id] = openId[id] === t ? null : t; render(); }
 function tags(id){
   const x = att[id], ta = x ? x.ta : 0, tl = x ? x.tl : 0, o = openId[id];
@@ -332,7 +337,7 @@ function monthsGrid(id){
 
 function mergeS(){
   const u = !!auth.currentUser;
-  students = rawS.map(s => ({...s, phone: u ? (s.phone || '') : ''}));
+  students = rawS.map(s => ({...s, phone: u ? (s.phone || '') : '', photo: u ? s.photo : ''}));   // লগইন ছাড়া ছবি/মোবাইল নেই
   render();
 }
 auth.onAuthStateChanged(u => {
@@ -409,12 +414,12 @@ var rcFb = '', LOGO_DU = '';
 function rcFit(){ const t = $('rcN'); if (t) { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; } }
 // শিক্ষক নিজে লিখলে/বদলালে তবেই সেভ হয়; না বদলালে মন্তব্যে সবসময় সর্বশেষ স্বয়ংক্রিয় ফিডব্যাক বসে
 function rcCalc(){
-  if (!rcId) return;
+  if (!rcId || !auth.currentUser) return;
   try { localStorage.setItem(rcKey(rcId), JSON.stringify({note: $('rcN').value, edited: true})); } catch(e){}
   rcFit();
 }
 function rcAuto(){
-  if (!rcId) return;
+  if (!rcId || !auth.currentUser) return;
   try { localStorage.removeItem(rcKey(rcId)); } catch(e){}
   $('rcN').value = rcFb; rcFit();
 }
@@ -465,6 +470,7 @@ function openRC(id){
   if (attDirty) buildAtt();
   const keep = $('rcm').classList.contains('hide') ? 0 : $('rcm').scrollTop;
   rcId = id;
+  const pub = !auth.currentUser;   // লগইন ছাড়া: শুধু প্রিন্ট ভার্সন (ডাউনলোড/সম্পাদনা/বছর বদল নেই)
   const x = att[id] || {a:Array(12).fill(0), l:Array(12).fill(0), p:Array(12).fill(0), ta:0, tl:0, tp:0};
   const tot = x.tp + x.tl + x.ta, pct = tot ? Math.round(x.tp * 100 / tot) : 0;
   const sv = rcLoad(id) || {note:''};
@@ -490,10 +496,10 @@ function openRC(id){
   else if (!two) asHtml = tbl(al, dFull);
   else { const h = Math.ceil(al.length / 2); asHtml = `<div class="two">${tbl(al.slice(0, h), dShort)}${tbl(al.slice(h), dShort)}</div>`; }
   const asSum = al.length ? `<div class="asum">মোট প্রাপ্ত নম্বর: ${fmt(G)} / ${fmt(T)} (${T ? bn(Math.round(G * 100 / T)) + '%' : '–'}) • অনুপস্থিত: ${bn(A)}টি</div>` : '';
-  const phHtml = (typeof s.photo === 'string' && s.photo.startsWith('data:image/')) ? `<img class="ph" src="${s.photo}" alt="">` : '<div class="ph"></div>';
-  $('rcm').innerHTML = `<div class="sheet rcc" style="--z:${zoom}">
+  const phHtml = (typeof s.photo === 'string' && s.photo.startsWith('data:image/')) ? `<img class="ph" src="${s.photo}" alt="">` : (pub ? '<div class="ph" style="color:#9aa3a0"><svg viewBox="0 0 24 24" fill="currentColor" style="width:100%;height:100%;display:block"><circle cx="12" cy="9" r="4"/><path d="M4 22c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5z"/></svg></div>' : '<div class="ph"></div>');
+  $('rcm').innerHTML = `<div class="sheet rcc${pub ? ' rc-pub' : ''}" style="--z:${zoom}">
     <div class="rch rcno"><div><h3>📋 ${esc(s.name)}</h3><div class="mu">${esc(s.class||'—')} • রোল: ${bn(s.roll||'–')}</div></div><button class="rcx" onclick="closeRC()">✕</button></div>
-    <div class="yr rcno"><button onclick="shiftY(-1)">◀</button><b>${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</b><button onclick="shiftY(1)">▶</button></div>
+    ${pub ? `<div class="mu rcno" style="text-align:center;margin:4px 0"><b>${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</b></div>` : `<div class="yr rcno"><button onclick="shiftY(-1)">◀</button><b>${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</b><button onclick="shiftY(1)">▶</button></div>`}
     <div class="rcp-only"><div class="rh"><img class="lg" src="${LOGO_DU || 'logo.jpg'}" alt="" onerror="this.style.visibility='hidden'"><div class="tx"><h2>চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h2><div class="tt">রিপোর্ট কার্ড : ${bn(Y)} সাল</div></div>${phHtml}</div>
     <table><tr><th>নাম</th><td>${esc(s.name)}</td><th>রোল</th><td>${bn(s.roll||'–')}</td></tr>
     <tr><th>শ্রেণি</th><td>${esc(s.class)}</td><th>মোবাইল</th><td>${s.phone ? bn(esc(s.phone)) : '–'}</td></tr>
@@ -504,10 +510,10 @@ function openRC(id){
     <tbody>${mm}<tr><th>মোট</th><th>${bn(x.tp)}</th><th>${bn(x.tl)}</th><th>${bn(x.ta)}</th><th colspan="4">উপস্থিতির হার: ${bn(pct)}%</th></tr></tbody></table>
     <b>মূল্যায়ন রিপোর্ট</b>
     ${asHtml}${asSum}
-    <b>মন্তব্য</b> <button class="rcb rcno" onclick="rcAuto()">🔄 স্বয়ংক্রিয় ফিডব্যাক বসান</button>
-    <textarea id="rcN" rows="2" oninput="rcCalc()">${esc(shown)}</textarea>
+    <b>মন্তব্য</b> ${pub ? '' : '<button class="rcb rcno" onclick="rcAuto()">🔄 স্বয়ংক্রিয় ফিডব্যাক বসান</button>'}
+    <textarea id="rcN" rows="2" ${pub ? 'readonly' : ''} oninput="rcCalc()">${esc(shown)}</textarea>
     <div class="sig"><span>শ্রেণি শিক্ষকের স্বাক্ষর</span></div>
-    <div class="rcbt rcno"><button class="pbtn" onclick="downloadRC()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="doPrint()">🖨️ প্রিন্ট</button></div>
+    <div class="rcbt rcno"><button class="pbtn" onclick="doPrint()">🖨️ প্রিন্ট</button><button class="pbtn" onclick="shareCardImg()">🖼️ ছবি শেয়ার</button></div>
   </div>`;
   $('rcm').classList.remove('hide');
   document.body.classList.add('rc-open');
@@ -516,33 +522,199 @@ function openRC(id){
 }
 
 $('rcm').onclick = e => { if (e.target === $('rcm')) closeRC(); };
-function downloadRC(){
-  const s = students.find(x => x.id === rcId); if (!s) return;
-  const c = $('rcm').querySelector('.sheet').cloneNode(true);
-  c.querySelectorAll('.rcno').forEach(e => e.remove());
-  if (LOGO_DU) c.querySelectorAll('.rh .lg').forEach(i => { i.src = LOGO_DU; });
-  const ta = c.querySelector('textarea');
-  if (ta) { const d = document.createElement('div'); d.style.cssText = 'border:1px solid #000;padding:4px;min-height:34px;white-space:pre-wrap'; d.textContent = $('rcN').value; ta.replaceWith(d); }
-  const css = '@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html{background:#ddd}'
-    + 'body{font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;width:210mm;min-height:297mm;margin:0 auto;padding:12mm 10mm;background:#fff;color:#000;line-height:1.45;font-size:13px}'
-    + '.rcp-only{display:block}.mu{font-size:12px;color:#444}.rcs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.rcs div{border:1px solid #000;text-align:center;padding:6px;border-radius:8px;font-size:12px}.rcs b{display:block;font-size:20px}'
-    + 'table{width:100%;border-collapse:collapse;font-size:12px;margin:4px 0 10px}th,td{border:1px solid #000;padding:4px;text-align:center}th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}td.l{text-align:left}table.fx{table-layout:fixed}td{word-break:break-word;overflow-wrap:anywhere}'
-    + '.rh{display:flex;align-items:center;gap:10px;margin:0 0 10px;background:#e8eee9;border:1px solid #9fb0a5;border-radius:8px;padding:8px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.rh .lg{width:72px;height:72px;flex:none;object-fit:contain}.rh .ph{width:72px;height:72px;flex:none;object-fit:cover;border:1px solid #888;border-radius:6px;background:#fff}.rh .tx{flex:1;text-align:center;min-width:0}.rh h2{margin:0;font-size:22px;line-height:1.25;font-weight:700;color:#1b1b3a}.rh .tt{display:inline-block;margin-top:6px;padding:3px 30px;border-top:1px solid #888;border-bottom:2px solid #555;font-size:15px;font-weight:600}'
-    + '.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}.two table{margin:0}.asum{font-size:12px;margin:2px 0 8px}.sig{display:flex;justify-content:flex-end;margin-top:40px}.sig span{border-top:1px solid #000;padding-top:2px;min-width:100px;text-align:center}'
-    + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}';
-  const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>রিপোর্ট কার্ড - ' + esc(s.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
-  const nm = String(s.name || 'ছাত্র').replace(/[\\\/:*?"<>|]/g, '').trim();
-  const fname = 'রিপোর্ট-কার্ড-' + nm + '-' + Y + '.html';
-  if (window.AndroidPrint && typeof AndroidPrint.saveFile !== 'undefined') { AndroidPrint.saveFile(fname, html, 'text/html'); return; }
-  if (window.AndroidPrint) { alert('ডাউনলোডের জন্য অ্যাপটি নতুন ভার্সনে আপডেট করুন (MainActivity.java নতুন করে বিল্ড করুন)।'); return; }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
-  a.download = fname;
-  document.body.appendChild(a); a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-}
 $('fc').onchange = render;
 $('q').oninput = render;
+
+// ===== ছবি শেয়ার: ক্লাসের হাজিরা তালিকা ও রিপোর্ট কার্ড (প্রিন্টের বদলে) =====
+const SF = '"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif';
+const loadImg = src => new Promise(r => { if (!src) return r(null); const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+function cvWrap(x, text, maxW){
+  const out = []; let line = '';
+  String(text).split(' ').forEach(w => { const t = line ? line + ' ' + w : w; if (line && x.measureText(t).width > maxW) { out.push(line); line = w; } else line = t; });
+  if (line) out.push(line); return out.length ? out : [''];
+}
+// ছক আঁকা: cols=[{w,al}], head=[..]|null, rows=[[..]] — ঘর {t, span, al, b} দিয়ে কলাম মেলানো যায়। নিচের y ফেরত দেয়।
+function cvTable(x, X, Y, cols, head, rows, o){
+  o = o || {};
+  const fs = o.fs || 15, lh = Math.round(fs * 1.45), pad = o.pad || 4, th = o.th || [], TW = cols.reduce((a, c) => a + c.w, 0);
+  const norm = r => { let ci = 0; return r.map(c => { const t = (c && typeof c === 'object') ? c : {t: c}, span = t.span || 1;
+    const w = cols.slice(ci, ci + span).reduce((a, k) => a + k.w, 0);
+    const cell = {t: String(t.t == null ? '' : t.t), span, ci, w, al: t.al || cols[ci].al || 'c', b: t.b}; ci += span; return cell; }); };
+  const all = [];
+  if (head) all.push({cells: norm(head), head: true});
+  rows.forEach(r => all.push({cells: norm(r)}));
+  all.forEach(r => {
+    r.cells.forEach(c => { x.font = ((r.head || c.b || th.indexOf(c.ci) >= 0) ? '700 ' : '500 ') + fs + 'px ' + SF; c.lines = cvWrap(x, c.t, c.w - 12); });
+    r.h = Math.max(1, ...r.cells.map(c => c.lines.length)) * lh + pad * 2;
+  });
+  let y = Y;
+  x.textBaseline = 'middle';
+  all.forEach(r => {
+    let cx = X;
+    r.cells.forEach(c => {
+      const isTh = r.head || c.b || th.indexOf(c.ci) >= 0;
+      if (isTh) { x.fillStyle = '#e8e8e8'; x.fillRect(cx, y, c.w, r.h); }
+      x.fillStyle = '#000'; x.font = (isTh ? '700 ' : '500 ') + fs + 'px ' + SF;
+      x.textAlign = c.al === 'l' ? 'left' : 'center';
+      const px = c.al === 'l' ? cx + 8 : cx + c.w / 2;
+      c.lines.forEach((ln, j) => x.fillText(ln, px, y + r.h / 2 + (j - (c.lines.length - 1) / 2) * lh));
+      cx += c.w;
+    });
+    r.y = y; y += r.h;
+  });
+  x.strokeStyle = '#000'; x.lineWidth = 1; x.beginPath();
+  all.forEach(r => {
+    x.moveTo(X, r.y + .5); x.lineTo(X + TW, r.y + .5);
+    let cx = X; r.cells.forEach(c => { x.moveTo(cx + .5, r.y); x.lineTo(cx + .5, r.y + r.h); cx += c.w; });
+    x.moveTo(X + TW - .5, r.y); x.lineTo(X + TW - .5, r.y + r.h);
+  });
+  x.moveTo(X, y - .5); x.lineTo(X + TW, y - .5); x.stroke();
+  return y;
+}
+// paint(x) আঁকার ফাংশন; প্রথমে ছোট ক্যানভাসে মেপে উচ্চতা বের করে, পরে আসল ক্যানভাসে আঁকে
+function cvRender(W, paint){
+  const H = Math.ceil(paint(document.createElement('canvas').getContext('2d')));
+  const k = Math.min(2, Math.sqrt(12e6 / (W * H))), c = document.createElement('canvas');
+  c.width = Math.round(W * k); c.height = Math.round(H * k);
+  const x = c.getContext('2d'); x.scale(k, k); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+  paint(x); return c;
+}
+function shareCanvas(c, fname){
+  // অ্যান্ড্রয়েড অ্যাপের ওয়েবভিউতে navigator.share চলে না — অ্যাপের ব্রিজ ব্যবহার
+  if (window.AndroidPrint && typeof AndroidPrint.shareImage === 'function') {
+    try { AndroidPrint.shareImage(fname + '.png', c.toDataURL('image/png')); showMsg('শেয়ার মেনু খুলছে…', 'ok'); }
+    catch (e) { console.error(e); showMsg('শেয়ার করা যায়নি', 'err'); }
+    return;
+  }
+  c.toBlob(async blob => {
+    if (!blob) return showMsg('ছবি তৈরি করা যায়নি', 'err');
+    const file = new File([blob], fname + '.png', {type: 'image/png'});
+    if (navigator.canShare && navigator.canShare({files: [file]})) {
+      try { await navigator.share({files: [file]}); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; console.error(e); }
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    showMsg('ছবিটি ডাউনলোড হয়েছে — হোয়াটসঅ্যাপে সংযুক্ত করে পাঠান', 'ok');
+  }, 'image/png');
+}
+const nextPaint = () => new Promise(r => setTimeout(r, 30));
+
+// ---- শ্রেণির হাজিরা তালিকা ----
+async function shareClassImg(){
+  const fc = $('fc').value; if (!fc) return showMsg('আগে শ্রেণি বেছে নিন', 'err');
+  const list = students.filter(s => s.class === fc).sort((a, b) => (+a.roll || 0) - (+b.roll || 0));
+  if (!list.length) return showMsg('কোনো ছাত্র/ছাত্রী নেই', 'err');
+  if (attDirty) buildAtt();
+  showMsg('⏳ ছবি তৈরি হচ্ছে…', 'ok'); await nextPaint();
+  try {
+    const W = 794, P = 30, TW = W - P * 2, pc = [11, 31, 20, 14, 11, 13];
+    const cols = pc.map((p, i) => ({w: TW * p / 100, al: i === 1 ? 'l' : 'c'}));
+    const rows = list.map(s => { const a = att[s.id] || {tp: 0, tl: 0, ta: 0};
+      return [bn(s.roll || '–'), s.name || '', s.phone ? bn(s.phone) : '–', bn(a.tp), bn(a.tl), bn(a.ta)]; });
+    const c = cvRender(W, x => {
+      x.textBaseline = 'middle'; x.textAlign = 'center'; x.fillStyle = '#000';
+      let y = P; x.font = '700 24px ' + SF; x.fillText(fc + ' — ছাত্র/ছাত্রীর হাজিরা', W / 2, y + 14); y += 34;
+      x.font = '500 16px ' + SF; x.fillText(bn(Y) + ' সাল (জানুয়ারি – ডিসেম্বর)', W / 2, y + 10); y += 30;
+      y = cvTable(x, P, y, cols, ['রোল', 'নাম', 'মোবাইল নম্বর', 'মোট উপস্থিত', 'ছুটি', 'অনুপস্থিত'], rows, {fs: 16});
+      return y + P;
+    });
+    shareCanvas(c, 'hajira-' + Y);
+  } catch (e) { console.error(e); showMsg('ছবি তৈরি করা যায়নি', 'err'); }
+}
+
+// ---- রিপোর্ট কার্ড ----
+function cvDraw(x, im, X, Y, w, h, cover){
+  const r = cover ? Math.max(w / im.naturalWidth, h / im.naturalHeight) : Math.min(w / im.naturalWidth, h / im.naturalHeight);
+  const dw = im.naturalWidth * r, dh = im.naturalHeight * r;
+  x.save(); x.beginPath(); x.rect(X, Y, w, h); x.clip(); x.drawImage(im, X + (w - dw) / 2, Y + (h - dh) / 2, dw, dh); x.restore();
+}
+async function shareCardImg(){
+  const id = rcId, s = students.find(z => z.id === id); if (!s) return;
+  if (attDirty) buildAtt();
+  showMsg('⏳ ছবি তৈরি হচ্ছে…', 'ok');
+  try {
+    const hasPh = typeof s.photo === 'string' && s.photo.startsWith('data:image/');
+    const [lg, ph] = await Promise.all([loadImg(LOGO_DU || 'logo.jpg'), hasPh ? loadImg(s.photo) : null]);
+    await nextPaint();
+    const x0 = att[id] || {a: Array(12).fill(0), l: Array(12).fill(0), p: Array(12).fill(0), ta: 0, tl: 0, tp: 0};
+    const tot = x0.tp + x0.tl + x0.ta, pct = tot ? Math.round(x0.tp * 100 / tot) : 0;
+    const al = asList(id); let G = 0, T = 0, A = 0;
+    al.forEach(e => { if (e.ab) A++; else { G += e.n; T += e.t; } });
+    const note = $('rcN') ? $('rcN').value : '';
+    const dFull = d => bn(d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4));
+    const dShort = d => bn(d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(2, 4));
+    const W = 794, P = 30, TW = W - P * 2;
+    const c = cvRender(W, x => {
+      x.textBaseline = 'middle'; let y = P;
+      // হেডার
+      x.fillStyle = '#e8eee9'; x.fillRect(P, y, TW, 96); x.strokeStyle = '#9fb0a5'; x.lineWidth = 1; x.strokeRect(P + .5, y + .5, TW - 1, 95);
+      if (lg) cvDraw(x, lg, P + 10, y + 12, 72, 72, false);
+      if (ph) { cvDraw(x, ph, P + TW - 82, y + 12, 72, 72, true); x.strokeStyle = '#888'; x.strokeRect(P + TW - 81.5, y + 12.5, 71, 71); }
+      x.textAlign = 'center'; x.fillStyle = '#1b1b3a'; x.font = '700 25px ' + SF; x.fillText('চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা', W / 2, y + 34);
+      x.fillStyle = '#000'; x.font = '600 16px ' + SF; x.fillText('রিপোর্ট কার্ড : ' + bn(Y) + ' সাল', W / 2, y + 68);
+      const tw = x.measureText('রিপোর্ট কার্ড : ' + bn(Y) + ' সাল').width + 60;
+      x.strokeStyle = '#888'; x.beginPath(); x.moveTo(W / 2 - tw / 2, y + 55.5); x.lineTo(W / 2 + tw / 2, y + 55.5); x.stroke();
+      x.strokeStyle = '#555'; x.lineWidth = 2; x.beginPath(); x.moveTo(W / 2 - tw / 2, y + 81); x.lineTo(W / 2 + tw / 2, y + 81); x.stroke(); x.lineWidth = 1;
+      y += 96 + 12;
+      // শিক্ষার্থীর তথ্য
+      const ic = [{w: 80}, {w: TW / 2 - 80}, {w: 80}, {w: TW / 2 - 80}];
+      y = cvTable(x, P, y, ic, null, [['নাম', s.name || '', 'রোল', bn(s.roll || '–')], ['শ্রেণি', s.class || '', 'মোবাইল', s.phone ? bn(s.phone) : '–']], {fs: 15, th: [0, 2]});
+      y = cvTable(x, P, y, [{w: 80}, {w: TW - 80}], null, [['পিতা', s.father || '–']], {fs: 15, th: [0]});
+      y += 12;
+      // মোট উপস্থিত / ছুটি / অনুপস্থিত
+      const bw = (TW - 16) / 3;
+      [[x0.tp, 'উপস্থিত'], [x0.tl, 'ছুটি'], [x0.ta, 'অনুপস্থিত']].forEach((b, i) => {
+        const bx = P + i * (bw + 8);
+        x.strokeStyle = '#000'; x.lineWidth = 1; x.strokeRect(bx + .5, y + .5, bw - 1, 58);
+        x.fillStyle = '#000'; x.textAlign = 'center'; x.font = '700 24px ' + SF; x.fillText(bn(b[0]), bx + bw / 2, y + 22);
+        x.font = '500 14px ' + SF; x.fillText(b[1], bx + bw / 2, y + 46);
+      });
+      y += 58 + 12;
+      // হাজিরা
+      x.textAlign = 'left'; x.fillStyle = '#000'; x.font = '700 16px ' + SF; x.fillText('হাজিরা', P, y + 10); y += 24;
+      const mw = TW * 0.16, nw = (TW - mw * 2) / 6;
+      const ac = [{w: mw}, {w: nw}, {w: nw}, {w: nw}, {w: mw}, {w: nw}, {w: nw}, {w: nw}];
+      const ar = [0, 1, 2, 3, 4, 5].map(i => [MONTHS[i], bn(x0.p[i]), bn(x0.l[i]), bn(x0.a[i]), MONTHS[i + 6], bn(x0.p[i + 6]), bn(x0.l[i + 6]), bn(x0.a[i + 6])]);
+      ar.push([{t: 'মোট', b: true}, {t: bn(x0.tp), b: true}, {t: bn(x0.tl), b: true}, {t: bn(x0.ta), b: true}, {t: 'উপস্থিতির হার: ' + bn(pct) + '%', span: 4, b: true}]);
+      y = cvTable(x, P, y, ac, ['মাস', 'উপস্থিত', 'ছুটি', 'অনুপস্থিত', 'মাস', 'উপস্থিত', 'ছুটি', 'অনুপস্থিত'], ar, {fs: 14, pad: 3});
+      y += 12;
+      // মূল্যায়ন রিপোর্ট
+      x.textAlign = 'left'; x.fillStyle = '#000'; x.font = '700 16px ' + SF; x.fillText('মূল্যায়ন রিপোর্ট', P, y + 10); y += 24;
+      const head = ['তারিখ', 'বিষয়', 'নম্বর', 'মোট'];
+      const tcols = w => [{w: w * .25}, {w: w * .41, al: 'l'}, {w: w * .17}, {w: w * .17}];
+      const trow = (e, df) => [df(e.d), e.s, e.ab ? 'অনু.' : fmt(e.n), fmt(e.t)];
+      if (!al.length) {
+        y = cvTable(x, P, y, [{w: TW}], null, [[asErr ? 'মূল্যায়নের তথ্য লোড করা যায়নি' : 'এই বছরে কোনো মূল্যায়নের নম্বর নেই']], {fs: 14});
+      } else if (al.length <= 22) {
+        y = cvTable(x, P, y, tcols(TW), head, al.map(e => trow(e, dFull)), {fs: 14, pad: 3});
+      } else {
+        const h = Math.ceil(al.length / 2), hw = (TW - 8) / 2;
+        const y1 = cvTable(x, P, y, tcols(hw), head, al.slice(0, h).map(e => trow(e, dShort)), {fs: 13, pad: 2});
+        const y2 = cvTable(x, P + hw + 8, y, tcols(hw), head, al.slice(h).map(e => trow(e, dShort)), {fs: 13, pad: 2});
+        y = Math.max(y1, y2);
+      }
+      if (al.length) {
+        x.textAlign = 'left'; x.fillStyle = '#000'; x.font = '500 14px ' + SF;
+        x.fillText('মোট প্রাপ্ত নম্বর: ' + fmt(G) + ' / ' + fmt(T) + ' (' + (T ? bn(Math.round(G * 100 / T)) + '%' : '–') + ') • অনুপস্থিত: ' + bn(A) + 'টি', P, y + 14); y += 28;
+      }
+      y += 8;
+      // মন্তব্য
+      x.textAlign = 'left'; x.fillStyle = '#000'; x.font = '700 16px ' + SF; x.fillText('মন্তব্য', P, y + 10); y += 24;
+      x.font = '500 15px ' + SF;
+      const nl = []; String(note || '').split('\n').forEach(p => cvWrap(x, p, TW - 20).forEach(l => nl.push(l)));
+      const nh = Math.max(40, nl.length * 22 + 14);
+      x.strokeStyle = '#000'; x.lineWidth = 1; x.strokeRect(P + .5, y + .5, TW - 1, nh - 1);
+      x.textAlign = 'left'; x.fillStyle = '#000'; nl.forEach((l, i) => x.fillText(l, P + 10, y + 7 + 11 + i * 22));
+      y += nh;
+      // স্বাক্ষর
+      y += 56; x.strokeStyle = '#000'; x.beginPath(); x.moveTo(W - P - 190, y + .5); x.lineTo(W - P, y + .5); x.stroke();
+      x.textAlign = 'center'; x.font = '500 14px ' + SF; x.fillText('শ্রেণি শিক্ষকের স্বাক্ষর', W - P - 95, y + 14);
+      return y + 14 + P;
+    });
+    shareCanvas(c, 'report-card-' + (String(s.roll || '').replace(/[^0-9A-Za-z]/g, '') || 'student') + '-' + Y);
+  } catch (e) { console.error(e); showMsg('ছবি তৈরি করা যায়নি', 'err'); }
+}
 
 window.addEventListener('unhandledrejection', ev => fail(ev.reason));
 </script>
