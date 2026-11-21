@@ -157,7 +157,7 @@ function renderMy(){
   const periodStart = {};
   myR.forEach(r => { if (r.start && !periodStart[r.period]) periodStart[r.period] = r.start; });
   const absentPeriods = new Set(todayP.filter(p => p.absentId === curMe.id).map(p => p.period));
-  const mk = (r, kind) => ({period:r.period, time: r.start ? fmtT(r.start) + (r.end ? ' – ' + fmtT(r.end) : '') : '—', cls:r.class, sub:r.subject, room:r.room, startMin: toMin(r.start || periodStart[r.period]), kind});
+  const mk = (r, kind) => ({period:r.period, time: r.start ? fmtT(r.start) + (r.end ? ' – ' + fmtT(r.end) : '') : '—', cls:r.class, sub:r.subject, room:r.room, startMin: toMin(r.start || periodStart[r.period]), startT: r.start ? fmtT(r.start) : '', kind});
 
   // আজকের বাকি ক্লাস (শুরুর সময় এখনকার পরে), প্রক্সি সহ
   const todayRows = [
@@ -174,8 +174,8 @@ function renderMy(){
     }
   }
 
-  const body = nextRow ? `<div class="tw"><table class="tb"><thead><tr><th>দিন</th><th>পিরিয়ড</th><th>সময়</th><th>শ্রেণি ও বিষয়</th></tr></thead><tbody>
-    <tr class="${nextRow.kind}"><td style="white-space:nowrap"><b>${whenLbl}</b></td><td style="white-space:nowrap"><b>${ordBn(nextRow.period)}</b></td><td>${nextRow.time}</td>
+  const body = nextRow ? `<div class="tw"><table class="tb"><thead><tr><th>দিন ও সময়</th><th>পিরিয়ড</th><th>শ্রেণি ও বিষয়</th></tr></thead><tbody>
+    <tr class="${nextRow.kind}"><td style="white-space:nowrap"><b>${whenLbl}</b>${nextRow.startT ? '<br>' + nextRow.startT : ''}</td><td style="white-space:nowrap"><b>${ordBn(nextRow.period)}</b></td>
     <td><b>${esc(nextRow.cls)}</b> — ${esc(nextRow.sub)}${nextRow.room ? ' (' + esc(nextRow.room) + ')' : ''}${nextRow.kind==='px' ? '<span class="tag">🔁 প্রক্সি</span>' : ''}</td></tr></tbody></table></div>`
     : '<div class="mu" style="text-align:center;padding:14px">আপনার পরবর্তী কোনো ক্লাস পাওয়া যায়নি 🎉</div>';
 
