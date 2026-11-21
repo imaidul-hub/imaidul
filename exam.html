@@ -340,26 +340,32 @@ function drawImg(d) {
 function smsg(t) { $('smsg').textContent = t || ''; }
 function share() {
   if (!shareData) return smsg('শেয়ার করার মতো কিছু নেই');
-  let c; try { c = drawImg(shareData); } catch (e) { console.error(e); return smsg('ছবি তৈরি করা যায়নি'); }
-  c.toBlob(async blob => {
-    if (!blob) return smsg('ছবি তৈরি করা যায়নি');
-    const file = new File([blob], 'exam-' + shareData.fname + '.png', { type: 'image/png' });
-    // অ্যান্ড্রয়েড অ্যাপের ওয়েবভিউতে navigator.share চলে না — তাই অ্যাপের নিজস্ব শেয়ার ব্রিজ ব্যবহার
-    if (window.AndroidPrint && typeof AndroidPrint.shareImage === 'function') {
-      const r = new FileReader();
-      r.onloadend = () => { try { AndroidPrint.shareImage(file.name, r.result); smsg(''); } catch (e) { console.error(e); smsg('শেয়ার করা যায়নি'); } };
-      r.readAsDataURL(blob);
+  const native = !!(window.AndroidPrint && typeof AndroidPrint.shareImage === 'function');
+  smsg('⏳ ছবি তৈরি হচ্ছে…');
+  // মেসেজটি স্ক্রিনে দেখানোর সুযোগ দিয়ে তারপর ভারী কাজ শুরু
+  setTimeout(() => {
+    let c; try { c = drawImg(shareData); } catch (e) { console.error(e); return smsg('ছবি তৈরি করা যায়নি'); }
+    // অ্যান্ড্রয়েড অ্যাপ: navigator.share চলে না — JPEG (PNG-র চেয়ে অনেক দ্রুত ও ছোট) সরাসরি অ্যাপে পাঠানো
+    if (native) {
+      try {
+        AndroidPrint.shareImage('exam-' + shareData.fname + '.jpg', c.toDataURL('image/jpeg', 0.92));
+        smsg('শেয়ার মেনু খুলছে…'); setTimeout(() => smsg(''), 2500);
+      } catch (e) { console.error(e); smsg('শেয়ার করা যায়নি'); }
       return;
     }
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: 'পরীক্ষা' }); smsg(''); return; }
-      catch (e) { if (e && e.name === 'AbortError') return; console.error(e); }
-    }
-    // শেয়ার সমর্থিত না হলে ছবিটি ডাউনলোড হবে — হোয়াটসঅ্যাপে সংযুক্ত করে পাঠান
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    smsg('ছবিটি ডাউনলোড হয়েছে — হোয়াটসঅ্যাপে সংযুক্ত করে পাঠান');
-  }, 'image/png');
+    c.toBlob(async blob => {
+      if (!blob) return smsg('ছবি তৈরি করা যায়নি');
+      const file = new File([blob], 'exam-' + shareData.fname + '.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: 'পরীক্ষা' }); smsg(''); return; }
+        catch (e) { if (e && e.name === 'AbortError') return smsg(''); console.error(e); }
+      }
+      // শেয়ার সমর্থিত না হলে ছবিটি ডাউনলোড হবে — হোয়াটসঅ্যাপে সংযুক্ত করে পাঠান
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      smsg('ছবিটি ডাউনলোড হয়েছে — হোয়াটসঅ্যাপে সংযুক্ত করে পাঠান');
+    }, 'image/png');
+  }, 30);
 }
 </script>
 <script src="pwa.js"></script>
