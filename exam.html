@@ -345,10 +345,10 @@ function share() {
   // মেসেজটি স্ক্রিনে দেখানোর সুযোগ দিয়ে তারপর ভারী কাজ শুরু
   setTimeout(() => {
     let c; try { c = drawImg(shareData); } catch (e) { console.error(e); return smsg('ছবি তৈরি করা যায়নি'); }
-    // অ্যান্ড্রয়েড অ্যাপ: navigator.share চলে না — JPEG (PNG-র চেয়ে অনেক দ্রুত ও ছোট) সরাসরি অ্যাপে পাঠানো
+    // অ্যান্ড্রয়েড অ্যাপ: navigator.share চলে না — PNG ছবি সরাসরি অ্যাপে পাঠানো
     if (native) {
       try {
-        AndroidPrint.shareImage('exam-' + shareData.fname + '.jpg', c.toDataURL('image/jpeg', 0.92));
+        AndroidPrint.shareImage('exam-' + shareData.fname + '.png', c.toDataURL('image/png'));
         smsg('শেয়ার মেনু খুলছে…'); setTimeout(() => smsg(''), 2500);
       } catch (e) { console.error(e); smsg('শেয়ার করা যায়নি'); }
       return;
