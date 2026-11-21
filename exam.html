@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>পরীক্ষার ডিউটি</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f7a4a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="মাদ্রাসা">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626;--hl:#fff6d6}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033;--hl:#3a3414}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
+.bar b{font-size:17px}
+.bar button,.bar a{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer;margin-left:6px}
+.wrap{max-width:560px;margin:0 auto;padding:6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:6px;margin-bottom:6px}
+.mu{color:var(--mu);font-size:13px}
+.hide{display:none!important}
+.db{display:flex;gap:6px;align-items:center}
+.db input{flex:1;min-width:0;font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.db button{flex:none;font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:6px 10px;cursor:pointer}
+.db button.td{background:var(--pr);color:#fff;border-color:var(--pr)}
+.db button:disabled{opacity:.35;cursor:default}
+.dlab{text-align:center;font-weight:700;color:var(--pr);margin:6px 0 4px}
+.mine{text-align:center;font-size:14px;margin:0 0 4px}
+.t{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);font-size:15px}
+.t th{background:var(--pr);color:#fff;font-weight:600;padding:4px 6px;border:1px solid var(--pr2);text-align:center}
+.t td{padding:3px 6px;border:1px solid var(--bd);vertical-align:top}
+.t td:first-child,.t td:last-child{text-align:center;white-space:nowrap}
+.t tr.me td{background:var(--hl)}
+.t tr.me b{color:var(--pr)}
+.t td.none{text-align:center;color:var(--mu)}
+.btns{display:flex;gap:6px;margin:8px 0}
+.btns button{flex:1;border:0;border-radius:8px;padding:7px;font:inherit;font-weight:700;cursor:pointer;background:var(--pr);color:#fff}
+.btns button.wa{background:#25d366;color:#08331a}
+.tabs{display:flex;gap:4px;margin:0 0 6px}
+.tabs button{flex:1;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:6px 4px;border-radius:10px;font:inherit;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--pr);color:#fff;border-color:var(--pr)}
+.sel{display:flex;flex-direction:column;gap:4px}
+.sel select{width:100%;font:inherit;padding:7px 8px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.t tr.gone td{opacity:.5}
+.t tr.tdy td{background:var(--hl)}
+.t td small{color:var(--mu);font-size:12px}
+.t td.c{text-align:center}
+.t td.l{text-align:left}
+.err{color:#b42318;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3);border-radius:12px;padding:12px;font-size:14px}
+.ptitle{display:none}
+@media print{
+  .bar,.db,.btns,.mine,.tabs,.sel,#sl,#sl-bar{display:none!important}
+  body{background:#fff;color:#000;animation:none}
+  .wrap{max-width:none;padding:0}
+  .ptitle{display:block;text-align:center;font-weight:700;font-size:18px;margin-bottom:6px}
+  .dlab{color:#000}
+  .t th{background:#eee!important;color:#000;border-color:#000}
+  .t td{border-color:#000}
+  .t tr.me td,.t tr.tdy td{background:#fff}
+  .t tr.gone td{opacity:1}
+}
+</style>
+<style id="sl-css">
+#sl{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f4f8f5;transition:opacity .45s ease,visibility .45s ease}
+#sl.sl-out{opacity:0;visibility:hidden;pointer-events:none}
+#sl .sl-ring{width:54px;height:54px;border-radius:50%;border:4px solid rgba(15,122,74,.18);border-top-color:#0f7a4a;border-right-color:#c9a227;animation:sl-spin .9s cubic-bezier(.5,.1,.5,.9) infinite}
+#sl .sl-txt{font:600 14px "Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;color:#0f7a4a;animation:sl-pulse 1.4s ease-in-out infinite}
+#sl-bar{position:fixed;top:0;left:0;height:3px;width:0;z-index:100000;background:linear-gradient(90deg,#0f7a4a,#c9a227);box-shadow:0 0 8px rgba(15,122,74,.5);transition:width .35s ease,opacity .3s ease}
+body{animation:sl-fade .5s ease both}
+body.sl-leave{opacity:0;transition:opacity .18s ease}
+@keyframes sl-spin{to{transform:rotate(360deg)}}
+@keyframes sl-pulse{0%,100%{opacity:.45}50%{opacity:1}}
+@keyframes sl-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-color-scheme:dark){#sl{background:#0e1712}#sl .sl-ring{border-color:rgba(52,181,122,.2);border-top-color:#34b57a}#sl .sl-txt{color:#34b57a}}
+@media(prefers-reduced-motion:reduce){#sl .sl-ring,#sl .sl-txt,body{animation:none}}
+</style>
+</head>
+<body>
+<div id="sl" role="status" aria-live="polite"><div class="sl-ring"></div><div class="sl-txt">লোড হচ্ছে...</div></div><div id="sl-bar"></div>
+<div class="bar">
+  <b>📋 পরীক্ষা</b>
+  <div><a href="index.html">হোম</a></div>
+</div>
+
+<div class="wrap">
+  <!-- ডিউটি ট্যাব শুধু লগইন করা শিক্ষক/অ্যাডমিনের জন্য; অন্যরা শুধু রুটিন দেখেন -->
+  <div class="tabs hide" id="tabs">
+    <button id="v1" class="on" onclick="setView('r')">📋 পরীক্ষার রুটিন</button>
+    <button id="v2" onclick="setView('d')">🧑‍🏫 পরীক্ষার ডিউটি</button>
+  </div>
+
+  <!-- পরীক্ষার রুটিন (সবার জন্য) -->
+  <div id="rv">
+    <div class="card sel">
+      <select id="rc" onchange="pickClass(this.value)"></select>
+      <select id="re" class="hide" onchange="pickExam(this.value)"></select>
+    </div>
+    <div class="mu" id="rmsg" style="text-align:center;margin:8px 0"></div>
+    <div class="dlab" id="rlab"></div>
+    <table class="t hide" id="rt">
+      <thead><tr><th>তারিখ</th><th>বিষয়</th><th>সময়</th></tr></thead>
+      <tbody id="rb"></tbody>
+    </table>
+  </div>
+
+  <!-- পরীক্ষার ডিউটি (শুধু লগইন করা শিক্ষক) -->
+  <div id="dv" class="hide">
+    <div id="dgate" class="hide"></div>
+    <div id="dmain">
+      <div class="db">
+        <button id="pv" onclick="step(-1)" title="আগের ডিউটির তারিখ">◀</button>
+        <input id="dd" type="date" onchange="pick(this.value)">
+        <button id="nx" onclick="step(1)" title="পরের ডিউটির তারিখ">▶</button>
+        <button class="td" onclick="pick(today())">আজ</button>
+      </div>
+      <div class="dlab" id="dlab"></div>
+      <div class="mine hide" id="mine"></div>
+      <table class="t">
+        <thead><tr><th>রুম নং</th><th>শিক্ষক</th><th>সময়</th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="ptitle" id="ptitle"></div>
+  <div class="btns" id="btns">
+    <button onclick="window.print()">🖨️ প্রিন্ট</button>
+    <button class="wa" onclick="share()">💬 ছবি শেয়ার</button>
+  </div>
+  <div class="mu" id="smsg" style="text-align:center"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const CFG = {
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+};
+const ADMIN_EMAIL = 'cfm@gmail.com';
+firebase.initializeApp(CFG);
+const auth = firebase.auth(), db = firebase.firestore();
+try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) {}
+db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const normPhone = p => { let d = String(p || '').replace(/\D/g, ''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };
+const WD = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+const MON = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+const SHIFTS = ['সকাল', 'দুপুর', 'বিকাল'];
+const CLS_ORDER = ['ইবতেদায়ী ১ম শ্রেণি','ইবতেদায়ী ২য় শ্রেণি','ইবতেদায়ী ৩য় শ্রেণি','ইবতেদায়ী ৪র্থ শ্রেণি','ইবতেদায়ী ৫ম শ্রেণি','দাখিল ৬ষ্ঠ শ্রেণি','দাখিল ৭ম শ্রেণি','দাখিল ৮ম শ্রেণি','দাখিল ৯ম শ্রেণি','দাখিল ১০ম শ্রেণি','আলিম ১ম বর্ষ','আলিম ২য় বর্ষ','ফাজিল ১ম বর্ষ','ফাজিল ২য় বর্ষ','ফাজিল ৩য় বর্ষ'];
+const shRank = s => { const i = SHIFTS.indexOf(s); return i < 0 ? 99 : i; };
+const clsRank = c => { const i = CLS_ORDER.indexOf(c); return i < 0 ? 999 : i; };
+const wdOf = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? '' : WD[x.getDay()]; };
+const dLong = d => { const x = new Date(d + 'T00:00:00'); return isNaN(x) ? '' : bn(+d.slice(8, 10)) + ' ' + MON[+d.slice(5, 7) - 1] + ' ' + bn(d.slice(0, 4)) + ' (' + WD[x.getDay()] + ')'; };
+const dNum = d => d ? bn(d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4)) : '';
+const fmt = t => { if (!t) return ''; let [h, m] = String(t).split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return bn(h + ':' + String(m).padStart(2, '0')) + ' ' + ap; };
+const tRange = e => e.end ? fmt(e.start) + ' –\n' + fmt(e.end) : fmt(e.start);
+
+let view = 'r', shareData = null;
+// রুটিন
+let exs = [], gotR = false, exErr = false, rcls = '', rexam = '';
+// ডিউটি
+let user = null, isAdmin = false, duties = [], teachers = [], gotD = false, gotT = false, errMsg = '', sel = '', unsubs = [];
+
+// ===== পরীক্ষার রুটিন: লগইন ছাড়াই সবাই দেখতে পাবে =====
+db.collection('examRoutines').onSnapshot(s => { exs = s.docs.map(d => d.data()); gotR = true; exErr = false; render(); },
+  e => { console.error(e); gotR = true; exErr = true; render(); });
+
+function pickClass(c) { rcls = c; rexam = ''; try { localStorage.setItem('examCls', c); } catch (e) {} render(); }
+function pickExam(n) { rexam = n; render(); }
+
+function renderR() {
+  const rows = exs.filter(e => e.class && e.exam && e.date);
+  const classes = [...new Set(rows.map(e => e.class))].sort((a, b) => clsRank(a) - clsRank(b) || a.localeCompare(b, 'bn'));
+  if (!rcls) { try { rcls = localStorage.getItem('examCls') || ''; } catch (e) {} }
+  if (!classes.includes(rcls)) rcls = classes.length === 1 ? classes[0] : '';
+  $('rc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + classes.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  $('rc').value = rcls;
+
+  // একই শ্রেণির একাধিক পরীক্ষা থাকলে পরীক্ষা বাছার ঘর আসে; ডিফল্ট: নিকটতম আসন্ন পরীক্ষা, না থাকলে সর্বশেষটি
+  const t0 = today(), by = {};
+  rows.filter(e => e.class === rcls).forEach(e => (by[e.exam] = by[e.exam] || []).push(e.date));
+  const names = Object.keys(by);
+  if (!names.includes(rexam)) {
+    const up = names.filter(n => by[n].some(d => d >= t0)).sort((a, b) => Math.min(...by[a].filter(d => d >= t0).map(x => x.replace(/-/g, ''))) - Math.min(...by[b].filter(d => d >= t0).map(x => x.replace(/-/g, ''))));
+    rexam = up[0] || names.sort((a, b) => (by[b].slice().sort().pop() > by[a].slice().sort().pop() ? 1 : -1))[0] || '';
+  }
+  $('re').classList.toggle('hide', names.length < 2);
+  $('re').innerHTML = names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  $('re').value = rexam;
+
+  const list = rows.filter(e => e.class === rcls && e.exam === rexam).sort((a, b) => a.date.localeCompare(b.date) || String(a.start || '').localeCompare(String(b.start || '')));
+  const msg = !gotR ? 'লোড হচ্ছে...' : exErr ? 'পরীক্ষার রুটিন লোড করা যায়নি' : !rows.length ? 'এখনো কোনো পরীক্ষার রুটিন দেওয়া হয়নি' : !rcls ? 'শ্রেণি বেছে নিলে পরীক্ষার রুটিন দেখা যাবে' : '';
+  $('rmsg').textContent = msg; $('rmsg').classList.toggle('hide', !msg);
+  const show = !!list.length;
+  $('rt').classList.toggle('hide', !show); $('rlab').classList.toggle('hide', !show);
+  $('rlab').textContent = show ? '📝 ' + rexam + ' — ' + rcls : '';
+  $('rb').innerHTML = list.map(e => `<tr class="${e.date < t0 ? 'gone' : e.date === t0 ? 'tdy' : ''}"><td style="white-space:nowrap;text-align:center">${dNum(e.date)}<br><small>${wdOf(e.date)}</small></td><td class="l"><b>${esc(e.subject)}</b></td><td style="white-space:nowrap;text-align:center">${esc(tRange(e)).replace(/\n/g, '<br>')}</td></tr>`).join('');
+  $('ptitle').textContent = show ? 'পরীক্ষার রুটিন — ' + rcls + ' (' + rexam + ')' : '';
+  shareData = show ? { title: '📋 পরীক্ষার রুটিন', sub: '📝 ' + rexam + ' — ' + rcls, fname: 'routine', heads: ['তারিখ', 'বিষয়', 'সময়'], cw: [170, 328, 190], al: ['c', 'l', 'c'],
+    rows: list.map(e => [[dNum(e.date), wdOf(e.date)], [e.subject], tRange(e).split('\n')]) } : null;
+}
+
+// ===== ডিউটি: শুধু লগইন করা শিক্ষক/অ্যাডমিন =====
+auth.onAuthStateChanged(u => {
+  unsubs.forEach(f => f()); unsubs = []; duties = []; teachers = []; gotD = gotT = false; errMsg = ''; sel = '';
+  user = u; isAdmin = !!u && (u.email || '').toLowerCase() === ADMIN_EMAIL;
+  if (u) {
+    unsubs.push(db.collection('teachers').onSnapshot(s => { teachers = s.docs.map(d => ({ id: d.id, ...d.data() })); gotT = true; render(); }, fail));
+    unsubs.push(db.collection('examDuties').onSnapshot(s => { duties = s.docs.map(d => ({ id: d.id, ...d.data() })); gotD = true; render(); }, fail));
+  }
+  render();
+});
+function fail(e) {
+  console.error(e);
+  errMsg = (e && e.code === 'permission-denied') ? 'ডিউটির তথ্য দেখার অনুমতি নেই। (অ্যাডমিন: Firestore Rules-এ examDuties ও teachers কালেকশন লগইন করা ব্যবহারকারীর জন্য রিড-এলাউ করুন।)'
+    : 'তথ্য লোড করা যায়নি: ' + esc((e && (e.code || e.message)) || e);
+  render();
+}
+const myTeacher = () => user && !isAdmin ? teachers.find(t => normPhone(t.phone) && normPhone(t.phone) === normPhone((user.email || '').split('@')[0])) || null : null;
+const canDuty = () => !!user && (isAdmin || (gotT && !!myTeacher()));
+const tName = id => (teachers.find(t => t.id === id) || {}).name || 'অজানা শিক্ষক';
+const datesList = () => [...new Set(duties.map(x => x.date).filter(Boolean))].sort();
+// ডিউটির সময়: ওই তারিখের পরীক্ষার রুটিন থেকে — শুরু ১২টার আগে = সকাল, ১২–৪টা = দুপুর, ৪টার পর = বিকাল
+const shiftOf = t => { const h = +String(t).split(':')[0]; return h < 12 ? 'সকাল' : h < 16 ? 'দুপুর' : 'বিকাল'; };
+function timeFor(date, shift) {
+  const l = exs.filter(e => e.date === date && e.start && shiftOf(e.start) === shift);
+  if (!l.length) return shift;
+  const st = l.map(e => e.start).sort()[0], en = l.map(e => e.end).filter(Boolean).sort().pop();
+  return en ? fmt(st) + ' –\n' + fmt(en) : fmt(st);
+}
+
+function renderD() {
+  const g = $('dgate'), mn = $('dmain');
+  if (errMsg || !gotD || !gotT) {
+    g.innerHTML = errMsg ? '<div class="err">' + errMsg + '</div>' : '<div class="mu" style="text-align:center">লোড হচ্ছে...</div>';
+    g.classList.remove('hide'); mn.classList.add('hide'); shareData = null; return;
+  }
+  g.classList.add('hide'); mn.classList.remove('hide');
+  const me = myTeacher(), dates = datesList(), t0 = today();
+  // ডিফল্ট তারিখ: আজ (ডিউটি থাকলে) → পরের ডিউটির তারিখ → শেষ তারিখ → আজ
+  if (!sel) sel = dates.includes(t0) ? t0 : (dates.find(d => d > t0) || dates[dates.length - 1] || t0);
+  $('dd').value = sel; $('dlab').textContent = dLong(sel) + (sel === t0 ? ' — আজ' : '');
+  $('pv').disabled = !dates.some(d => d < sel); $('nx').disabled = !dates.some(d => d > sel);
+
+  const rows = {};
+  duties.filter(x => x.date === sel).forEach(x => { const k = x.shift + '|' + (x.room || '—'); (rows[k] = rows[k] || { shift: x.shift, room: x.room || '—', ids: [] }).ids.push(x.teacherId); });
+  const list = Object.values(rows).sort((a, b) => shRank(a.shift) - shRank(b.shift) || String(a.room).localeCompare(String(b.room), 'bn', { numeric: true }));
+  const data = list.map(r => ({ room: r.room, time: timeFor(sel, r.shift), ids: r.ids, names: r.ids.map(tName).sort((a, b) => a.localeCompare(b, 'bn')) }));
+  $('tb').innerHTML = list.length ? list.map((r, i) => {
+    const mine = me && r.ids.includes(me.id);
+    const names = r.ids.map(id => ({ id, n: tName(id) })).sort((a, b) => a.n.localeCompare(b.n, 'bn'));
+    return `<tr class="${mine ? 'me' : ''}"><td>${esc(bn(r.room))}</td><td>${names.map(x => me && x.id === me.id ? '<b>' + esc(x.n) + '</b>' : esc(x.n)).join('<br>')}</td><td>${esc(data[i].time).replace(/\n/g, '<br>')}</td></tr>`;
+  }).join('') : '<tr><td colspan="3" class="none">এই তারিখে কোনো ডিউটি নেই</td></tr>';
+
+  const my = $('mine');
+  if (me) {
+    const mm = list.filter(r => r.ids.includes(me.id));
+    my.textContent = mm.length ? '✅ আপনার ডিউটি: ' + mm.map(r => 'রুম ' + bn(r.room) + ' (' + r.shift + ')').join(', ') : 'এই তারিখে আপনার ডিউটি নেই';
+    my.classList.remove('hide');
+  } else my.classList.add('hide');
+  $('ptitle').textContent = 'পরীক্ষার ডিউটি — ' + dLong(sel);
+  shareData = list.length ? { title: '🧑‍🏫 পরীক্ষার ডিউটি', sub: '📅 ' + dLong(sel), fname: 'duty-' + sel, heads: ['রুম নং', 'শিক্ষক', 'সময়'], cw: [110, 388, 190], al: ['c', 'l', 'c'],
+    rows: data.map(r => [[bn(r.room)], r.names, r.time.split('\n')]) } : null;
+}
+
+function setView(v) { view = v; render(); }
+function render() {
+  const cd = canDuty();
+  $('tabs').classList.toggle('hide', !cd);
+  if (view === 'd' && !cd) view = 'r';
+  $('v1').classList.toggle('on', view === 'r'); $('v2').classList.toggle('on', view === 'd');
+  $('rv').classList.toggle('hide', view !== 'r'); $('dv').classList.toggle('hide', view !== 'd');
+  if (view === 'r') renderR(); else renderD();
+  smsg('');
+}
+function pick(d) { if (!d) return; sel = d; render(); }
+function step(dir) {
+  const dates = datesList();
+  const n = dir < 0 ? dates.filter(d => d < sel).pop() : dates.find(d => d > sel);
+  if (n) pick(n);
+}
+
+// ---- ছবি তৈরি (Canvas) ও শেয়ার ----
+function wrapText(ctx, text, maxW) {
+  const out = []; let line = '';
+  String(text).split(' ').forEach(w => { const t = line ? line + ' ' + w : w; if (line && ctx.measureText(t).width > maxW) { out.push(line); line = w; } else line = t; });
+  if (line) out.push(line); return out.length ? out : [''];
+}
+function drawImg(d) {
+  const F = '"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif', W = 720, PAD = 16, TW = W - PAD * 2, LH = 28, RP = 7, cw = d.cw;
+  const m = document.createElement('canvas').getContext('2d'); m.font = '600 20px ' + F;
+  const rows = d.rows.map(r => r.map((c, i) => [].concat(...c.map(t => wrapText(m, t, cw[i] - 24)))));
+  const rh = r => Math.max(1, ...r.map(c => c.length)) * LH + RP * 2, H = 116 + 36 + rows.reduce((a, r) => a + rh(r), 0) + 16;
+  const c = document.createElement('canvas'), k = 2; c.width = W * k; c.height = H * k;
+  const x = c.getContext('2d'); x.scale(k, k); x.textBaseline = 'middle';
+  x.fillStyle = '#ffffff'; x.fillRect(0, 0, W, H);
+  const g = x.createLinearGradient(0, 0, W, 0); g.addColorStop(0, '#0b5c37'); g.addColorStop(1, '#0f7a4a');
+  x.fillStyle = g; x.fillRect(0, 0, W, 66); x.fillStyle = '#c9a227'; x.fillRect(0, 66, W, 4);
+  x.fillStyle = '#fff'; x.textAlign = 'center'; x.font = '700 30px ' + F; x.fillText(d.title, W / 2, 34);
+  let fs = 22; x.font = '700 ' + fs + 'px ' + F; while (x.measureText(d.sub).width > TW && fs > 13) { fs--; x.font = '700 ' + fs + 'px ' + F; }
+  x.fillStyle = '#0b5c37'; x.fillText(d.sub, W / 2, 94);
+  const xs = [PAD, PAD + cw[0], PAD + cw[0] + cw[1]], y0 = 116; let y = y0;
+  x.fillStyle = '#0f7a4a'; x.fillRect(PAD, y, TW, 36); x.fillStyle = '#fff'; x.font = '700 20px ' + F;
+  d.heads.forEach((h, i) => x.fillText(h, xs[i] + cw[i] / 2, y + 19));
+  y += 36;
+  rows.forEach((r, i) => {
+    const h = rh(r);
+    x.fillStyle = i % 2 ? '#f1f7f3' : '#ffffff'; x.fillRect(PAD, y, TW, h);
+    x.fillStyle = '#17241c'; x.font = '600 20px ' + F;
+    r.forEach((ls, ci) => {
+      x.textAlign = d.al[ci] === 'l' ? 'left' : 'center';
+      const px = d.al[ci] === 'l' ? xs[ci] + 12 : xs[ci] + cw[ci] / 2;
+      ls.forEach((ln, j) => x.fillText(ln, px, y + h / 2 + (j - (ls.length - 1) / 2) * LH));
+    });
+    y += h;
+  });
+  x.strokeStyle = '#a9c4b3'; x.lineWidth = 1; x.strokeRect(PAD + .5, y0 + .5, TW - 1, y - y0 - 1);
+  [xs[1], xs[2]].forEach(v => { x.beginPath(); x.moveTo(v + .5, y0); x.lineTo(v + .5, y); x.stroke(); });
+  let yy = y0 + 36; rows.forEach(r => { yy += rh(r); x.beginPath(); x.moveTo(PAD, yy + .5); x.lineTo(PAD + TW, yy + .5); x.stroke(); });
+  return c;
+}
+function smsg(t) { $('smsg').textContent = t || ''; }
+function share() {
+  if (!shareData) return smsg('শেয়ার করার মতো কিছু নেই');
+  let c; try { c = drawImg(shareData); } catch (e) { console.error(e); return smsg('ছবি তৈরি করা যায়নি'); }
+  c.toBlob(async blob => {
+    if (!blob) return smsg('ছবি তৈরি করা যায়নি');
+    const file = new File([blob], 'exam-' + shareData.fname + '.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'পরীক্ষা' }); smsg(''); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; console.error(e); }
+    }
+    // শেয়ার সমর্থিত না হলে ছবিটি ডাউনলোড হবে — হোয়াটসঅ্যাপে সংযুক্ত করে পাঠান
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    smsg('ছবিটি ডাউনলোড হয়েছে — হোয়াটসঅ্যাপে সংযুক্ত করে পাঠান');
+  }, 'image/png');
+}
+</script>
+<script src="pwa.js"></script>
+<script id="sl-js">
+(function(){
+  var sl=document.getElementById('sl'),bar=document.getElementById('sl-bar'),done=false,w=8,t0=Date.now();
+  if(!sl)return;
+  bar.style.width=w+'%';
+  var iv=setInterval(function(){w+=(90-w)*.08;bar.style.width=w+'%';},250);
+  function hide(){
+    if(done)return;done=true;clearInterval(iv);
+    var wait=Math.max(0,350-(Date.now()-t0));
+    setTimeout(function(){
+      bar.style.width='100%';
+      sl.classList.add('sl-out');
+      setTimeout(function(){bar.style.opacity='0';},250);
+      setTimeout(function(){sl.remove();bar.remove();},700);
+    },wait);
+  }
+  var loaded=document.readyState==='complete',authed=false;
+  function check(){if(loaded&&authed)hide();}
+  window.addEventListener('load',function(){loaded=true;check();});
+  try{firebase.auth().onAuthStateChanged(function(){authed=true;check();},function(){authed=true;check();});}catch(e){authed=true;}
+  setTimeout(hide,6000);
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href]');
+    if(!a||a.target==='_blank'||e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey)return;
+    var h=a.getAttribute('href');
+    if(!h||h.charAt(0)==='#'||/^(javascript|mailto|tel|blob|data):/i.test(h)||a.hasAttribute('download'))return;
+    if(a.origin&&a.origin!==location.origin)return;
+    document.body.classList.add('sl-leave');
+  });
+  window.addEventListener('pageshow',function(e){if(e.persisted)document.body.classList.remove('sl-leave');});
+})();
+</script>
+</body>
+</html>

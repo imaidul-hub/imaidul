@@ -110,6 +110,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <button id="b5" onclick="tab(5)">🎓 ছাত্র</button>
       <button id="b6" onclick="tab(6)">📝 পরীক্ষা রুটিন</button>
       <button id="b7" onclick="tab(7)">📚 বিষয়</button>
+      <button id="b8" onclick="tab(8)">🧑‍🏫 পরীক্ষা ডিউটি</button>
     </div>
     <div id="p1">
     <div class="stats">
@@ -125,6 +126,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <a class="m" href="#" onclick="tab(3);return false"><i>🗓️</i>রুটিন</a>
       <a class="m" href="#" onclick="tab(4);return false"><i>🔁</i>প্রক্সি</a>
       <a class="m" href="#" onclick="tab(6);return false"><i>📝</i>পরীক্ষা রুটিন</a>
+      <a class="m" href="#" onclick="tab(8);return false"><i>🧑‍🏫</i>পরীক্ষা ডিউটি</a>
       <a class="m" href="attendance.html"><i>✅</i>হাজিরা</a>
       <a class="m" href="fees.html"><i>💰</i>ফি ও বেতন</a>
       <a class="m" href="result-upload.html"><i>📝</i>ফলাফল</a>
@@ -320,6 +322,32 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <div class="card" id="blist"><div class="mu">লোড হচ্ছে...</div></div>
     </div>
 
+    <!-- পরীক্ষা ডিউটি -->
+    <div id="p8" class="hide">
+      <div class="card">
+        <h3 id="dh" style="margin-top:0">পরীক্ষা ডিউটি যোগ করুন</h3>
+        <div class="mu">তারিখ</div>
+        <input id="dd" type="date">
+        <input id="dr" placeholder="রুম নং (যেমন: ১০১)">
+        <select id="dt"></select>
+        <div class="mu">↑ ডিউটি পড়বে যে শিক্ষকের</div>
+        <select id="dsh">
+          <option value="">-- শিফট বেছে নিন --</option>
+          <option>সকাল</option>
+          <option>দুপুর</option>
+          <option>বিকাল</option>
+        </select>
+        <button id="dbtn" class="act" onclick="saveDuty()">ডিউটি সংরক্ষণ</button>
+        <button id="dcan" class="act sec hide" onclick="cancelD()">বাতিল</button>
+        <div class="mu">একই রুমে একই তারিখ ও শিফটে একাধিক শিক্ষক দেওয়া যাবে। তবে একই শিক্ষককে একই তারিখ ও শিফটে দুইবার দেওয়া যাবে না।</div>
+      </div>
+      <h2>ডিউটি তালিকা <span id="dcnt" class="mu"></span></h2>
+      <div class="mu">তারিখ অনুযায়ী দেখুন (ফাঁকা রাখলে সব তারিখ)</div>
+      <input id="dfd" type="date">
+      <select id="dft"></select>
+      <div class="card" id="dlist"><div class="mu">লোড হচ্ছে...</div></div>
+    </div>
+
   </div>
 </div>
 
@@ -461,7 +489,7 @@ $('lt').onchange = loadRoutines;
 $('rt').onchange = () => { $('lt').value = $('rt').value; loadRoutines(); };
 const fmt = t => { if (!t) return ''; let [h,m] = t.split(':').map(Number); const ap = h>=12?'PM':'AM'; h = h%12||12; return bn(h+':'+String(m).padStart(2,'0'))+' '+ap; };
 
-function tab(n){ [1,2,3,4,5,6,7].forEach(i => { $('p'+i).classList.toggle('hide', i!==n); $('b'+i).classList.toggle('on', i===n); }); }
+function tab(n){ [1,2,3,4,5,6,7,8].forEach(i => { $('p'+i).classList.toggle('hide', i!==n); $('b'+i).classList.toggle('on', i===n); }); }
 
 var unsubS = null;
 function stopData(){
@@ -471,12 +499,14 @@ function stopData(){
   if (unsubP) { unsubP(); unsubP = null; }
   if (unsubX) { unsubX(); unsubX = null; }
   if (unsubB) { unsubB(); unsubB = null; }
+  if (unsubD) { unsubD(); unsubD = null; }
   tab(1);
 }
 function startData(){
   startStudents();
   startExams();
   startSubjects();
+  startDuties();
   unsubT = db.collection('teachers').orderBy('name').onSnapshot(s => {
     teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
     const opts = teachers.map(t => `<option value="${t.id}">${esc(t.name)}${t.subject?' ('+esc(t.subject)+')':''}</option>`).join('');
@@ -486,6 +516,9 @@ function startData(){
     $('pa').innerHTML = '<option value="">-- অনুপস্থিত শিক্ষক (ঐচ্ছিক) --</option>' + opts;
     if (kr) $('rt').value = kr; if (kl) $('lt').value = kl;
     $('pa').value = ka; if (ks) $('ps').value = ks;
+    const kd = $('dt').value;
+    $('dt').innerHTML = '<option value="">-- শিক্ষক বেছে নিন --</option>' + opts; if (kd) $('dt').value = kd;
+    renderDuties();
     loadProxies();
     $('tcount').textContent = '(মোট ' + bn(teachers.length) + ' জন)';
     $('tlist').innerHTML = teachers.map(t => `<div class="row" style="flex-direction:column;gap:2px">
@@ -913,6 +946,57 @@ function cancelB(){
 function delSubject(id){
   if (confirm('এই বিষয়টি মুছবেন?')) db.collection('subjects').doc(id).delete().then(() => { if (editB === id) cancelB(); }).catch(fail);
 }
+
+
+// ===== পরীক্ষা ডিউটি (কালেকশন: examDuties) =====
+var duties = [], unsubD = null, editD = null;
+const SHIFTS = ['সকাল','দুপুর','বিকাল'];
+$('dft').innerHTML = '<option value="">সব শিফট</option>' + SHIFTS.map(x => `<option>${x}</option>`).join('');
+$('dd').value = today();
+$('dfd').onchange = $('dft').onchange = () => renderDuties();
+function startDuties(){
+  unsubD = db.collection('examDuties').onSnapshot(s => {
+    duties = s.docs.map(d => ({id: d.id, ...d.data()}));
+    renderDuties();
+  }, fail);
+}
+function renderDuties(){
+  const fd = $('dfd').value, fs = $('dft').value;
+  const list = duties.filter(x => (!fd || x.date === fd) && (!fs || x.shift === fs));
+  list.sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')) || (SHIFTS.indexOf(a.shift) - SHIFTS.indexOf(b.shift))
+    || String(a.room||'').localeCompare(String(b.room||''), 'bn', {numeric:true}) || tn(a.teacherId).localeCompare(tn(b.teacherId), 'bn'));
+  $('dcnt').textContent = '(' + bn(list.length) + 'টি' + ((fd || fs) ? ' / মোট ' + bn(duties.length) + 'টি' : '') + ')';
+  if (!list.length) { $('dlist').innerHTML = '<div class="mu">কোনো ডিউটি নেই</div>'; return; }
+  let html = '', cur = null;
+  list.forEach(x => {
+    if (x.date !== cur) { cur = x.date; html += `<div style="font-weight:700;color:var(--pr);margin:10px 0 2px">📅 ${dfmt(x.date)}${wday(x.date) ? ' (' + wday(x.date) + ')' : ''}</div>`; }
+    html += `<div class="row"><div><b>${esc(tn(x.teacherId))}</b><div class="mu">🕒 ${esc(x.shift)} শিফট • 🚪 রুম ${bn(esc(x.room))}</div></div>
+      <div style="white-space:nowrap"><button class="ed" onclick="editDuty('${x.id}')">✏️</button><button class="del" onclick="delDuty('${x.id}')">✕</button></div></div>`;
+  });
+  $('dlist').innerHTML = html;
+}
+function saveDuty(){
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  const d = {date:$('dd').value, room:$('dr').value.trim(), teacherId:$('dt').value, shift:$('dsh').value};
+  if (!d.date || !d.room || !d.teacherId || !d.shift) return showMsg('তারিখ, রুম নং, শিক্ষক ও শিফট দিন');
+  if (duties.some(x => x.id !== editD && x.date === d.date && x.shift === d.shift && x.teacherId === d.teacherId))
+    return showMsg(tn(d.teacherId) + '-এর ' + dfmt(d.date) + ' তারিখে ' + d.shift + ' শিফটে ডিউটি আগে থেকেই আছে');
+  const wasEdit = !!editD;
+  const q = editD ? db.collection('examDuties').doc(editD).update(d) : db.collection('examDuties').add(d);
+  guard(q).then(() => { cancelD(); $('dd').value = d.date; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); if (!wasEdit) $('dsh').value = d.shift; })
+    .catch(fail);
+}
+function editDuty(id){
+  const x = duties.find(v => v.id === id); if (!x) return;
+  editD = id; $('dd').value = x.date; $('dr').value = x.room || ''; $('dt').value = x.teacherId; $('dsh').value = x.shift;
+  $('dh').textContent = '✏️ ডিউটি এডিট'; $('dbtn').textContent = '✅ আপডেট করুন'; $('dcan').classList.remove('hide');
+  $('dd').scrollIntoView({behavior:'smooth', block:'center'});
+}
+function cancelD(){
+  editD = null; $('dr').value = ''; $('dt').value = ''; $('dsh').value = '';
+  $('dh').textContent = 'পরীক্ষা ডিউটি যোগ করুন'; $('dbtn').textContent = 'ডিউটি সংরক্ষণ'; $('dcan').classList.add('hide');
+}
+function delDuty(id){ if (confirm('এই ডিউটিটি মুছবেন?')) db.collection('examDuties').doc(id).delete().then(() => { if (editD === id) cancelD(); }).catch(fail); }
 
 // ===== শিক্ষকদের মোবাইল লগইন তৈরি =====
 const normPhone = p => { let d = String(p||'').replace(/\D/g,''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };

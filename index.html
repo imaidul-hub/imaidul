@@ -48,6 +48,7 @@ table.tb tr.gone td{opacity:.55;text-decoration:line-through}
 .tag.o{background:#b42318}
 .myh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
 .myh a,.myh button{background:none;border:0;color:var(--pr);font:inherit;font-size:13px;cursor:pointer}
+.sh{font-weight:700;color:var(--pr);margin:8px 0 2px}
 footer{text-align:center;color:var(--mu);font-size:13px;padding:18px 12px;border-top:1px solid var(--bd)}
 </style>
 <style id="sl-css">
@@ -85,12 +86,9 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <a class="m" href="attendance.html"><div class="i">✅</div><b>হাজিরা</b><span>দৈনিক উপস্থিতি</span></a>
     <a class="m" href="asses.html"><div class="i">✏️</div><b>মূল্যায়ন</b><span>বিষয়ভিত্তিক নম্বর</span></a>
     <a class="m" href="results.html"><div class="i">📝</div><b>পরীক্ষার ফলাফল</b><span>মার্কশীট</span></a>
-    <a class="m" href="notices.html"><div class="i">📢</div><b>নোটিশ</b><span>ঘোষণা ও ছুটি</span></a>
+    <a class="m" href="exam.html"><div class="i">📋</div><b>পরীক্ষা</b><span>রুটিন ও ডিউটি</span></a>
     <a class="m" href="admitcard.html"><div class="i">🪪</div><b>এডমিট কার্ড</b><span>প্রবেশপত্র প্রিন্ট</span></a>
   </div>
-
-  <h2>সর্বশেষ নোটিশ</h2>
-  <div id="notices"><div class="card mu">লোড হচ্ছে...</div></div>
 </div>
 
 <footer>© <span id="yr"></span> চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা, চুনারুঘাট, হবিগঞ্জ • সর্বস্বত্ব সংরক্ষিত</footer>
@@ -114,12 +112,6 @@ db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
 const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 document.getElementById('yr').textContent = bn(new Date().getFullYear());
-
-db.collection('notices').orderBy('date','desc').limit(5).onSnapshot(s => {
-  document.getElementById('notices').innerHTML = s.empty
-    ? '<div class="card mu">এখনো কোনো নোটিশ নেই</div>'
-    : s.docs.map(d => { const n = d.data(); return `<div class="card"><b>${esc(n.title)}</b><div class="mu">${bn(esc(n.date))}</div><div>${esc(n.body)}</div></div>`; }).join('');
-}, () => document.getElementById('notices').innerHTML = '<div class="card mu">নোটিশ লোড করা যায়নি</div>');
 
 // ===== অ্যালার্ম ও শিক্ষক রুটিন লজিক =====
 const auth = firebase.auth();
