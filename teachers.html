@@ -333,7 +333,7 @@ function downloadRC(){
     + '.rch h3{margin:0 0 4px;font-size:18px}.mu{font-size:12px;color:#444}.rcs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.rcs div{border:1px solid #000;text-align:center;padding:6px;border-radius:8px;font-size:12px}.rcs b{display:block;font-size:20px}'
     + '.sec{display:flex;justify-content:space-between;border-bottom:2px solid #000;margin:14px 0 8px;font-weight:700;font-size:14px}.sec span{font-weight:400;font-size:12px}'
     + '.rt{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}.rt th,.rt td{border:1px solid #000;padding:5px 3px;text-align:center;word-break:break-word;overflow-wrap:anywhere}.rt th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-    + '.rt th:nth-child(1){width:28%}.rt th:nth-child(2){width:18%}.rt th:nth-child(3){width:22%}.rt thead{display:table-header-group}.rt tr{page-break-inside:avoid}.empty{text-align:center;padding:10px;font-size:12px}'
+    + '.rt th:nth-child(1){width:20%}.rt th:nth-child(2){width:12%}.rt th:nth-child(3){width:20%}.rt thead{display:table-header-group}.rt tr{page-break-inside:avoid}.empty{text-align:center;padding:10px;font-size:12px}'
     + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}'
     + '@media print{html{-webkit-filter:grayscale(1);filter:grayscale(1)}*{color:#000!important}.rt small,.mu{color:#333!important}}';
   const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>' + rcLabel() + ' - ' + esc(t.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
@@ -355,17 +355,18 @@ function drawRC(){
   const srt = (x, y) => x.d < y.d ? -1 : x.d > y.d ? 1 : 0;
   const ml = a.ml.slice().sort(srt), pl = a.pl.slice().sort(srt);
   const dt = e => bn(e.d.slice(8, 10) + '/' + e.d.slice(5, 7) + '/' + e.d.slice(0, 4));
-  const tbl = rows => rows.length
-    ? '<table class="rt"><thead><tr><th>তারিখ</th><th>পিরিয়ড</th><th>শ্রেণী</th><th>বিষয়</th></tr></thead><tbody>' +
-      rows.map(e => `<tr><td>${dt(e)}</td><td>${e.pr ? bn(esc(e.pr)) : '–'}</td><td>${e.c ? bn(esc(e.c)) : '–'}</td><td>${e.s ? esc(e.s) : '–'}</td></tr>`).join('') + '</tbody></table>'
+  const oName = id => !id ? '–' : id === '__none__' ? 'শিক্ষক নেই' : esc(tName(id));
+  const tbl = (rows, oLabel) => rows.length
+    ? '<table class="rt"><thead><tr><th>তারিখ</th><th>পিরিয়ড</th><th>শ্রেণী</th><th>বিষয়</th><th>' + oLabel + '</th></tr></thead><tbody>' +
+      rows.map(e => `<tr><td>${dt(e)}</td><td>${e.pr ? bn(esc(e.pr)) : '–'}</td><td>${e.c ? bn(esc(e.c)) : '–'}</td><td>${e.s ? esc(e.s) : '–'}</td><td>${oName(e.o)}</td></tr>`).join('') + '</tbody></table>'
     : '<div class="empty">এই বছরে কোনো তথ্য নেই</div>';
   const ix = idxOf(t), ds = desigOf(t), showM = rcMode !== 'p', showP = rcMode !== 'm';
   $('rcc').innerHTML = `<div class="rch"><div><h3>${rcMode === 'm' ? '❌' : rcMode === 'p' ? '✅' : '📋'} ${esc(t.name)}</h3><div class="mu">${esc(ds || '—')} • ইন্ডেক্স: ${ix !== '' ? bn(esc(ix)) : '–'}</div></div><button class="rcx rcno" onclick="closeRC()">✕</button></div>
     <div class="yr rcno"><button onclick="shiftY(-1)">◀</button><b>${bn(Y)} সাল (জানুয়ারি – ডিসেম্বর)</b><button onclick="shiftY(1)">▶</button></div>
     <div style="text-align:center;font-weight:700;margin:8px 0;display:none" class="rcp-only">${bn(Y)} সাল</div>
     <div class="rcs"${rcMode === 'all' ? '' : ' style="grid-template-columns:1fr"'}>${showM ? `<div class="a"><b>${bn(ml.length)}</b>ক্লাস মিস</div>` : ''}${showP ? `<div class="b"><b>${bn(pl.length)}</b>প্রক্সি নিয়েছেন</div>` : ''}</div>
-    ${showM ? `<div class="sec">❌ ক্লাস মিসের তালিকা <span>${bn(Y)} সাল</span></div>${tbl(ml)}` : ''}
-    ${showP ? `<div class="sec">✅ প্রক্সির তালিকা <span>${bn(Y)} সাল</span></div>${tbl(pl)}` : ''}
+    ${showM ? `<div class="sec">❌ ক্লাস মিসের তালিকা <span>${bn(Y)} সাল</span></div>${tbl(ml, 'ক্লাস নিয়েছেন')}` : ''}
+    ${showP ? `<div class="sec">✅ প্রক্সির তালিকা <span>${bn(Y)} সাল</span></div>${tbl(pl, 'যার ক্লাস নিয়েছেন')}` : ''}
     <div class="rcno" style="display:flex;gap:8px"><button class="pbtn" onclick="downloadRC()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="printRC()">🖨️ প্রিন্ট</button></div>`;
 }
 

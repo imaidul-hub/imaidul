@@ -238,11 +238,12 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
         <h3 id="ph" style="margin-top:0">প্রক্সি যোগ করুন</h3>
         <input id="pd" type="date">
         <select id="pa"></select>
-        <div class="mu">↑ অনুপস্থিত শিক্ষক (ঐচ্ছিক)</div>
+        <div id="pacnt" class="mu hide" style="font-weight:700;color:var(--er)"></div>
         <select id="ps"></select>
+        <div id="pscnt" class="mu hide" style="font-weight:700;color:var(--er)"></div>
         <div class="mu">↑ যিনি প্রক্সি নিবেন</div>
-        <div class="row2"><input id="pp" type="number" min="1" placeholder="পিরিয়ড নং"><input id="pr" placeholder="রুম (ঐচ্ছিক)"></div>
-        <div class="row2"><select id="pc"></select><input id="pj" placeholder="বিষয়"></div>
+        <div class="row2"><input id="pp" type="number" min="1" placeholder="পিরিয়ড নং"><select id="pps" class="hide"></select><input id="pr" placeholder="রুম (ঐচ্ছিক)"></div>
+        <div class="row2"><select id="pc"></select><input id="pj" placeholder="বিষয়"><select id="pjs" class="hide"></select></div>
         <button id="pbtn" class="act" onclick="saveProxy()">প্রক্সি সংরক্ষণ</button>
         <button id="pcan" class="act sec hide" onclick="cancelP()">বাতিল</button>
       </div>
@@ -497,6 +498,7 @@ function stopData(){
   if (unsubT) { unsubT(); unsubT = null; }
   if (unsubR) { unsubR(); unsubR = null; }
   if (unsubP) { unsubP(); unsubP = null; }
+  if (unsubY) { unsubY(); unsubY = null; } yearOf = null; yearPx = [];
   if (unsubX) { unsubX(); unsubX = null; }
   if (unsubB) { unsubB(); unsubB = null; }
   if (unsubD) { unsubD(); unsubD = null; }
@@ -512,14 +514,14 @@ function startData(){
     const opts = teachers.map(t => `<option value="${t.id}">${esc(t.name)}${t.subject?' ('+esc(t.subject)+')':''}</option>`).join('');
     const kr = $('rt').value, kl = $('lt').value;
     const ka = $('pa').value, ks = $('ps').value;
-    $('rt').innerHTML = opts; $('lt').innerHTML = opts; $('ps').innerHTML = opts;
+    $('rt').innerHTML = opts; $('lt').innerHTML = opts; $('ps').innerHTML = '<option value="">-- প্রক্সি শিক্ষক বেছে নিন --</option><option value="__none__">🚫 শিক্ষক নেই</option>' + opts;
     $('pa').innerHTML = '<option value="">-- অনুপস্থিত শিক্ষক (ঐচ্ছিক) --</option>' + opts;
     if (kr) $('rt').value = kr; if (kl) $('lt').value = kl;
     $('pa').value = ka; if (ks) $('ps').value = ks;
     const kd = $('dt').value;
     $('dt').innerHTML = '<option value="">-- শিক্ষক বেছে নিন --</option>' + opts; if (kd) $('dt').value = kd;
     renderDuties();
-    loadProxies();
+    loadProxies(); showCounts();
     $('tcount').textContent = '(মোট ' + bn(teachers.length) + ' জন)';
     $('tlist').innerHTML = teachers.map(t => `<div class="row" style="flex-direction:column;gap:2px">
       <div>${okPhoto(t.photo) ? `<img src="${t.photo}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px">` : ''}<b>${esc(t.name)}</b>${t.desig ? ' <span class="tag-d">'+esc(t.desig)+'</span>' : ''}${t.classOf ? '<div class="mu">🏫 শ্রেণি শিক্ষক: '+esc(t.classOf)+'</div>' : ''}<div class="mu">${esc(t.subject||'')} ${esc(t.phone||'')}${t.index ? ' • ইনডেক্স: ' + bn(esc(t.index)) : ''}</div></div>
@@ -643,11 +645,72 @@ function loadRoutines(){
 
 // --- প্রক্সি ---
 var pxs = [], unsubP = null, editP = null;
-const tn = id => (teachers.find(t => t.id === id) || {}).name || '—';
+const NOTEACHER = '__none__';
+const tn = id => id === NOTEACHER ? 'শিক্ষক নেই' : ((teachers.find(t => t.id === id) || {}).name || '—');
 $('pd').value = today();
-$('pd').onchange = loadProxies;
+var absRts = [], PC_FULL = '', yearPx = [], yearOf = null, unsubY = null;
+function loadYear(){
+  const y = ($('pd').value || today()).slice(0,4); if (y === yearOf) return;
+  yearOf = y; if (unsubY) unsubY();
+  unsubY = db.collection('proxies').where('date','>=',y+'-01-01').where('date','<=',y+'-12-31').onSnapshot(s => { yearPx = s.docs.map(d => d.data()); showCounts(); }, fail);
+}
+function showCounts(){
+  const sid = $('ps').value, aid = $('pa').value, y = bn(yearOf || '');
+  const a = $('pscnt'), b = $('pacnt');
+  const okS = sid && sid !== NOTEACHER, okA = !!aid;
+  a.classList.toggle('hide', !okS); b.classList.toggle('hide', !okA);
+  if (okS) a.textContent = 'এই বছরে মোট প্রক্সি করেছেন: ' + bn(yearPx.filter(x => x.subId === sid).length) + 'টি';
+  if (okA) b.textContent = 'এই বছরে মোট ক্লাস মিস: ' + bn(yearPx.filter(x => x.absentId === aid).length) + 'টি';
+}
+$('ps').onchange = showCounts;
+$('pd').onchange = () => { loadProxies(); syncAbs(); };
+$('pa').onchange = () => { syncAbs(); showCounts(); };
+$('pps').onchange = () => {
+  const r = absRts.find(x => x.id === $('pps').value);
+  if (!r) { $('pp').value = ''; return; }
+  $('pp').value = r.period; setCls('pc', r.class); fillSubs(r.class, r.subject); $('pr').value = r.room || '';
+};
+$('pjs').onchange = () => { $('pj').value = $('pjs').value; };
+$('pc').onchange = () => { if (!$('pps').classList.contains('hide')) fillSubs($('pc').value, ''); };
+const dayRts = () => { const w = new Date($('pd').value + 'T00:00:00').getDay(); return absRts.filter(r => r.day === w).sort((a,b) => a.period - b.period); };
+const uniq = a => [...new Set(a.filter(Boolean))];
+function fillSubs(cls, pick){
+  const subs = uniq(dayRts().filter(r => !cls || r.class === cls).map(r => r.subject));
+  $('pjs').innerHTML = '<option value="">-- বিষয় বেছে নিন --</option>' + subs.map(x => `<option>${esc(x)}</option>`).join('');
+  const v = pick || (subs.length === 1 ? subs[0] : '');
+  if (v && !subs.includes(v)) { const o = document.createElement('option'); o.textContent = v; $('pjs').appendChild(o); }
+  $('pjs').value = v; $('pj').value = v;
+}
+async function syncAbs(keep){
+  const id = $('pa').value;
+  if (!id) { absRts = []; return renderAbs(keep); }
+  try { const s = await db.collection('routines').where('teacherId','==',id).get(); if ($('pa').value !== id) return; absRts = s.docs.map(d => ({id:d.id, ...d.data()})); }
+  catch(e){ absRts = []; }
+  renderAbs(keep);
+}
+function renderAbs(keep){
+  const rs = dayRts(), id = $('pa').value;
+  let on = !!id && rs.length > 0;
+  const cp = $('pp').value, cc = $('pc').value, cj = $('pj').value;
+  const hit = keep ? rs.find(r => String(r.period) === String(cp)) : null;
+  if (keep && on && !hit) on = false;
+  if (!PC_FULL) PC_FULL = $('pc').innerHTML;
+  $('pp').classList.toggle('hide', on); $('pj').classList.toggle('hide', on);
+  $('pps').classList.toggle('hide', !on); $('pjs').classList.toggle('hide', !on);
+  $('pbtn').disabled = !!id && rs.length === 0;   // অনুপস্থিত শিক্ষকের ওই দিন ক্লাস না থাকলে বাটন বন্ধ
+  if (on) {
+    $('pps').innerHTML = '<option value="">-- পিরিয়ড বেছে নিন --</option>' + rs.map(r => `<option value="${r.id}">${bn(r.period)}ম পিরিয়ড — ${esc(r.class)} (${esc(r.subject)})</option>`).join('');
+    $('pc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + uniq(rs.map(r => r.class)).map(c => `<option>${esc(c)}</option>`).join('');
+    if (hit) { $('pps').value = hit.id; setCls('pc', cc || hit.class); fillSubs($('pc').value, cj || hit.subject); }
+    else { $('pp').value = ''; $('pj').value = ''; $('pjs').innerHTML = '<option value="">-- বিষয় বেছে নিন --</option>'; }
+  } else {
+    $('pc').innerHTML = PC_FULL; setCls('pc', keep ? cc : '');
+    if (!keep) { $('pp').value = ''; $('pj').value = ''; }
+  }
+}
 
 function loadProxies(){
+  loadYear();
   if (unsubP) { unsubP(); unsubP = null; }
   const d = $('pd').value; if (!d) return;
   unsubP = db.collection('proxies').where('date','==',d).onSnapshot(s => {
@@ -663,9 +726,10 @@ function saveProxy(){
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
   const p = {date:$('pd').value, period:+$('pp').value, absentId:$('pa').value, subId:$('ps').value,
     class:$('pc').value.trim(), subject:$('pj').value.trim(), room:$('pr').value.trim()};
+  if (p.absentId && !dayRts().length) return showMsg('এই শিক্ষকের ওই দিন কোনো ক্লাস নেই');
   if (!p.date || !p.period || !p.subId || !p.class || !p.subject) return showMsg('তারিখ, পিরিয়ড, প্রক্সি শিক্ষক, শ্রেণি ও বিষয় দিন');
   if (p.absentId === p.subId) return showMsg('অনুপস্থিত ও প্রক্সি শিক্ষক একই হতে পারে না');
-  if (p.date === $('pd').value && pxs.some(x => x.id !== editP && x.subId === p.subId && x.period === p.period)) return showMsg('এই শিক্ষকের ওই পিরিয়ডে প্রক্সি আগে থেকেই আছে');
+  if (p.date === $('pd').value && pxs.some(x => x.id !== editP && p.subId !== NOTEACHER && x.subId === p.subId && x.period === p.period)) return showMsg('এই শিক্ষকের ওই পিরিয়ডে প্রক্সি আগে থেকেই আছে');
   const wasEdit = !!editP;
   const q = editP ? db.collection('proxies').doc(editP).update(p) : db.collection('proxies').add(p);
   guard(q).then(() => { cancelP(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); $('pd').value = p.date; if (!wasEdit) $('pp').value = p.period + 1; loadProxies(); })
@@ -675,15 +739,18 @@ function editProxy(id){
   const p = pxs.find(x => x.id === id); if (!p) return;
   editP = id; $('pd').value = p.date; $('pa').value = p.absentId||''; $('ps').value = p.subId; $('pp').value = p.period;
   setCls('pc', p.class); $('pj').value = p.subject||''; $('pr').value = p.room||'';
+  syncAbs(true); showCounts();
   $('ph').textContent = '✏️ প্রক্সি এডিট'; $('pbtn').textContent = '✅ আপডেট করুন'; $('pcan').classList.remove('hide');
   $('pd').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function cancelP(){
   editP = null; $('pa').value = ''; $('pp').value = $('pc').value = $('pj').value = $('pr').value = '';
   $('ph').textContent = 'প্রক্সি যোগ করুন'; $('pbtn').textContent = 'প্রক্সি সংরক্ষণ'; $('pcan').classList.add('hide');
+  absRts = []; renderAbs(); showCounts();
 }
 function waProxy(id){
   const p = pxs.find(x => x.id === id), t = teachers.find(x => x.id === (p||{}).subId);
+  if (p && p.subId === NOTEACHER) return showMsg('এই ক্লাসে কোনো শিক্ষক নেই, তাই মেসেজ পাঠানো যাবে না');
   if (!p || !t) return;
   const ph = normPhone(t.phone); if (!/^01\d{9}$/.test(ph)) return showMsg('এই শিক্ষকের মোবাইল নম্বর সঠিক নয়');
   const msg = '🔁 নতুন প্রক্সি ক্লাস\n' + bn(p.date) + ' • ' + bn(p.period) + 'ম পিরিয়ড\nশ্রেণি: ' + p.class + ' (' + p.subject + ')' + (p.absentId ? '\n' + tn(p.absentId) + '-এর পরিবর্তে' : '') + (p.room ? '\nরুম: ' + p.room : '');
