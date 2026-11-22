@@ -69,7 +69,7 @@
 
   @page { size:A3 landscape; margin:8mm; }
   @page stu { size:A4 portrait; margin:8mm; }
-  @page tab { size:A3 landscape; margin:8mm; }
+  @page tab { size:A4 landscape; margin:8mm; }
   @page trl { size:A4 portrait; margin:8mm; }
   @media print {
     body { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -281,11 +281,17 @@
   :is(#tbl,#tblc) thead th.gh { padding:0 4px; line-height:1; font-size:14px; height:auto; }
   :is(#tbl,#tblc) thead th.sc { padding-top:1px; padding-bottom:1px; line-height:1.1; }
   @media print {
-    :is(#tbl,#tblc) thead th.gh { padding:0 2px; line-height:1; font-size:11px; }
-    :is(#tbl,#tblc) { font-size:12.5px; }
-    :is(#tbl,#tblc) th, :is(#tbl,#tblc) td { padding:1.5px 2px; }
-    :is(#tbl,#tblc) .sc { width:34px; min-width:34px; max-width:34px; }
-    :is(#tbl,#tblc) thead th { font-size:12px; }
+    :is(#tbl,#tblc) thead th.gh { padding:0 2px; line-height:1; font-size:13px; }
+    :is(#tbl,#tblc) { font-size:15px; }
+    :is(#tbl,#tblc) th, :is(#tbl,#tblc) td { padding:1px 1px; }
+    /* প্রিন্টে রোল, নম্বর, gp, মোট, GPA, গ্রেড, ক্রম — সব ঘর একই মাপের; নাম একটু বড় ফন্টে */
+    :is(#tbl,#tblc) :is(.sc,.s1,.ex) { width:40px; min-width:40px; max-width:none; }
+    :is(#tbl,#tblc) .ex.gpc { width:54px; min-width:54px; max-width:none; }
+    :is(#tbl,#tblc) .rs { width:56px; min-width:56px; max-width:none; }
+    :is(#tbl,#tblc) .s2 { font-size:17px; min-width:150px; white-space:nowrap; }
+    :is(#tbl,#tblc) thead th { font-size:14px; }
+    /* শিক্ষার্থীর নম্বর (বডি ঘর) আরো বড় ফন্টে */
+    :is(#tbl,#tblc) tbody td:is(.sc,.s1,.ex) { font-size:19px; font-weight:600; }
   }
   #tblc .s1, #tblc .s2 { position:static; }
   #tblc { border-collapse:collapse; font-weight:500; text-align:center; white-space:nowrap; }
@@ -298,6 +304,18 @@
   #tblc tbody tr.absent { background:#f4f4f4; color:#777; }
   @media screen { #trans .tr { zoom:var(--trz,1); } }
   @media screen { #tbl { zoom:var(--tbz,1); } }
+  @media print { #tbl { zoom:var(--pz,1) !important; } }
+  /* প্রিন্টের মাপ আগেই মাপার জন্য (beforeprint-এ html.pm ক্লাস সাময়িক বসে) */
+  html.pm #tbl { font-size:15px; width:auto; }
+  html.pm #tbl th, html.pm #tbl td { padding:1px 1px; }
+  html.pm #tbl thead th { font-size:14px; }
+  html.pm #tbl thead th.gh { padding:0 2px; line-height:1; font-size:13px; }
+  html.pm #tbl :is(.sc,.s1,.ex) { width:40px; min-width:40px; max-width:none; }
+  html.pm #tbl .ex.gpc { width:54px; min-width:54px; max-width:none; }
+  html.pm #tbl .rs { width:56px; min-width:56px; max-width:none; }
+  html.pm #tbl .s2 { font-size:17px; min-width:150px; white-space:nowrap; position:static; }
+  html.pm #tbl tbody td:is(.sc,.s1,.ex) { font-size:19px; font-weight:600; }
+  html.pm #tbl .s1 { position:static; }
   #trans .tr { -webkit-touch-callout:none; }
   .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#17241c; color:#fff; padding:8px 16px; border-radius:999px; font-size:14px; z-index:99; display:none; max-width:90vw; text-align:center; }
 </style>
@@ -373,7 +391,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <button class="primary" id="print">🖨️ প্রিন্ট</button>
       <button class="primary" id="dl">⬇️ ডাউনলোড (PDF)</button>
     </div>
-    <div class="hint adm-only" id="hint">হেডার সারিতে "নাম" লেখা থাকলে পেজ নিজেই বিষয়, MCQ/CQ/মোট কলাম চিনে নেয়। বিষয় প্রতি ফাইলে আলাদা হলেও চলবে। প্রিন্ট ডায়ালগে "Save as PDF" বাছলে PDF হবে (A3 landscape)।</div>
+    <div class="hint adm-only" id="hint">হেডার সারিতে "নাম" লেখা থাকলে পেজ নিজেই বিষয়, MCQ/CQ/মোট কলাম চিনে নেয়। বিষয় প্রতি ফাইলে আলাদা হলেও চলবে। প্রিন্ট ডায়ালগে "Save as PDF" বাছলে PDF হবে (A4 landscape)।</div>
     <div class="err" id="err"></div>
     <div class="hint" id="nameHint" style="color:#b00020"></div>
   </div>
@@ -899,7 +917,7 @@ function render() {
       h2 += [...labs, 'gp'].map(x => `<th class="sc">${esc(x)}</th>`).join('');
     }
   });
-  h1 += ['মোট নম্বর','GPA','গ্রেড','ফলাফল','মেধা ক্রম'].map(x => `<th rowspan="${RS}">${x}</th>`).join('') + '</tr>';
+  h1 += ['মোট নম্বর','GPA','গ্রেড','ফলাফল','মেধা ক্রম'].map(x => `<th rowspan="${RS}" class="${x === 'ফলাফল' ? 'rs' : x === 'GPA' ? 'ex gpc' : 'ex'}">${x}</th>`).join('') + '</tr>';
   h2 += '</tr>'; if (three) h3 += '</tr>';
 
   let body = '<tbody>';
@@ -912,12 +930,12 @@ function render() {
       const zero = st.status === 'fail' && !s.cfg.optional && e.gp === 0;
       body += `<td class="sc gp${zero ? ' z' : ''}">${e.gp == null ? '—' : fmtGp(e.gp)}</td>`;
     }
-    const resCell = st.status === 'pass' ? '<td class="res-pass">উত্তীর্ণ</td>'
-      : st.status === 'fail' ? `<td class="res-fail" title="${esc(st.failNames.join(', '))}">Fail-${st.failN}</td>`
-      : '<td>অনুপস্থিত</td>';
-    body += `<td class="tot">${st.present ? bn(st.total) : '—'}</td>`
-      + `<td>${st.gpa != null ? bn(st.gpa.toFixed(2)) : '—'}</td>`
-      + `<td>${st.grade ?? '—'}</td>${resCell}<td>${st.rank ? bn(st.rank) : '—'}</td></tr>`;
+    const resCell = st.status === 'pass' ? '<td class="res-pass rs">উত্তীর্ণ</td>'
+      : st.status === 'fail' ? `<td class="res-fail rs" title="${esc(st.failNames.join(', '))}">Fail-${st.failN}</td>`
+      : '<td class="rs">অনুপস্থিত</td>';
+    body += `<td class="tot ex">${st.present ? bn(st.total) : '—'}</td>`
+      + `<td class="ex gpc">${st.gpa != null ? bn(st.gpa.toFixed(2)) : '—'}</td>`
+      + `<td class="ex">${st.grade ?? '—'}</td>${resCell}<td class="ex">${st.rank ? bn(st.rank) : '—'}</td></tr>`;
   }
   $('tbl').innerHTML = '<thead>' + h1 + h2 + h3 + '</thead>' + body + '</tbody>';
   $('report').style.display = 'block';
@@ -1424,6 +1442,17 @@ function fitTbl(){
 { const _render = render; render = function () { const r = _render.apply(this, arguments); fitTbl(); return r; }; }
 { let lw = 0; const b = $('tbl').parentElement; new ResizeObserver(en => { const w = Math.round(en[0].contentRect.width); if (w && w !== lw) { lw = w; fitTbl(); } }).observe(b); }
 window.addEventListener('orientationchange', () => setTimeout(fitTbl, 250));
+
+// প্রিন্ট: মেধা তালিকা A4 landscape পাতার প্রস্থে ফিট (কলাম বেশি হলে আনুপাতিক ছোট হয়)
+window.addEventListener('beforeprint', () => {
+  const t = $('tbl'); if (!t || !t.rows.length || !t.offsetParent) return;
+  const de = document.documentElement, oz = t.style.zoom;
+  de.classList.add('pm'); t.style.zoom = '1';
+  const nat = t.offsetWidth;
+  de.classList.remove('pm'); t.style.zoom = oz;
+  const AVAIL = 1062;   // A4 landscape ২৯৭মিমি − ১৬মিমি মার্জিন ≈ ১০৬২px
+  t.style.setProperty('--pz', nat > AVAIL ? (AVAIL / nat * 0.985).toFixed(4) : '1');
+});
 
 /* ---------- ট্রান্সক্রিপ্টে লং প্রেস (বা ডান-ক্লিক) → ছবি ডাউনলোডের পপ-আপ ---------- */
 (function () {
