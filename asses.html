@@ -74,18 +74,6 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
   <div id="main" class="hide">
     <div class="mu" id="who" style="margin:2px 2px 8px"></div>
 
-    <!-- অ্যাডমিন: কোন শিক্ষক কোন শ্রেণি ও বিষয়ে নম্বর দিতে পারবেন -->
-    <div id="adm" class="card hide">
-      <b>🔑 নম্বর দেওয়ার পারমিশন</b>
-      <label class="l">শিক্ষক</label><select id="pt"></select>
-      <div class="two">
-        <div><label class="l">শ্রেণি</label><select id="pc"></select></div>
-        <div><label class="l">বিষয়</label><input class="f" id="ps" list="subjList" placeholder="যেমন: গণিত"><datalist id="subjList"></datalist></div>
-      </div>
-      <button class="sbtn" style="margin-top:10px;width:100%" onclick="addPerm()">➕ পারমিশন দিন</button>
-      <div id="pl" style="margin-top:10px"></div>
-    </div>
-
     <div class="card">
       <label class="l">শ্রেণি</label><select id="cls" onchange="onCls()"></select>
       <label class="l">বিষয়</label><select id="sub" onchange="loadSheet()"></select>
@@ -257,33 +245,6 @@ async function save(){
   b.disabled = false;
 }
 
-// ---- অ্যাডমিনের পারমিশন ব্যবস্থাপনা ----
-function renderPerms(){
-  $('pt').innerHTML = teachers.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
-  $('pc').innerHTML = opts(classList(), '-- শ্রেণি --');
-  const subs = new Set(); teachers.forEach(t => { if (t.subject && typeof t.subject === 'string') subs.add(t.subject); });
-  Object.values(permsAll).forEach(p => (p.items || []).forEach(x => subs.add(x.s)));
-  $('subjList').innerHTML = [...subs].map(x => `<option value="${esc(x)}">`).join('');
-  const ids = Object.keys(permsAll).filter(id => (permsAll[id].items || []).length);
-  $('pl').innerHTML = ids.length ? ids.map(id => `<div class="pt"><b>${esc(permsAll[id].name)}</b><div>` +
-    permsAll[id].items.map((x, i) => `<span class="chip">${esc(x.c)} • ${esc(x.s)}<button onclick="delPerm('${id}',${i})" title="মুছুন">✕</button></span>`).join('') + '</div></div>').join('')
-    : '<div class="mu">এখনো কাউকে পারমিশন দেওয়া হয়নি</div>';
-}
-async function addPerm(){
-  const tid = $('pt').value, c = $('pc').value, s = $('ps').value.trim();
-  if (!tid || !c || !s) return alert('শিক্ষক, শ্রেণি ও বিষয় দিন');
-  const t = teachers.find(x => x.id === tid), items = ((permsAll[tid] || {}).items || []).slice();
-  if (!items.some(x => x.c === c && x.s === s)) items.push({c, s});
-  try { await db.collection('assessPerms').doc(tid).set({name: t.name || '', items}); permsAll[tid] = {name: t.name || '', items}; $('ps').value = ''; renderPerms(); }
-  catch (e) { alert('সেভ হয়নি: ' + (e.code || e.message)); }
-}
-async function delPerm(tid, i){
-  if (!confirm('এই পারমিশন মুছবেন?')) return;
-  const items = permsAll[tid].items.slice(); items.splice(i, 1);
-  try { await db.collection('assessPerms').doc(tid).set({name: permsAll[tid].name, items}); permsAll[tid].items = items; renderPerms(); }
-  catch (e) { alert('মোছা যায়নি: ' + (e.code || e.message)); }
-}
-
 async function boot(u){
   $('list').innerHTML = '<div class="empty">লোড হচ্ছে...</div>';
   try {
@@ -294,7 +255,6 @@ async function boot(u){
     if (isAdmin) {
       const ps = await db.collection('assessPerms').get();
       permsAll = {}; ps.docs.forEach(d => permsAll[d.id] = d.data());
-      $('adm').classList.remove('hide'); renderPerms();
     } else {
       const p = await db.collection('assessPerms').doc(me.id).get();
       myPerms = p.exists ? (p.data().items || []) : [];

@@ -62,6 +62,9 @@ select{font:inherit;padding:10px;border-radius:8px;border:1px solid var(--bd);ba
 .dchips input:checked+span{background:var(--pr);color:#fff;border-color:var(--pr)}
 .tag-d{display:inline-block;font-size:12px;padding:0 8px;border-radius:999px;background:var(--pr);color:#fff;margin-left:4px}
 .hide{display:none}
+.apchip{display:inline-flex;align-items:center;gap:6px;padding:2px 4px 2px 10px;margin:2px;border-radius:999px;font-size:13px;background:rgba(15,122,74,.12);color:var(--pr);border:1px solid rgba(15,122,74,.35)}
+.apchip button{border:0;background:transparent;color:var(--er);font-size:15px;cursor:pointer;padding:2px 6px;width:auto;margin:0}
+.appt{border-top:1px dashed var(--bd);padding:8px 0}
 .login{max-width:380px;margin:40px auto}
 </style>
 <style id="sl-css">
@@ -102,7 +105,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
   <!-- ড্যাশবোর্ড -->
   <div id="dash" class="hide">
     <div class="mu" id="who"></div>
-    <div class="tabs">
+    <div class="tabs hide">
       <button id="b1" class="on" onclick="tab(1)">🏠 ড্যাশবোর্ড</button>
       <button id="b2" onclick="tab(2)">👨‍🏫 শিক্ষক</button>
       <button id="b3" onclick="tab(3)">🗓️ রুটিন</button>
@@ -113,7 +116,10 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <button id="b8" onclick="tab(8)">🧑‍🏫 পরীক্ষা ডিউটি</button>
       <button id="b9" onclick="tab(9)">🏖️ ছুটির তালিকা</button>
       <button id="b10" onclick="tab(10)">📊 ফলাফল আপলোড</button>
+      <button id="b11" onclick="tab(11)">🔑 মূল্যায়ন সেটিং</button>
+      <button id="b12" onclick="tab(12)">🎨 কো-কারিকুলাম</button>
     </div>
+    <div id="backBar" class="hide"><button class="act sec" onclick="tab(1)">⬅️ ড্যাশবোর্ডে ফিরুন</button></div>
     <div id="p1">
     <div class="stats">
       <div class="st"><b id="nT">–</b><span>শিক্ষক</span></div>
@@ -128,10 +134,14 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <a class="m" href="#" onclick="tab(3);return false"><i>🗓️</i>রুটিন</a>
       <a class="m" href="#" onclick="tab(4);return false"><i>🔁</i>প্রক্সি</a>
       <a class="m" href="#" onclick="tab(6);return false"><i>📝</i>পরীক্ষা রুটিন</a>
+      <a class="m" href="#" onclick="tab(7);return false"><i>📚</i>বিষয়</a>
       <a class="m" href="#" onclick="tab(8);return false"><i>🧑‍🏫</i>পরীক্ষা ডিউটি</a>
+      <a class="m" href="#" onclick="tab(9);return false"><i>🏖️</i>ছুটির তালিকা</a>
       <a class="m" href="attendance.html"><i>✅</i>হাজিরা</a>
       <a class="m" href="fees.html"><i>💰</i>ফি ও বেতন</a>
       <a class="m" href="#" onclick="tab(10);return false"><i>📝</i>ফলাফল</a>
+      <a class="m" href="#" onclick="tab(11);return false"><i>🔑</i>মূল্যায়ন সেটিং</a>
+      <a class="m" href="#" onclick="tab(12);return false"><i>🎨</i>কো-কারিকুলাম সেটিং</a>
       <a class="m" href="notices.html"><i>📢</i>নোটিশ</a>
       <a class="m" href="contact.html"><i>📞</i>যোগাযোগ</a>
     </div>
@@ -291,6 +301,14 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
 
     <div id="p6" class="hide">
       <div class="card">
+        <h3 style="margin-top:0">📅 পরীক্ষা চলার সময়সীমা</h3>
+        <div class="mu">এই সময়ের মধ্যে হোম পেজে শিক্ষকের "পরবর্তী ক্লাস"-এর জায়গায় "পরীক্ষা চলছে" লেখা আসবে।</div>
+        <input id="epN" placeholder="পরীক্ষার নাম (যেমন: অর্ধবার্ষিক পরীক্ষা-২০২৬)">
+        <div class="row2"><div><div class="mu">শুরুর তারিখ</div><input id="epF" type="date"></div><div><div class="mu">শেষ তারিখ</div><input id="epT" type="date"></div></div>
+        <button class="act" onclick="epAdd()">➕ সময়সীমা সংরক্ষণ</button>
+        <div id="epL" style="margin-top:6px"></div>
+      </div>
+      <div class="card">
         <h3 id="xh" style="margin-top:0">পরীক্ষার রুটিনে বিষয় যোগ করুন</h3>
         <input id="xe" list="xel" placeholder="পরীক্ষার নাম (যেমন: অর্ধবার্ষিক পরীক্ষা-২০২৬)"><datalist id="xel"></datalist>
         <select id="xc"></select>
@@ -389,6 +407,49 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <!-- ফলাফল আপলোড -->
     <div id="p10" class="hide">
       <iframe id="resFrame" title="ফলাফল আপলোড" style="width:100%;height:calc(100vh - 130px);min-height:520px;border:1px solid var(--bd);border-radius:12px;background:#fff"></iframe>
+    </div>
+
+    <!-- মূল্যায়ন সেটিং -->
+    <div id="p11" class="hide">
+      <div class="card">
+        <h3 style="margin-top:0">🔑 নম্বর দেওয়ার পারমিশন</h3>
+        <div class="mu">কোন শিক্ষক কোন শ্রেণি ও বিষয়ে মূল্যায়ন পরীক্ষার নম্বর দিতে পারবেন তা এখানে ঠিক করুন।</div>
+        <select id="apT"></select>
+        <div class="row2">
+          <select id="apC"></select>
+          <input id="apS" list="apSubjList" placeholder="বিষয় (যেমন: গণিত)"><datalist id="apSubjList"></datalist>
+        </div>
+        <button class="act" onclick="apAdd()">➕ পারমিশন দিন</button>
+      </div>
+      <h2>দেওয়া পারমিশন</h2>
+      <div class="card" id="apList"><div class="mu">লোড হচ্ছে...</div></div>
+      <div class="mu" style="text-align:center"><a href="asses.html" style="color:var(--pr)">📝 মূল্যায়ন পরীক্ষার নম্বর পেজ</a></div>
+    </div>
+
+    <!-- কো-কারিকুলাম সেটিং -->
+    <div id="p12" class="hide">
+      <div class="card">
+        <h3 style="margin-top:0">🎨 কো-কারিকুলাম বিষয় যোগ করুন</h3>
+        <input id="coN" placeholder="বিষয়ের নাম (যেমন: কুরআন তিলাওয়াত, ক্রীড়া)">
+        <div class="mu">শ্রেণি (একাধিক বেছে নিন)</div>
+        <div id="coCl" class="dchips"></div>
+        <div style="display:flex;gap:14px;margin-bottom:4px"><button type="button" class="ed" onclick="coSetCl(true)">সব শ্রেণি</button><button type="button" class="ed" onclick="coSetCl(false)">সব মুছুন</button></div>
+        <button class="act" onclick="coAddSub()">➕ বিষয় যুক্ত করুন</button>
+      </div>
+      <h2>কো-কারিকুলাম বিষয় <span id="coCnt" class="mu"></span></h2>
+      <select id="coF" onchange="coRender()"></select>
+      <div class="card" id="coSL"><div class="mu">লোড হচ্ছে...</div></div>
+
+      <div class="card">
+        <h3 style="margin-top:0">👨‍🏫 শিক্ষককে নম্বর দেওয়ার পারমিশন</h3>
+        <select id="coT"></select>
+        <select id="coC" onchange="coFillSub()"></select>
+        <select id="coS"></select>
+        <button class="act" onclick="coAddPerm()">➕ পারমিশন দিন</button>
+      </div>
+      <h2>দেওয়া পারমিশন</h2>
+      <div class="card" id="coPL"><div class="mu">লোড হচ্ছে...</div></div>
+      <div class="mu" style="text-align:center"><a href="co-curriculum.html" style="color:var(--pr)">🎨 কো-কারিকুলাম নম্বর পেজ</a></div>
     </div>
 
   </div>
@@ -533,7 +594,10 @@ $('lt').onchange = loadRoutines;
 $('rt').onchange = () => { $('lt').value = $('rt').value; loadRoutines(); };
 const fmt = t => { if (!t) return ''; let [h,m] = t.split(':').map(Number); const ap = h>=12?'PM':'AM'; h = h%12||12; return bn(h+':'+String(m).padStart(2,'0'))+' '+ap; };
 
-function tab(n){ [1,2,3,4,5,6,7,8,9,10].forEach(i => { $('p'+i).classList.toggle('hide', i!==n); $('b'+i).classList.toggle('on', i===n); });
+function tab(n){ $('backBar').classList.toggle('hide', n === 1); window.scrollTo(0, 0);
+  [1,2,3,4,5,6,7,8,9,10,11,12].forEach(i => { $('p'+i).classList.toggle('hide', i!==n); $('b'+i).classList.toggle('on', i===n); });
+  if (n === 11) apRender();
+  if (n === 12) coRender();
   if (n === 10) { const f = $('resFrame'); if (!f.dataset.on) { f.dataset.on = '1'; f.srcdoc = window.RESULT_DOC; } } }
 
 var unsubS = null;
@@ -547,6 +611,9 @@ function stopData(){
   if (unsubB) { unsubB(); unsubB = null; }
   if (unsubD) { unsubD(); unsubD = null; }
   if (unsubH) { unsubH(); unsubH = null; }
+  if (unsubAP) { unsubAP(); unsubAP = null; } permsAll = {};
+  if (unsubEP) { unsubEP(); unsubEP = null; }
+  if (unsubCoS) { unsubCoS(); unsubCoS = null; } if (unsubCoP) { unsubCoP(); unsubCoP = null; } coSubs = []; coPerms = {};
   tab(1);
 }
 function startData(){
@@ -555,6 +622,9 @@ function startData(){
   startSubjects();
   startDuties();
   startHolidays();
+  startAssessPerms();
+  startCo();
+  startExamPeriods();
   unsubT = db.collection('teachers').orderBy('name').onSnapshot(s => {
     teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
     const opts = teachers.map(t => `<option value="${t.id}">${esc(t.name)}${t.subject?' ('+esc(t.subject)+')':''}</option>`).join('');
@@ -1305,6 +1375,120 @@ async function loginAll(){
   for (const t of todo){ try { await makeLogin(t, normPhone(t.phone).slice(-6)); ok++; } catch(e){ bad.push(t.name + ' [' + (e.code || e.message) + ']'); } }
   showMsg('✅ ' + bn(ok) + ' জনের লগইন তৈরি হয়েছে' + (bad.length ? '\n❌ ব্যর্থ: ' + bad.join('; ') : ''), bad.length ? 'err' : 'ok');
 }
+
+// ===== মূল্যায়ন সেটিং (নম্বর দেওয়ার পারমিশন) =====
+var permsAll = {}, unsubAP = null;
+function startAssessPerms(){
+  unsubAP = db.collection('assessPerms').onSnapshot(sn => {
+    permsAll = {}; sn.docs.forEach(d => permsAll[d.id] = d.data());
+    apRender();
+  }, fail);
+}
+function apRender(){
+  const tv = $('apT').value, cv = $('apC').value;
+  $('apT').innerHTML = '<option value="">-- শিক্ষক বেছে নিন --</option>' + teachers.map(t => `<option value="${t.id}">${esc(t.name)}${t.subject?' ('+esc(t.subject)+')':''}</option>`).join('');
+  $('apC').innerHTML = '<option value="">-- শ্রেণি --</option>' + ALL_CLASSES.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if (tv) $('apT').value = tv; if (cv) $('apC').value = cv;
+  const subs = new Set();
+  teachers.forEach(t => { if (t.subject && typeof t.subject === 'string') subs.add(t.subject); });
+  (typeof sbs !== 'undefined' ? sbs : []).forEach(b => b.name && subs.add(b.name));
+  Object.values(permsAll).forEach(p => (p.items || []).forEach(x => subs.add(x.s)));
+  $('apSubjList').innerHTML = [...subs].map(x => `<option value="${esc(x)}">`).join('');
+  const ids = Object.keys(permsAll).filter(id => (permsAll[id].items || []).length);
+  $('apList').innerHTML = ids.length ? ids.map(id => `<div class="appt"><b>${esc(permsAll[id].name)}</b><div>` +
+    permsAll[id].items.map((x, i) => `<span class="apchip">${esc(x.c)} • ${esc(x.s)}<button onclick="apDel('${id}',${i})" title="মুছুন">✕</button></span>`).join('') + '</div></div>').join('')
+    : '<div class="mu">এখনো কাউকে পারমিশন দেওয়া হয়নি</div>';
+}
+function apAdd(){
+  const tid = $('apT').value, c = $('apC').value, s = $('apS').value.trim();
+  if (!tid || !c || !s) return showMsg('শিক্ষক, শ্রেণি ও বিষয় দিন');
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  const t = teachers.find(x => x.id === tid) || {}, items = ((permsAll[tid] || {}).items || []).slice();
+  if (!items.some(x => x.c === c && x.s === s)) items.push({c, s});
+  guard(db.collection('assessPerms').doc(tid).set({name: t.name || '', items}))
+    .then(() => { $('apS').value = ''; showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok'); }).catch(fail);
+}
+function apDel(tid, i){
+  if (!confirm('এই পারমিশন মুছবেন?')) return;
+  const items = permsAll[tid].items.slice(); items.splice(i, 1);
+  guard(db.collection('assessPerms').doc(tid).set({name: permsAll[tid].name, items}))
+    .then(() => showMsg('✅ মুছে ফেলা হয়েছে', 'ok')).catch(fail);
+}
+
+// ===== কো-কারিকুলাম সেটিং =====
+var coSubs = [], coPerms = {}, unsubCoS = null, unsubCoP = null;
+$('coCl').innerHTML = ALL_CLASSES.map(c => `<label><input type="checkbox" value="${esc(c)}"><span>${esc(c)}</span></label>`).join('');
+const coSetCl = on => $('coCl').querySelectorAll('input').forEach(x => x.checked = on);
+function startCo(){
+  unsubCoS = db.collection('coSubjects').onSnapshot(sn => { coSubs = sn.docs.map(d => ({id: d.id, ...d.data()})); coRender(); }, fail);
+  unsubCoP = db.collection('coCurPerms').onSnapshot(sn => { coPerms = {}; sn.docs.forEach(d => coPerms[d.id] = d.data()); coRender(); }, fail);
+}
+function coFillSub(){
+  const c = $('coC').value, sv = $('coS').value;
+  const names = [...new Set(coSubs.filter(x => x.class === c).map(x => x.name))].sort((a, b) => a.localeCompare(b, 'bn'));
+  $('coS').innerHTML = `<option value="">${c ? '-- বিষয় বেছে নিন --' : '-- আগে শ্রেণি বেছে নিন --'}</option>` + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  if (names.includes(sv)) $('coS').value = sv;
+}
+function coRender(){
+  const tv = $('coT').value, cv = $('coC').value, fv = $('coF').value;
+  const clsOpt = '<option value="">-- শ্রেণি --</option>' + ALL_CLASSES.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  $('coF').innerHTML = '<option value="">সব শ্রেণি</option>' + ALL_CLASSES.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  $('coC').innerHTML = clsOpt;
+  $('coT').innerHTML = '<option value="">-- শিক্ষক বেছে নিন --</option>' + teachers.map(t => `<option value="${t.id}">${esc(t.name)}${t.subject?' ('+esc(t.subject)+')':''}</option>`).join('');
+  if (tv) $('coT').value = tv; if (cv) $('coC').value = cv; if (fv) $('coF').value = fv;
+  coFillSub();
+  const list = coSubs.filter(x => !$('coF').value || x.class === $('coF').value)
+    .sort((a, b) => (ALL_CLASSES.indexOf(a.class) - ALL_CLASSES.indexOf(b.class)) || String(a.name || '').localeCompare(String(b.name || ''), 'bn'));
+  $('coCnt').textContent = '(' + bn(list.length) + 'টি' + ($('coF').value ? ' / মোট ' + bn(coSubs.length) + 'টি' : '') + ')';
+  $('coSL').innerHTML = list.length ? list.map(x => `<div class="row"><div><b>${esc(x.name)}</b> <span class="mu">• ${esc(x.class)}</span></div><button class="del" onclick="coDelSub('${x.id}')">মুছুন</button></div>`).join('') : '<div class="mu">কোনো বিষয় নেই</div>';
+  const ids = Object.keys(coPerms).filter(id => (coPerms[id].items || []).length);
+  $('coPL').innerHTML = ids.length ? ids.map(id => `<div class="appt"><b>${esc(coPerms[id].name)}</b><div>` +
+    coPerms[id].items.map((x, i) => `<span class="apchip">${esc(x.c)} • ${esc(x.s)}<button onclick="coDelPerm('${id}',${i})" title="মুছুন">✕</button></span>`).join('') + '</div></div>').join('')
+    : '<div class="mu">এখনো কাউকে পারমিশন দেওয়া হয়নি</div>';
+}
+function coAddSub(){
+  const name = $('coN').value.trim(), cls = [...$('coCl').querySelectorAll('input:checked')].map(x => x.value);
+  if (!name || !cls.length) return showMsg('বিষয়ের নাম ও অন্তত একটি শ্রেণি দিন');
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  const fresh = cls.filter(c => !coSubs.some(x => x.class === c && x.name === name));
+  if (!fresh.length) return showMsg('এই বিষয়টি সব বাছাই করা শ্রেণিতে আগে থেকেই আছে');
+  const batch = db.batch();
+  fresh.forEach(c => batch.set(db.collection('coSubjects').doc(), {name, class: c}));
+  guard(batch.commit()).then(() => { $('coN').value = ''; coSetCl(false); showMsg('✅ ' + bn(fresh.length) + 'টি শ্রেণিতে যুক্ত হয়েছে', 'ok'); }).catch(fail);
+}
+function coDelSub(id){
+  if (confirm('এই বিষয়টি মুছবেন?')) db.collection('coSubjects').doc(id).delete().catch(fail);
+}
+function coAddPerm(){
+  const tid = $('coT').value, c = $('coC').value, s = $('coS').value;
+  if (!tid || !c || !s) return showMsg('শিক্ষক, শ্রেণি ও বিষয় বেছে নিন');
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  const t = teachers.find(x => x.id === tid) || {}, items = ((coPerms[tid] || {}).items || []).slice();
+  if (!items.some(x => x.c === c && x.s === s)) items.push({c, s});
+  guard(db.collection('coCurPerms').doc(tid).set({name: t.name || '', items})).then(() => showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok')).catch(fail);
+}
+function coDelPerm(tid, i){
+  if (!confirm('এই পারমিশন মুছবেন?')) return;
+  const items = coPerms[tid].items.slice(); items.splice(i, 1);
+  guard(db.collection('coCurPerms').doc(tid).set({name: coPerms[tid].name, items})).then(() => showMsg('✅ মুছে ফেলা হয়েছে', 'ok')).catch(fail);
+}
+
+// ===== পরীক্ষা চলার সময়সীমা =====
+var eps = [], unsubEP = null;
+function startExamPeriods(){
+  unsubEP = db.collection('examPeriods').onSnapshot(sn => {
+    eps = sn.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => String(b.from || '').localeCompare(String(a.from || '')));
+    $('epL').innerHTML = eps.length ? eps.map(x => `<div class="row"><div><b>${esc(x.name)}</b><div class="mu">${bn(esc(x.from))} থেকে ${bn(esc(x.to))} পর্যন্ত</div></div><button class="del" onclick="epDel('${x.id}')">মুছুন</button></div>`).join('') : '<div class="mu">কোনো সময়সীমা দেওয়া হয়নি</div>';
+  }, fail);
+}
+function epAdd(){
+  const name = $('epN').value.trim(), from = $('epF').value, to = $('epT').value;
+  if (!name || !from || !to) return showMsg('পরীক্ষার নাম, শুরু ও শেষ তারিখ দিন');
+  if (to < from) return showMsg('শেষ তারিখ শুরুর তারিখের আগে হতে পারে না');
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  guard(db.collection('examPeriods').add({name, from, to})).then(() => { $('epN').value = $('epF').value = $('epT').value = ''; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
+}
+function epDel(id){ if (confirm('এই সময়সীমা মুছবেন?')) db.collection('examPeriods').doc(id).delete().catch(fail); }
 </script>
 <script src="pwa.js"></script>
 <script id="sl-js">

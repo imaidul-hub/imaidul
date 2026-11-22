@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>কো-কারিকুলাম মূল্যায়ন</title>
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.bar{background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.bar a{background:rgba(255,255,255,.2);border-radius:8px;padding:6px 12px;font-size:13px}
+.wrap{max-width:720px;margin:0 auto;padding:12px 12px 90px}
+.hide{display:none!important}
+.mu{color:var(--mu);font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px}
+label.l{display:block;font-size:13px;color:var(--mu);margin:10px 2px 4px}
+label.l:first-child{margin-top:0}
+select,input.f{font:inherit;padding:12px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cnt{margin:8px 2px;color:var(--mu);font-size:13px}
+.r{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:8px 10px;margin-bottom:6px}
+.no{width:26px;flex:none;text-align:center;color:var(--mu);font-size:13px}
+.nm{flex:1;min-width:0}
+.nm b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac{display:flex;align-items:center;gap:3px;font-size:12px;color:var(--mu);flex:none}
+.ac input{width:18px;height:18px}
+.mk{width:74px;flex:none;font:inherit;font-size:17px;font-weight:700;text-align:center;padding:9px 4px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.mk:disabled{opacity:.4}
+.mk.bad{border-color:var(--er);background:rgba(220,38,38,.1);color:var(--er)}
+.sv{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--bd);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
+.sv div.in{max-width:720px;margin:0 auto}
+.sv .mu{text-align:center;min-height:20px}
+.pbtn{font:inherit;padding:12px;border-radius:12px;border:0;background:var(--pr);color:#fff;width:100%;cursor:pointer;font-weight:700;font-size:16px}
+.pbtn:disabled{opacity:.6}
+.sbtn{font:inherit;font-weight:700;padding:10px 14px;border-radius:10px;border:1px solid var(--pr);background:transparent;color:var(--pr);cursor:pointer}
+.empty{text-align:center;color:var(--mu);padding:30px 10px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 4px 2px 10px;margin:2px;border-radius:999px;font-size:13px;background:rgba(15,122,74,.12);color:var(--pr);border:1px solid rgba(15,122,74,.35)}
+.chip button{border:0;background:transparent;color:var(--er);font-size:15px;cursor:pointer;padding:2px 6px}
+.pt{border-top:1px dashed var(--bd);padding:8px 0}
+</style>
+<style id="sl-css">
+#sl{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f4f8f5;transition:opacity .45s ease,visibility .45s ease}
+#sl.sl-out{opacity:0;visibility:hidden;pointer-events:none}
+#sl .sl-ring{width:54px;height:54px;border-radius:50%;border:4px solid rgba(15,122,74,.18);border-top-color:#0f7a4a;border-right-color:#c9a227;animation:sl-spin .9s cubic-bezier(.5,.1,.5,.9) infinite}
+#sl .sl-txt{font:600 14px "Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;color:#0f7a4a;animation:sl-pulse 1.4s ease-in-out infinite}
+#sl-bar{position:fixed;top:0;left:0;height:3px;width:0;z-index:100000;background:linear-gradient(90deg,#0f7a4a,#c9a227);box-shadow:0 0 8px rgba(15,122,74,.5);transition:width .35s ease,opacity .3s ease}
+body{animation:sl-fade .5s ease both}
+body.sl-leave{opacity:0;transition:opacity .18s ease}
+@keyframes sl-spin{to{transform:rotate(360deg)}}
+@keyframes sl-pulse{0%,100%{opacity:.45}50%{opacity:1}}
+@keyframes sl-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-color-scheme:dark){#sl{background:#0e1712}#sl .sl-ring{border-color:rgba(52,181,122,.2);border-top-color:#34b57a}#sl .sl-txt{color:#34b57a}}
+@media(prefers-reduced-motion:reduce){#sl .sl-ring,#sl .sl-txt,body{animation:none}}
+</style>
+</head>
+<body>
+<div id="sl" role="status" aria-live="polite"><div class="sl-ring"></div><div class="sl-txt">লোড হচ্ছে...</div></div><div id="sl-bar"></div>
+<div class="bar"><b>🎨 কো-কারিকুলাম মূল্যায়ন</b><a href="index.html">হোম</a></div>
+
+<div class="wrap">
+  <div id="need" class="hide card" style="text-align:center;margin:30px 0">
+    <b>🔐 এই পেজ দেখতে লগইন করুন</b>
+    <div class="mu" style="margin:4px 0 12px">শিক্ষক বা অ্যাডমিন হিসেবে লগইন করলে নম্বর দেওয়া যাবে</div>
+    <a href="teacher.html" style="display:inline-block;background:var(--pr);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">👨‍🏫 শিক্ষক লগইন</a>
+    <a href="admin.html" style="display:inline-block;background:var(--mu);color:#fff;padding:8px 20px;border-radius:999px;font-weight:700">🔐 অ্যাডমিন</a>
+  </div>
+
+  <div id="main" class="hide">
+    <div class="mu" id="who" style="margin:2px 2px 8px"></div>
+
+    <div class="card">
+      <label class="l">শ্রেণি</label><select id="cls" onchange="onCls()"></select>
+      <label class="l">বিষয়</label><select id="sub" onchange="loadSheet()"></select>
+      <div class="two">
+        <div><label class="l">তারিখ</label><input class="f" id="dt" type="date" onchange="loadSheet()"></div>
+        <div><label class="l">মোট নম্বর</label><input class="f" id="tot" inputmode="decimal" placeholder="যেমন: ২০" oninput="onTot()"></div>
+      </div>
+    </div>
+
+    <div class="cnt" id="info"></div>
+    <div id="list"><div class="empty">শ্রেণি ও বিষয় বেছে নিন</div></div>
+  </div>
+</div>
+
+<div class="sv hide" id="svb"><div class="in"><div class="mu" id="st"></div><button class="pbtn" id="svbtn" onclick="save()">💾 নম্বর সেভ করুন</button></div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const db = firebase.firestore(), auth = firebase.auth();
+// ⚡ দ্রুত ও স্থিতিশীল লোডিং: ধীর/ব্লকড নেটওয়ার্কে স্বয়ংক্রিয় long-polling + অফলাইন ক্যাশ
+try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) {}
+db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+const $ = id => document.getElementById(id);
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const en = s => String(s).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const normPhone = p => { let d = String(p||'').replace(/\D/g,''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };
+const pick = (o, fs) => { for (const f of fs) { const v = o[f]; if (v !== undefined && v !== null && v !== '' && typeof v !== 'object') return String(v); } return ''; };
+
+// শিক্ষার্থীর শ্রেণি ও রোলের সম্ভাব্য ফিল্ড (আপনার ডাটায় যেটা আছে সেটা ধরবে)
+const sCls = s => pick(s, ['className','class','cls','classId','grade','শ্রেণি']);
+const sRoll = s => pick(s, ['roll','rollNo','roll_no','rollNumber','রোল']);
+
+const CLS_ORDER = ['প্লে','নার্সারি','নূরানী','প্রথম','দ্বিতীয়','তৃতীয়','চতুর্থ','পঞ্চম','ষষ্ঠ','সপ্তম','অষ্টম','নবম','দশম','একাদশ','দ্বাদশ'];
+const clsRank = c => { const t = String(c), n = parseFloat(en(t)); if (!isNaN(n)) return 100 + n; const i = CLS_ORDER.findIndex(x => t.startsWith(x)); return i >= 0 ? i : 500; };
+const cmpCls = (a, b) => clsRank(a) - clsRank(b) || String(a).localeCompare(String(b), 'bn');
+const cmpStu = (a, b) => { const x = parseFloat(en(sRoll(a))), y = parseFloat(en(sRoll(b)));
+  if (!isNaN(x) && !isNaN(y) && x !== y) return x - y;
+  return String(a.name || '').localeCompare(String(b.name || ''), 'bn'); };
+
+var teachers = [], students = [], coSubs = [], me = null, isAdmin = false, myPerms = [], permsAll = {}, marks = {}, cur = [], tok = 0;
+
+// লগইন করা ইউজার কোন শিক্ষক (uid / ইমেইল / মোবাইল দিয়ে মেলানো)
+function findTeacher(u){
+  const em = (u.email || '').toLowerCase(), local = normPhone(em.split('@')[0]);
+  return teachers.find(t => t.id === u.uid || t.uid === u.uid
+    || (t.email && String(t.email).toLowerCase() === em)
+    || (local && (normPhone(t.phone) === local || normPhone(t.mobile) === local))) || null;
+}
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const docId = (c, s, d) => (c + '__' + s + '__' + d).replace(/\//g, '-');
+
+function classList(){
+  const set = isAdmin ? coSubs.map(x => x.class).filter(Boolean) : myPerms.map(x => x.c);
+  return [...new Set(set)].sort(cmpCls);
+}
+function subjectList(c){
+  if (!isAdmin) return [...new Set(myPerms.filter(x => x.c === c).map(x => x.s))];
+  return [...new Set(coSubs.filter(x => x.class === c).map(x => x.name).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'bn'));
+}
+const opts = (arr, ph) => `<option value="">${ph}</option>` + arr.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
+
+function fillCls(){
+  const cl = classList();
+  $('cls').innerHTML = opts(cl, '-- শ্রেণি বেছে নিন --');
+  fillSub();
+  if (!cl.length) $('list').innerHTML = `<div class="empty">${isAdmin ? 'কোনো কো-কারিকুলাম বিষয় যোগ করা হয়নি।<br>অ্যাডমিন প্যানেল → কো-কারিকুলাম সেটিং থেকে যোগ করুন।' : 'আপনাকে কোনো শ্রেণি ও বিষয়ে নম্বর দেওয়ার পারমিশন দেওয়া হয়নি।<br>অ্যাডমিনের সাথে যোগাযোগ করুন।'}</div>`;
+}
+function fillSub(){ $('sub').innerHTML = opts(subjectList($('cls').value), '-- বিষয় বেছে নিন --'); }
+function onCls(){ fillSub(); loadSheet(); }
+
+async function loadSheet(){
+  const c = $('cls').value, s = $('sub').value, d = $('dt').value, t = ++tok;
+  marks = {}; $('tot').value = ''; $('st').textContent = '';
+  if (!c || !s || !d) { cur = []; renderList(); return; }
+  if (!isAdmin && !myPerms.some(x => x.c === c && x.s === s)) { cur = []; renderList(); return; }
+  cur = students.filter(x => sCls(x) === c).sort(cmpStu);
+  renderList();
+  try {
+    const snap = await db.collection('coCurMarks').doc(docId(c, s, d)).get();
+    if (t !== tok) return;
+    if (snap.exists) {
+      const v = snap.data();
+      $('tot').value = v.total != null ? bn(v.total) : '';
+      marks = {};
+      Object.keys(v.marks || {}).forEach(id => { const m = v.marks[id]; marks[id] = {n: m.n != null ? String(m.n) : '', abs: !!m.abs}; });
+      $('st').textContent = '✔ আগে সেভ করা নম্বর দেখানো হচ্ছে';
+      renderList();
+    }
+  } catch (e) { $('st').textContent = 'লোড করা যায়নি: ' + (e.code || e.message); }
+}
+
+function renderList(){
+  const has = cur.length > 0;
+  $('svb').classList.toggle('hide', !has);
+  if (!has) {
+    $('info').textContent = '';
+    if ($('cls').value && $('sub').value && $('dt').value) $('list').innerHTML = '<div class="empty">এই শ্রেণিতে কোনো শিক্ষার্থী নেই</div>';
+    else if ($('cls').value || $('sub').value) $('list').innerHTML = '<div class="empty">শ্রেণি, বিষয় ও তারিখ বেছে নিন</div>';
+    return;
+  }
+  $('list').innerHTML = cur.map((s, i) => {
+    const m = marks[s.id] || {n: '', abs: false}, rl = sRoll(s);
+    return `<div class="r"><span class="no">${bn(i + 1)}</span>
+      <div class="nm"><b>${esc(s.name)}</b><span class="mu">${rl ? 'রোল: ' + bn(esc(rl)) : '&nbsp;'}</span></div>
+      <label class="ac"><input type="checkbox" ${m.abs ? 'checked' : ''} onchange="setAbs('${s.id}',this)">অনু.</label>
+      <input class="mk" inputmode="decimal" placeholder="–" value="${esc(m.n ? bn(m.n) : '')}" ${m.abs ? 'disabled' : ''} oninput="setN('${s.id}',this)"></div>`;
+  }).join('');
+  document.querySelectorAll('.mk').forEach(chk);
+  stats();
+}
+function totalVal(){ const t = parseFloat(en($('tot').value)); return isNaN(t) ? null : t; }
+function chk(el){ const t = totalVal(), n = parseFloat(en(el.value)); el.classList.toggle('bad', t !== null && !isNaN(n) && n > t); }
+function setN(id, el){
+  const v = en(el.value).replace(/[^0-9.]/g, '');
+  (marks[id] = marks[id] || {n: '', abs: false}).n = v;
+  chk(el); stats();
+}
+function setAbs(id, el){
+  const m = marks[id] = marks[id] || {n: '', abs: false};
+  m.abs = el.checked;
+  const inp = el.closest('.r').querySelector('.mk');
+  inp.disabled = m.abs;
+  if (m.abs) { m.n = ''; inp.value = ''; inp.classList.remove('bad'); }
+  stats();
+}
+function onTot(){ document.querySelectorAll('.mk').forEach(chk); }
+function stats(){
+  let g = 0, a = 0;
+  cur.forEach(s => { const m = marks[s.id]; if (!m) return; if (m.abs) a++; else if (m.n !== '') g++; });
+  $('info').textContent = `মোট ${bn(cur.length)} জন • নম্বর দেওয়া ${bn(g)} জন • অনুপস্থিত ${bn(a)} জন`;
+}
+
+async function save(){
+  const c = $('cls').value, s = $('sub').value, d = $('dt').value, total = totalVal();
+  if (!c || !s || !d) return alert('শ্রেণি, বিষয় ও তারিখ বেছে নিন');
+  if (!(total > 0)) return alert('মোট নম্বর দিন');
+  if (!isAdmin && !myPerms.some(x => x.c === c && x.s === s)) return alert('এই শ্রেণি ও বিষয়ে নম্বর দেওয়ার পারমিশন আপনার নেই');
+  const out = {}; let bad = 0;
+  cur.forEach(st => {
+    const m = marks[st.id]; if (!m) return;
+    const base = {name: st.name || '', roll: sRoll(st)};
+    if (m.abs) out[st.id] = {...base, abs: true};
+    else if (m.n !== '') { const n = parseFloat(m.n); if (isNaN(n) || n > total) bad++; else out[st.id] = {...base, n}; }
+  });
+  if (bad) return alert(bad + ' জনের নম্বর মোট নম্বরের চেয়ে বেশি বা ভুল। লাল ঘরগুলো ঠিক করুন।');
+  const b = $('svbtn'); b.disabled = true; $('st').textContent = 'সেভ হচ্ছে...';
+  try {
+    await db.collection('coCurMarks').doc(docId(c, s, d)).set({
+      cls: c, subject: s, date: d, total, marks: out,
+      teacherId: me ? me.id : '', teacherName: me ? me.name : 'অ্যাডমিন',
+      uid: auth.currentUser.uid, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    $('st').textContent = '✅ সেভ হয়েছে (' + bn(Object.keys(out).length) + ' জনের নম্বর)';
+  } catch (e) { $('st').textContent = '❌ সেভ হয়নি: ' + (e.code || e.message); }
+  b.disabled = false;
+}
+
+async function boot(u){
+  $('list').innerHTML = '<div class="empty">লোড হচ্ছে...</div>';
+  try {
+    const [ts, ss, cs] = await Promise.all([db.collection('teachers').get(), db.collection('students').get(), db.collection('coSubjects').get()]);
+    coSubs = cs.docs.map(d => ({id: d.id, ...d.data()}));
+    teachers = ts.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'bn'));
+    students = ss.docs.map(d => ({id: d.id, ...d.data()}));
+    me = findTeacher(u); isAdmin = !me;
+    if (isAdmin) {
+      const ps = await db.collection('coCurPerms').get();
+      permsAll = {}; ps.docs.forEach(d => permsAll[d.id] = d.data());
+    } else {
+      const p = await db.collection('coCurPerms').doc(me.id).get();
+      myPerms = p.exists ? (p.data().items || []) : [];
+    }
+    $('who').textContent = isAdmin ? '🔐 অ্যাডমিন হিসেবে লগইন' : '👨‍🏫 ' + (me.name || '');
+    $('dt').value = today();
+    fillCls();
+  } catch (e) { $('list').innerHTML = '<div class="empty">লোড করা যায়নি<br><span class="mu">' + esc(e.code || '') + ' ' + esc(e.message) + '</span></div>'; }
+}
+auth.onAuthStateChanged(u => {
+  $('need').classList.toggle('hide', !!u);
+  $('main').classList.toggle('hide', !u);
+  if (!u) { $('svb').classList.add('hide'); return; }
+  boot(u);
+});
+</script>
+<script id="sl-js">
+(function(){
+  var sl=document.getElementById('sl'),bar=document.getElementById('sl-bar'),done=false,w=8,t0=Date.now();
+  if(!sl)return;
+  bar.style.width=w+'%';
+  var iv=setInterval(function(){w+=(90-w)*.08;bar.style.width=w+'%';},250);
+  function hide(){
+    if(done)return;done=true;clearInterval(iv);
+    var wait=Math.max(0,350-(Date.now()-t0));
+    setTimeout(function(){
+      bar.style.width='100%';
+      sl.classList.add('sl-out');
+      setTimeout(function(){bar.style.opacity='0';},250);
+      setTimeout(function(){sl.remove();bar.remove();},700);
+    },wait);
+  }
+  var loaded=document.readyState==='complete',authed=false;
+  function check(){if(loaded&&authed)hide();}
+  window.addEventListener('load',function(){loaded=true;check();});
+  try{firebase.auth().onAuthStateChanged(function(){authed=true;check();},function(){authed=true;check();});}catch(e){authed=true;}
+  setTimeout(hide,6000);
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href]');
+    if(!a||a.target==='_blank'||e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey)return;
+    var h=a.getAttribute('href');
+    if(!h||h.charAt(0)==='#'||/^(javascript|mailto|tel|blob|data):/i.test(h)||a.hasAttribute('download'))return;
+    if(a.origin&&a.origin!==location.origin)return;
+    document.body.classList.add('sl-leave');
+  });
+  window.addEventListener('pageshow',function(e){if(e.persisted)document.body.classList.remove('sl-leave');});
+})();
+</script>
+</body>
+</html>

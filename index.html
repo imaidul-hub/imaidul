@@ -88,6 +88,8 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <a class="m" href="results.html"><div class="i">📝</div><b>পরীক্ষার ফলাফল</b><span>মার্কশীট</span></a>
     <a class="m" href="exam.html"><div class="i">📋</div><b>পরীক্ষা</b><span>রুটিন ও ডিউটি</span></a>
     <a class="m" href="admitcard.html"><div class="i">🪪</div><b>এডমিট কার্ড</b><span>প্রবেশপত্র প্রিন্ট</span></a>
+    <a class="m" href="co-curriculum.html"><div class="i">🎨</div><b>কো-কারিকুলাম</b><span>সহশিক্ষা কার্যক্রমের নম্বর</span></a>
+    <a class="m" href="#"><div class="i">📞</div><b>যোগাযোগ</b><span>ফোন ও ঠিকানা</span></a>
   </div>
 </div>
 
@@ -122,7 +124,7 @@ const fmtT = t => { if (!t) return ''; let [h,m] = t.split(':').map(Number); con
 const ordBn = n => { const o = {1:'১ম',2:'২য়',3:'৩য়',4:'৪র্থ',6:'৬ষ্ঠ'}; return (o[n] || bn(n) + 'ম') + ' পিরিয়ড'; };
 const todayStr = ds(new Date());
 
-var allT = [], myR = [], todayP = [], curMe = null, uT = null, uR = null, uP = null, uH = null, holMap = {}, uX = null, examR = [];
+var allT = [], myR = [], todayP = [], curMe = null, uT = null, uR = null, uP = null, uH = null, holMap = {}, uX = null, uEP = null, examR = [], exR = [], epR = [];
 // পরীক্ষার সময়সীমা: প্রতিটি পরীক্ষার (examRoutines) প্রথম ও শেষ তারিখের মধ্যের সব দিন
 const examOn = d => { const r = examR.find(x => d >= x.from && d <= x.to); return r ? r.name : null; };
 const MY = () => document.getElementById('my');
@@ -255,13 +257,17 @@ function pickMe(){
 
 auth.onAuthStateChanged(u => {
   const tb = document.getElementById('tLoginBtn'); if (tb) tb.textContent = u ? '👨‍🏫 শিক্ষক পোর্টাল' : '👨‍🏫 শিক্ষক লগইন';
-  [uT, uP, uH, uX].forEach(f => f && f()); uT = uP = uH = uX = null; if (uR) { uR(); uR = null; } curMe = null; myR = []; todayP = []; holMap = {}; examR = [];
+  [uT, uP, uH, uX, uEP].forEach(f => f && f()); uT = uP = uH = uX = uEP = null; if (uR) { uR(); uR = null; } curMe = null; myR = []; todayP = []; holMap = {}; examR = []; exR = []; epR = [];
   renderMy();
   if (!u) return;
   uX = db.collection('examRoutines').onSnapshot(s => {
     const m = {};
     s.docs.forEach(d => { const e = d.data(); if (!e.date) return; const k = e.exam || 'পরীক্ষা'; const x = m[k] = m[k] || { name: k, from: e.date, to: e.date }; if (e.date < x.from) x.from = e.date; if (e.date > x.to) x.to = e.date; });
-    examR = Object.values(m); renderMy();
+    exR = Object.values(m); examR = exR.concat(epR); renderMy();
+  }, e => console.error(e));
+  uEP = db.collection('examPeriods').onSnapshot(s => {
+    epR = s.docs.map(d => d.data()).filter(e => e.from && e.to).map(e => ({ name: e.name || 'পরীক্ষা', from: e.from, to: e.to }));
+    examR = exR.concat(epR); renderMy();
   }, e => console.error(e));
   uH = db.collection('holidays').where('date','>=',todayStr).onSnapshot(s => { holMap = {}; s.docs.forEach(d => { const h = d.data(); holMap[h.date] = h; }); renderMy(); }, e => console.error(e));
   uT = db.collection('teachers').onSnapshot(s => { allT = s.docs.map(d => ({id:d.id, ...d.data()})); pickMe(); }, mErr);
