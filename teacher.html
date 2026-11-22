@@ -170,7 +170,8 @@ function changePw(){
 }
 
 // ---- ডাটা ----
-var teachers = [], proxies = [], me = null, unsubP = null, unsubT = null, unsubH = null, todayHol = null, day = ds(new Date());
+var teachers = [], proxies = [], me = null, unsubP = null, unsubT = null, unsubH = null, todayHol = null, unsubX = null, examR = [], day = ds(new Date());
+const examOn = d => { const r = examR.find(x => d >= x.from && d <= x.to); return r ? r.name : null; };
 const tName = id => (teachers.find(t => t.id === id) || {}).name || '—';
 
 function myPhone(){ const u = auth.currentUser; return u && u.email ? normPhone(u.email.split('@')[0]) : ''; }
@@ -188,7 +189,8 @@ function render(){
   $('hi').textContent = me ? 'আসসালামু আলাইকুম, ' + me.name : 'আসসালামু আলাইকুম';
   const list = proxies.slice().sort((a,b) => a.period - b.period);
   const mine = me ? list.filter(p => p.subId === me.id) : [];
-  const holMsg = todayHol ? '<div class="empty">🏖️ আজ ছুটি' + (todayHol.reason ? ' — ' + esc(todayHol.reason) : '') + '। আজ কোনো ক্লাস নেই।</div>' : '';
+  const exOn = examOn(ds(new Date()));
+  const holMsg = (!todayHol && exOn) ? '<div class="empty">📝 ' + esc(exOn) + ' চলছে। পরীক্ষা চলাকালীন কোনো ক্লাস নেই।</div>' : todayHol ? '<div class="empty">🏖️ আজ ছুটি' + (todayHol.reason ? ' — ' + esc(todayHol.reason) : '') + '। আজ কোনো ক্লাস নেই।</div>' : '';
   $('mine').innerHTML = holMsg || (!me ? '<div class="empty">এই নম্বর শিক্ষক তালিকায় পাওয়া যায়নি</div>'
     : mine.length ? mine.map(p => item(p, true)).join('') : '<div class="empty">আজ আপনার কোনো প্রক্সি নেই 🎉</div>');
   $('all').innerHTML = holMsg || (list.length ? list.map(p => item(p, false)).join('') : '<div class="empty">আজ কোনো প্রক্সি নেই</div>');
@@ -197,10 +199,15 @@ function startData(){
   stopData();
   day = ds(new Date());
   unsubT = db.collection('teachers').onSnapshot(s => { teachers = s.docs.map(d => ({id:d.id, ...d.data()})); render(); }, fail);
+  unsubX = db.collection('examRoutines').onSnapshot(s => {
+    const m = {};
+    s.docs.forEach(d => { const e = d.data(); if (!e.date) return; const k = e.exam || 'পরীক্ষা'; const x = m[k] = m[k] || { name: k, from: e.date, to: e.date }; if (e.date < x.from) x.from = e.date; if (e.date > x.to) x.to = e.date; });
+    examR = Object.values(m); render();
+  }, e => console.error(e));
   unsubH = db.collection('holidays').doc(day).onSnapshot(s => { todayHol = s.exists ? s.data() : null; render(); }, e => console.error(e));
   unsubP = db.collection('proxies').where('date','==',day).onSnapshot(s => { proxies = s.docs.map(d => ({id:d.id, ...d.data()})); render(); }, fail);
 }
-function stopData(){ if (unsubH) { unsubH(); unsubH = null; } todayHol = null; if (unsubT) { unsubT(); unsubT = null; } if (unsubP) { unsubP(); unsubP = null; } if (unsubR) { unsubR(); unsubR = null; } rtFor = null; myRt = []; }
+function stopData(){ if (unsubX) { unsubX(); unsubX = null; } examR = []; if (unsubH) { unsubH(); unsubH = null; } todayHol = null; if (unsubT) { unsubT(); unsubT = null; } if (unsubP) { unsubP(); unsubP = null; } if (unsubR) { unsubR(); unsubR = null; } rtFor = null; myRt = []; }
 
 // ---- সাপ্তাহিক ক্লাস রুটিন (প্রথম কলামে রবি → বৃহস্পতি) ----
 var myRt = [], unsubR = null, rtFor = null;
