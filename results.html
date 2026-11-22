@@ -1435,11 +1435,13 @@ window.addEventListener('load', fitTr);
   const box = $('trans'); let timer = null, sx = 0, sy = 0, lastShow = 0;
   const close = () => { const o = $('imgPop'); if (o) o.remove(); };
   const cache = new WeakMap();
+  let q = Promise.resolve();
+  setTimeout(() => { if (!window.html2canvas) loadJs(CDN.h2c).catch(() => {}); }, 1500);   // লাইব্রেরি আগেই নামিয়ে রাখা
   const blobToData = b => new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = () => no(new Error('ছবি পড়া যায়নি')); fr.readAsDataURL(b); });
   // ছবি একবারই তৈরি হয় (পপ-আপ খোলার সাথে সাথে শুরু), ডাউনলোড/শেয়ার দুটোই সেটি ব্যবহার করে
   function makeImg(card) {
     if (cache.has(card)) return cache.get(card);
-    const p = (async () => {
+    const p = q.then(async () => {
       if (!window.html2canvas) await loadJs(CDN.h2c);
       const st = stageClear(), el = card.cloneNode(true);
       el.classList.add('fit');
@@ -1447,13 +1449,15 @@ window.addEventListener('load', fitTr);
       st.appendChild(el);
       await nextFrame();
       fixSpans(el);   // rowspan ঘর কেটে যাওয়া ঠেকাতে
-      const cv = await snap(el, 2);
+      const cv = await snap(el, 1.7);
       stageClear();
-      const name = ('ট্রান্সক্রিপ্ট_' + (card.dataset.roll || '') + (card.dataset.name ? '_' + card.dataset.name : '')).replace(/[\\/:*?"<>|\s]+/g, '_') + '.png';
-      const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
-      if (!blob) throw new Error('ছবি তৈরি করা যায়নি।');
-      return { blob, name, file: new File([blob], name, { type: 'image/png' }) };
-    })();
+      const name = ('ট্রান্সক্রিপ্ট_' + (card.dataset.roll || '') + (card.dataset.name ? '_' + card.dataset.name : '')).replace(/[\\/:*?"<>|\s]+/g, '_') + '.jpg';
+      // JPEG: PNG-র চেয়ে অনেক দ্রুত তৈরি হয় ও ছোট হয়, তাই ডাউনলোড/শেয়ার প্রায় সঙ্গে সঙ্গে
+      const data = cv.toDataURL('image/jpeg', 0.92);
+      const blob = await (await fetch(data)).blob();
+      return { blob, data, name, file: new File([blob], name, { type: 'image/jpeg' }) };
+    });
+    q = p.catch(() => {});   // একটার পর একটা তৈরি হয় (একই স্টেজ ব্যবহার হয় বলে)
     cache.set(card, p);
     p.catch(() => cache.delete(card));
     return p;
