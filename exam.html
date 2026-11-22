@@ -241,6 +241,7 @@ const datesList = () => [...new Set(duties.map(x => x.date).filter(Boolean))].so
 // ডিউটির সময়: ওই তারিখের পরীক্ষার রুটিন থেকে — শুরু ১২টার আগে = সকাল, ১২–৪টা = দুপুর, ৪টার পর = বিকাল
 const shiftOf = t => { const h = +String(t).split(':')[0]; return h < 12 ? 'সকাল' : h < 16 ? 'দুপুর' : 'বিকাল'; };
 function timeFor(date, shift) {
+  if (shift === 'সকাল') return fmt('10:00'); // সকালের ডিউটির সময় সবসময় ১০:০০ AM
   const l = exs.filter(e => e.date === date && e.start && shiftOf(e.start) === shift);
   if (!l.length) return shift;
   const st = l.map(e => e.start).sort()[0], en = l.map(e => e.end).filter(Boolean).sort().pop();
