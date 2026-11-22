@@ -1100,6 +1100,7 @@ function renderTranscript(R, subs) {
   const T = (a, b) => en ? a : b;
   const N = v => en ? String(v) : bn(v);
   const f2 = v => v == null ? '-' : N((+v).toFixed(2));
+  const fi = v => v == null ? '-' : N(Math.round(+v));
   const inst = esc($('inst').textContent.trim()), exam = esc($('exam').textContent.trim()), cls = esc($('cls').value.trim());
   const initial = esc(($('inst').textContent.trim() || 'S').charAt(0));
   const logo = LOGO ? `<img src="${LOGO}" alt="" onerror="this.style.display='none'">` : initial, logoCls = LOGO ? ' img' : '';
@@ -1163,10 +1164,10 @@ function renderTranscript(R, subs) {
         const pk = (e.pk && e.pk[pi]) || {};
         const nm = np > 1 ? (sj.merged ? esc(sj.papers[pi].ord) : esc(sj.name) + ' ' + esc(ordLab(sj.papers[pi].ord, pi))) : esc(sj.name);
         const label = nm + (optl && !/ঐচ্ছিক|optional/i.test(sj.name) ? ` (${T('Optional', 'ঐচ্ছিক')})` : '');
-        const full = +(sj.cfg.full / np).toFixed(2);
+        const full = Math.round(sj.cfg.full / np);
         const tot = np > 1 ? e.papers[pi] : e.total;
-        let tr = `<tr><td>${N(sl)}</td><td class="l">${label}</td><td>${N(full)}</td><td>${f2(pk.cq)}</td><td>${f2(pk.mcq)}</td><td>${f2(pk.prac)}</td>`
-          + `<td class="n">${f2(tot)}</td><td>${f2(hi(sj, pi, null))}</td>`;
+        let tr = `<tr><td>${N(sl)}</td><td class="l">${label}</td><td>${N(full)}</td><td>${fi(pk.cq)}</td><td>${fi(pk.mcq)}</td><td>${fi(pk.prac)}</td>`
+          + `<td class="n">${fi(tot)}</td><td>${fi(hi(sj, pi, null))}</td>`;
         if (pi === 0) tr += `<td rowspan="${np}" class="n${zero ? ' fl' : ''}">${letter(e.gp)}</td><td rowspan="${np}" class="n${zero ? ' fl' : ''}">${f2(e.gp)}</td>`;
         if (firstRow) {
           tr += `<td rowspan="${totRows}" class="gpa${failed ? ' fl' : ''}">(${gL})<b>${f2(g2)}</b>`
@@ -1177,7 +1178,7 @@ function renderTranscript(R, subs) {
         rows += tr + '</tr>';
       }
     });
-    rows += `<tr class="gt"><td colspan="2" style="text-align:right">${T('Grand Total :', 'সর্বমোট :')}</td><td>${N(gFull)}</td><td colspan="3">(${T('Out of', 'মোট')} ${N(gFull)})</td><td>${f2(gTotal)}</td><td colspan="5"></td></tr>`;
+    rows += `<tr class="gt"><td colspan="2" style="text-align:right">${T('Grand Total :', 'সর্বমোট :')}</td><td>${N(gFull)}</td><td colspan="3">(${T('Out of', 'মোট')} ${N(gFull)})</td><td>${fi(gTotal)}</td><td colspan="5"></td></tr>`;
     const info = [[T('ID', 'আইডি'), esc(idOf(st))], [T('Name', 'নাম'), esc(st.name)], [T('Medium', 'মাধ্যম'), esc(tmed)], [T('Shift', 'শিফট'), esc(tshift)],
                   [T('Class', 'শ্রেণি'), cls], [T('Section', 'শাখা'), esc(secOf(st))], [T('Group', 'গ্রুপ'), esc(grpOf(st))], [T('Roll', 'রোল'), N(st.roll)]];
     const cell = r => `<td class="k">${r[0]}</td><td class="v">${r[1] || '&nbsp;'}</td>`;
