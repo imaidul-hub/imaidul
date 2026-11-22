@@ -122,7 +122,7 @@ const fmtT = t => { if (!t) return ''; let [h,m] = t.split(':').map(Number); con
 const ordBn = n => { const o = {1:'১ম',2:'২য়',3:'৩য়',4:'৪র্থ',6:'৬ষ্ঠ'}; return (o[n] || bn(n) + 'ম') + ' পিরিয়ড'; };
 const todayStr = ds(new Date());
 
-var allT = [], myR = [], todayP = [], curMe = null, uT = null, uR = null, uP = null;
+var allT = [], myR = [], todayP = [], curMe = null, uT = null, uR = null, uP = null, uH = null, holMap = {};
 const MY = () => document.getElementById('my');
 const mErr = e => { MY().innerHTML = '<div class="card mu">ক্লাসের তথ্য লোড করা যায়নি: ' + esc(e.code||'') + ' ' + esc(e.message) + '</div>'; };
 
@@ -165,14 +165,18 @@ function renderMy(){
     ...todayP.filter(p => p.subId === curMe.id).map(p => mk({period:p.period, start:p.time, class:p.class, subject:p.subject, room:p.room}, 'px'))
   ].filter(r => r.startMin === null || r.startMin > nowMin).sort((a,b) => a.period - b.period);
 
-  let nextRow = todayRows[0] || null, whenLbl = 'আজ';
+  const todayHol = holMap[todayStr];
+  let nextRow = todayHol ? null : (todayRows[0] || null), whenLbl = 'আজ';
   if (!nextRow) {
-    for (let i = 1; i <= 7 && !nextRow; i++) {
-      const d = (dow + i) % 7;
+    for (let i = 1; i <= 21 && !nextRow; i++) {
+      const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+      if (holMap[ds(dt)]) continue;   // ছুটির দিন বাদ
+      const d = dt.getDay();
       const list = myR.filter(r => r.day === d).sort((a,b) => a.period - b.period);
       if (list.length) { nextRow = mk(list[0], ''); whenLbl = i === 1 ? 'আগামীকাল' : DAYS[d]; }
     }
   }
+  const holNote = todayHol ? `<div class="mu" style="text-align:center;padding:8px;margin-bottom:8px;border-radius:8px;background:rgba(201,162,39,.18);color:var(--tx)">🏖️ আজ ছুটি${todayHol.reason ? ' — ' + esc(todayHol.reason) : ''}। আজ কোনো ক্লাস নেই।</div>` : '';
 
   const body = nextRow ? `<div class="tw"><table class="tb"><thead><tr><th>দিন ও সময়</th><th>পিরিয়ড</th><th>শ্রেণি ও বিষয়</th></tr></thead><tbody>
     <tr class="${nextRow.kind}"><td style="white-space:nowrap"><b>${whenLbl}</b>${nextRow.startT ? '<br>' + nextRow.startT : ''}</td><td style="white-space:nowrap"><b>${ordBn(nextRow.period)}</b></td>
@@ -181,12 +185,12 @@ function renderMy(){
 
   MY().innerHTML = `<div class="card">
     <div class="myh"><b>📅 আপনার পরবর্তী ক্লাস</b></div>
-    ${body}</div>`;
+    ${holNote}${body}</div>`;
 }
 
 // প্রতি ১ সেকেন্ড পর পর বর্তমান সময় চেক করা এবং অ্যালার্ম বাজানো
 function checkRoutineAlarms() {
-  if (!alarmPermissionGranted || !curMe) return;
+  if (!alarmPermissionGranted || !curMe || holMap[todayStr]) return;
 
   const now = new Date();
   const currentHours = now.getHours();
@@ -248,9 +252,10 @@ function pickMe(){
 
 auth.onAuthStateChanged(u => {
   const tb = document.getElementById('tLoginBtn'); if (tb) tb.textContent = u ? '👨‍🏫 শিক্ষক পোর্টাল' : '👨‍🏫 শিক্ষক লগইন';
-  [uT, uP].forEach(f => f && f()); uT = uP = null; if (uR) { uR(); uR = null; } curMe = null; myR = []; todayP = [];
+  [uT, uP, uH].forEach(f => f && f()); uT = uP = uH = null; if (uR) { uR(); uR = null; } curMe = null; myR = []; todayP = []; holMap = {};
   renderMy();
   if (!u) return;
+  uH = db.collection('holidays').where('date','>=',todayStr).onSnapshot(s => { holMap = {}; s.docs.forEach(d => { const h = d.data(); holMap[h.date] = h; }); renderMy(); }, e => console.error(e));
   uT = db.collection('teachers').onSnapshot(s => { allT = s.docs.map(d => ({id:d.id, ...d.data()})); pickMe(); }, mErr);
   uP = db.collection('proxies').where('date','==',todayStr).onSnapshot(s => { todayP = s.docs.map(d => d.data()); renderMy(); }, mErr);
 });

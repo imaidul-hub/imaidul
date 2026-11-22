@@ -111,6 +111,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <button id="b6" onclick="tab(6)">📝 পরীক্ষা রুটিন</button>
       <button id="b7" onclick="tab(7)">📚 বিষয়</button>
       <button id="b8" onclick="tab(8)">🧑‍🏫 পরীক্ষা ডিউটি</button>
+      <button id="b9" onclick="tab(9)">🏖️ ছুটির তালিকা</button>
     </div>
     <div id="p1">
     <div class="stats">
@@ -349,6 +350,28 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <div class="card" id="dlist"><div class="mu">লোড হচ্ছে...</div></div>
     </div>
 
+    <!-- ছুটির তালিকা -->
+    <div id="p9" class="hide">
+      <div class="card">
+        <h3 style="margin-top:0">📂 ফাইল থেকে ছুটির তালিকা আপলোড</h3>
+        <div class="mu">Excel (.xlsx/.xls) বা CSV (.csv) ফাইল। প্রথম কলাম: <b>তারিখ (dd/mm/yyyy)</b> | দ্বিতীয় কলাম: <b>কারণ</b>। প্রথম সারি হেডার হলে নিজে থেকেই বাদ যাবে।</div>
+        <input type="file" id="hf" accept=".csv,.xlsx,.xls,text/csv" onchange="pickHoliday(this)">
+        <div id="hprev" class="hide"></div>
+        <button id="hupb" class="act hide" onclick="uploadHolidays()">✅ সংরক্ষণ করুন</button>
+        <div class="mu">একই তারিখ আগে থেকে থাকলে কারণ আপডেট হবে।</div>
+      </div>
+      <div class="card">
+        <h3 id="hh" style="margin-top:0">একটি ছুটি হাতে যোগ করুন</h3>
+        <input id="hd" type="date">
+        <input id="hr" placeholder="ছুটির কারণ (যেমন: ঈদুল ফিতর)">
+        <button class="act" onclick="saveHoliday()">ছুটি সংরক্ষণ</button>
+      </div>
+      <h2>ছুটির তালিকা <span id="hcnt" class="mu"></span></h2>
+      <select id="hfy"></select>
+      <button class="act sec" onclick="delAllHolidays()">🗑️ দেখানো সব ছুটি মুছুন</button>
+      <div class="card" id="hlist"><div class="mu">লোড হচ্ছে...</div></div>
+    </div>
+
   </div>
 </div>
 
@@ -490,7 +513,7 @@ $('lt').onchange = loadRoutines;
 $('rt').onchange = () => { $('lt').value = $('rt').value; loadRoutines(); };
 const fmt = t => { if (!t) return ''; let [h,m] = t.split(':').map(Number); const ap = h>=12?'PM':'AM'; h = h%12||12; return bn(h+':'+String(m).padStart(2,'0'))+' '+ap; };
 
-function tab(n){ [1,2,3,4,5,6,7,8].forEach(i => { $('p'+i).classList.toggle('hide', i!==n); $('b'+i).classList.toggle('on', i===n); }); }
+function tab(n){ [1,2,3,4,5,6,7,8,9].forEach(i => { $('p'+i).classList.toggle('hide', i!==n); $('b'+i).classList.toggle('on', i===n); }); }
 
 var unsubS = null;
 function stopData(){
@@ -502,6 +525,7 @@ function stopData(){
   if (unsubX) { unsubX(); unsubX = null; }
   if (unsubB) { unsubB(); unsubB = null; }
   if (unsubD) { unsubD(); unsubD = null; }
+  if (unsubH) { unsubH(); unsubH = null; }
   tab(1);
 }
 function startData(){
@@ -509,6 +533,7 @@ function startData(){
   startExams();
   startSubjects();
   startDuties();
+  startHolidays();
   unsubT = db.collection('teachers').orderBy('name').onSnapshot(s => {
     teachers = s.docs.map(d => ({id:d.id, ...d.data()}));
     const opts = teachers.map(t => `<option value="${t.id}">${esc(t.name)}${t.subject?' ('+esc(t.subject)+')':''}</option>`).join('');
@@ -1064,6 +1089,109 @@ function cancelD(){
   $('dh').textContent = 'পরীক্ষা ডিউটি যোগ করুন'; $('dbtn').textContent = 'ডিউটি সংরক্ষণ'; $('dcan').classList.add('hide');
 }
 function delDuty(id){ if (confirm('এই ডিউটিটি মুছবেন?')) db.collection('examDuties').doc(id).delete().then(() => { if (editD === id) cancelD(); }).catch(fail); }
+
+// ===== ছুটির তালিকা (কালেকশন: holidays — ডক ID = তারিখ yyyy-mm-dd; ফিল্ড: date, reason) =====
+var hols = [], unsubH = null, hRows = [];
+function startHolidays(){
+  unsubH = db.collection('holidays').onSnapshot(s => {
+    hols = s.docs.map(d => ({id: d.id, ...d.data()}));
+    const ys = [...new Set(hols.map(h => String(h.date||'').slice(0,4)).filter(Boolean))].sort();
+    const k = $('hfy').value;
+    $('hfy').innerHTML = '<option value="">সব বছর</option>' + ys.map(y => `<option value="${y}">${bn(y)}</option>`).join('');
+    $('hfy').value = ys.includes(k) ? k : '';
+    renderHolidays();
+  }, fail);
+}
+const hShown = () => { const y = $('hfy').value; return hols.filter(h => !y || String(h.date||'').startsWith(y)).sort((a,b) => String(a.date).localeCompare(String(b.date))); };
+function renderHolidays(){
+  const list = hShown(), y = $('hfy').value;
+  $('hcnt').textContent = '(' + bn(list.length) + 'টি' + (y ? ' / মোট ' + bn(hols.length) + 'টি' : '') + ')';
+  if (!list.length) { $('hlist').innerHTML = '<div class="mu">কোনো ছুটি যোগ করা হয়নি</div>'; return; }
+  $('hlist').innerHTML = list.map(h => `<div class="row"><div><b>📅 ${dfmt(h.date)}${wday(h.date) ? ' (' + wday(h.date) + ')' : ''}</b><div class="mu">${esc(h.reason||'')}</div></div>
+    <button class="del" onclick="delHoliday('${h.id}')">✕</button></div>`).join('');
+}
+$('hfy').onchange = renderHolidays;
+// "dd/mm/yyyy" (বাংলা অঙ্ক, - . / বিভাজক, Excel সিরিয়াল ও Date সহ) → "yyyy-mm-dd"
+const enDigits = s => String(s).replace(/[০-৯]/g, c => '০১২৩৪৫৬৭৮৯'.indexOf(c));
+function parseHDate(v){
+  if (v instanceof Date && !isNaN(v)) return v.getFullYear()+'-'+String(v.getMonth()+1).padStart(2,'0')+'-'+String(v.getDate()).padStart(2,'0');
+  if (typeof v === 'number' && v > 20000 && v < 80000) { const d = new Date(Math.round((v - 25569) * 86400000)); return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0'); }
+  const m = enDigits(String(v == null ? '' : v).trim()).match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if (!m) return null;
+  const dd = +m[1], mm = +m[2], yy = +m[3], t = new Date(yy, mm - 1, dd);
+  if (t.getFullYear() !== yy || t.getMonth() !== mm - 1 || t.getDate() !== dd) return null;
+  return yy + '-' + String(mm).padStart(2,'0') + '-' + String(dd).padStart(2,'0');
+}
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/, '');
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i+1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true;
+    else if (c === ',' || c === ';' || c === '\t') { row.push(cur); cur = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i+1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += c;
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+function loadXLSX(){
+  if (window.XLSX) return Promise.resolve();
+  return new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = ok; s.onerror = () => no(new Error('Excel রিডার লোড হয়নি। ইন্টারনেট দেখুন অথবা CSV ফাইল দিন।')); document.head.appendChild(s); });
+}
+async function pickHoliday(inp){
+  const f = inp.files && inp.files[0]; if (!f) return;
+  hRows = []; $('hprev').classList.add('hide'); $('hupb').classList.add('hide');
+  try {
+    let raw;
+    if (/\.csv$/i.test(f.name) || f.type === 'text/csv') raw = parseCSV(await f.text());
+    else { await loadXLSX(); const wb = XLSX.read(await f.arrayBuffer(), {type:'array', cellDates:true}); raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:true, defval:''}); }
+    const ok = [], bad = [], seen = {};
+    raw.forEach((r, i) => {
+      if (!r || !r.some(x => String(x).trim())) return;
+      const date = parseHDate(r[0]), reason = String(r[1] == null ? '' : r[1]).trim();
+      if (!date) { if (i === 0) return; bad.push(bn(i + 1) + ' নং সারি: "' + String(r[0]).trim() + '" তারিখ ঠিক নয়'); return; }
+      if (!reason) { bad.push(bn(i + 1) + ' নং সারি: কারণ নেই'); return; }
+      seen[date] = reason;
+    });
+    Object.keys(seen).sort().forEach(d => ok.push({date: d, reason: seen[d]}));
+    hRows = ok;
+    $('hprev').innerHTML = `<div style="font-weight:700;color:var(--pr);margin:8px 0">✅ ${bn(ok.length)}টি ছুটি পাওয়া গেছে</div>` +
+      (bad.length ? `<div class="warn">⚠️ ${bn(bad.length)}টি সারি বাদ:<br>${bad.slice(0,10).map(esc).join('<br>')}${bad.length > 10 ? '<br>...' : ''}</div>` : '') +
+      ok.slice(0,30).map(h => `<div class="row"><div><b>${dfmt(h.date)}</b> (${wday(h.date)})</div><div class="mu">${esc(h.reason)}</div></div>`).join('') +
+      (ok.length > 30 ? `<div class="mu">...আরও ${bn(ok.length - 30)}টি</div>` : '');
+    $('hprev').classList.remove('hide');
+    if (ok.length) $('hupb').classList.remove('hide');
+    else showMsg('কোনো সঠিক সারি পাওয়া যায়নি। ফরমেট: তারিখ (dd/mm/yyyy) | কারণ');
+  } catch(e){ fail(e); }
+}
+function uploadHolidays(){
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  if (!hRows.length) return;
+  const rows = hRows.slice(), chunks = [];
+  for (let i = 0; i < rows.length; i += 400) chunks.push(rows.slice(i, i + 400));
+  const up = rows.filter(r => hols.some(h => h.id === r.date)).length;
+  const p = Promise.all(chunks.map(ch => { const b = db.batch(); ch.forEach(r => b.set(db.collection('holidays').doc(r.date), {date: r.date, reason: r.reason})); return b.commit(); }));
+  guard(p).then(() => {
+    hRows = []; $('hf').value = ''; $('hprev').classList.add('hide'); $('hupb').classList.add('hide');
+    showMsg('✅ ' + bn(rows.length) + 'টি ছুটি সংরক্ষিত হয়েছে' + (up ? ' (নতুন ' + bn(rows.length - up) + ', আপডেট ' + bn(up) + ')' : ''), 'ok');
+  }).catch(fail);
+}
+function saveHoliday(){
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  const date = $('hd').value, reason = $('hr').value.trim();
+  if (!date || !reason) return showMsg('তারিখ ও কারণ দিন');
+  guard(db.collection('holidays').doc(date).set({date, reason})).then(() => { $('hr').value = ''; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
+}
+function delHoliday(id){ if (confirm('এই ছুটিটি মুছবেন?')) db.collection('holidays').doc(id).delete().catch(fail); }
+function delAllHolidays(){
+  const list = hShown(); if (!list.length) return showMsg('মোছার মতো কোনো ছুটি নেই');
+  if (!confirm('এখন দেখানো ' + bn(list.length) + 'টি ছুটি মুছবেন? এটি ফেরানো যাবে না।')) return;
+  const chunks = []; for (let i = 0; i < list.length; i += 400) chunks.push(list.slice(i, i + 400));
+  Promise.all(chunks.map(ch => { const b = db.batch(); ch.forEach(h => b.delete(db.collection('holidays').doc(h.id))); return b.commit(); }))
+    .then(() => showMsg('✅ মুছে ফেলা হয়েছে', 'ok')).catch(fail);
+}
 
 // ===== শিক্ষকদের মোবাইল লগইন তৈরি =====
 const normPhone = p => { let d = String(p||'').replace(/\D/g,''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };

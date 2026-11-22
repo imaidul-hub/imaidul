@@ -297,6 +297,7 @@
   #tblc tbody tr.fail { background:#fff7f7; }
   #tblc tbody tr.absent { background:#f4f4f4; color:#777; }
   @media screen { #trans .tr { zoom:var(--trz,1); } }
+  #trans .tr { -webkit-touch-callout:none; }
   .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#17241c; color:#fff; padding:8px 16px; border-radius:999px; font-size:14px; z-index:99; display:none; max-width:90vw; text-align:center; }
 </style>
 <style id="pub-css">
@@ -1407,6 +1408,89 @@ function fitTr(){
 { let lw = 0; new ResizeObserver(en => { const w = Math.round(en[0].contentRect.width); if (w && w !== lw) { lw = w; fitTr(); } }).observe($('trans')); }
 window.addEventListener('orientationchange', () => setTimeout(fitTr, 250));
 window.addEventListener('load', fitTr);
+
+/* ---------- ট্রান্সক্রিপ্টে লং প্রেস (বা ডান-ক্লিক) → ছবি ডাউনলোডের পপ-আপ ---------- */
+(function () {
+  const box = $('trans'); let timer = null, sx = 0, sy = 0, lastShow = 0;
+  const close = () => { const o = $('imgPop'); if (o) o.remove(); };
+  const cache = new WeakMap();
+  // ছবি একবারই তৈরি হয় (পপ-আপ খোলার সাথে সাথে শুরু), ডাউনলোড/শেয়ার দুটোই সেটি ব্যবহার করে
+  function makeImg(card) {
+    if (cache.has(card)) return cache.get(card);
+    const p = (async () => {
+      if (!window.html2canvas) await loadJs(CDN.h2c);
+      const st = stageClear(), el = card.cloneNode(true);
+      el.classList.add('fit');
+      el.style.cssText += ';width:1100px;max-width:none;margin:0;box-sizing:border-box;height:782px;';
+      st.appendChild(el);
+      await nextFrame();
+      const cv = await snap(el, 2);
+      stageClear();
+      const name = ('ট্রান্সক্রিপ্ট_' + (card.dataset.roll || '') + (card.dataset.name ? '_' + card.dataset.name : '')).replace(/[\\/:*?"<>|\s]+/g, '_') + '.png';
+      const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+      if (!blob) throw new Error('ছবি তৈরি করা যায়নি।');
+      return { blob, name, file: new File([blob], name, { type: 'image/png' }) };
+    })();
+    cache.set(card, p);
+    p.catch(() => cache.delete(card));
+    return p;
+  }
+  async function saveImg(card) {
+    try {
+      toast('⏳ ছবি তৈরি হচ্ছে...');
+      const r = await makeImg(card);
+      const a = document.createElement('a'); a.href = URL.createObjectURL(r.blob); a.download = r.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      toast('✅ ছবি ডাউনলোড শুরু হয়েছে'); setTimeout(() => toast(''), 2500);
+    } catch (e) { console.error(e); toast(''); $('err').textContent = 'ছবি ডাউনলোড ব্যর্থ: ' + (e.message || e); }
+  }
+  async function shareImg(card) {
+    try {
+      toast('⏳ ছবি তৈরি হচ্ছে...');
+      const r = await makeImg(card);
+      toast('');
+      await navigator.share({ files: [r.file], title: card.dataset.name ? card.dataset.name + ' — ফলাফল' : 'ফলাফল' });
+    } catch (e) {
+      toast('');
+      if (e && e.name === 'AbortError') return;   // ব্যবহারকারী নিজেই বাতিল করেছেন
+      console.error(e);
+      $('err').textContent = (e && e.name === 'NotAllowedError') ? 'শেয়ার চালু হয়নি — আবার চেষ্টা করুন।' : 'শেয়ার ব্যর্থ: ' + ((e && e.message) || e);
+    }
+  }
+  function show(card) {
+    if (Date.now() - lastShow < 700) return; lastShow = Date.now();
+    close();
+    const o = document.createElement('div'); o.id = 'imgPop'; o.className = 'no-print';
+    o.style.cssText = 'position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+    const who = (card.dataset.name ? card.dataset.name + ' — ' : '') + 'রোল ' + bn(card.dataset.roll || '');
+    o.innerHTML = `<div style="background:#fff;color:#111;border-radius:14px;padding:16px;width:min(320px,100%);box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:center">`
+      + `<div style="font-weight:700;margin-bottom:12px">${esc(who)}</div>`
+      + `<button id="imgPopDl" class="primary" style="width:100%;padding:11px;cursor:pointer;margin-bottom:8px">⬇️ ছবি ডাউনলোড করুন</button>`
+      + `<button id="imgPopSh" class="primary" style="width:100%;padding:11px;cursor:pointer;margin-bottom:8px;display:none">📤 শেয়ার করুন</button>`
+      + `<button id="imgPopX" style="width:100%;padding:10px;cursor:pointer">বাতিল</button></div>`;
+    document.body.appendChild(o);
+    o.addEventListener('click', e => { if (e.target === o) close(); });
+    $('imgPopX').addEventListener('click', close);
+    $('imgPopDl').addEventListener('click', () => { close(); saveImg(card); });
+    // শেয়ার বাটন শুধু যে ডিভাইস/ব্রাউজারে ফাইল শেয়ার সমর্থিত সেখানে দেখাবে
+    try {
+      const t = new File([''], 't.png', { type: 'image/png' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [t] })) {
+        $('imgPopSh').style.display = '';
+        $('imgPopSh').addEventListener('click', () => { close(); shareImg(card); });
+      }
+    } catch (e) {}
+    makeImg(card).catch(() => {});   // আগে থেকেই ছবি বানিয়ে রাখা, যাতে চাপলেই শেয়ার/ডাউনলোড হয়
+  }
+  box.addEventListener('pointerdown', e => {
+    const c = e.target.closest('.tr'); if (!c || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    sx = e.clientX; sy = e.clientY; clearTimeout(timer); timer = setTimeout(() => show(c), 600);
+  });
+  box.addEventListener('pointermove', e => { if (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10) clearTimeout(timer); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => box.addEventListener(ev, () => clearTimeout(timer)));
+  box.addEventListener('contextmenu', e => { const c = e.target.closest('.tr'); if (!c) return; e.preventDefault(); clearTimeout(timer); show(c); });
+})();
 
 $('cfg').addEventListener('input', e => {
   const t = e.target, s = LAYOUT.subjects[+t.dataset.i]; if (!s) return;
