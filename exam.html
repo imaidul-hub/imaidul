@@ -56,8 +56,24 @@ a{color:inherit;text-decoration:none}
 .t td.l{text-align:left}
 .err{color:#b42318;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3);border-radius:12px;padding:12px;font-size:14px}
 .ptitle{display:none}
+.sel input,.db select{width:100%;font:inherit;padding:7px 8px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.db select{flex:1;min-width:0;width:auto;padding:6px 8px}
+.sp-pr{width:100%;border:0;border-radius:8px;padding:8px;font:inherit;font-weight:700;cursor:pointer;background:var(--pr);color:#fff}
+.sp-page{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.sp-slip{border:1.5px solid var(--pr2);border-radius:6px;padding:5px 6px;display:flex;flex-direction:column;gap:4px;background:var(--card);overflow:hidden;font-size:12px;line-height:1.4}
+.sp-h{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--bd);padding-bottom:3px}
+.sp-h img{width:34px;height:34px;object-fit:contain;flex:none}
+.sp-h div{flex:1;text-align:center;min-width:0}
+.sp-h b{display:block;font-size:12px;line-height:1.25}
+.sp-h span{font-size:11px;color:var(--mu)}
+.sp-b{display:flex;gap:6px;flex:1;min-height:0}
+.sp-ph{width:62px;height:74px;flex:none;border:1px solid var(--bd);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;color:var(--mu);font-size:10px;line-height:1.2}
+.sp-ph img{width:100%;height:100%;object-fit:cover}
+.sp-d{flex:1;min-width:0}
+.sp-d .nm{font-weight:700;font-size:14px;line-height:1.3;margin-bottom:1px}
 @media print{
-  .bar,.db,.btns,.mine,.tabs,.sel,#sl,#sl-bar{display:none!important}
+  .bar,.db,.btns,.mine,.tabs,.sel,.sctl,#spm,#sl,#sl-bar{display:none!important}
+  @page{size:A4 portrait;margin:8mm}
   body{background:#fff;color:#000;animation:none}
   .wrap{max-width:none;padding:0}
   .ptitle{display:block;text-align:center;font-weight:700;font-size:18px;margin-bottom:6px}
@@ -66,6 +82,14 @@ a{color:inherit;text-decoration:none}
   .t td{border-color:#000}
   .t tr.me td,.t tr.tdy td{background:#fff}
   .t tr.gone td{opacity:1}
+  .sp-page{grid-template-rows:repeat(5,53mm);gap:3mm;margin:0;break-after:page;page-break-after:always}
+  #spo>.sp-page:last-child{break-after:auto;page-break-after:auto}
+  .sp-slip{height:53mm;border-color:#000;background:#fff;padding:2mm 2.5mm;gap:1.5mm;font-size:12px}
+  .sp-slip *{color:#000!important}
+  .sp-h{border-color:#000}
+  .sp-h img{width:11mm;height:11mm}
+  .sp-ph{width:24mm;height:30mm;border-color:#000}
+  .sp-d .nm{font-size:14.5px}
 }
 </style>
 <style id="sl-css">
@@ -95,6 +119,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
   <div class="tabs hide" id="tabs">
     <button id="v2" onclick="setView('d')">🧑‍🏫 পরীক্ষার ডিউটি</button>
     <button id="v1" class="on" onclick="setView('r')">📋 পরীক্ষার রুটিন</button>
+    <button id="v3" onclick="setView('s')">🪑 সীট প্লান</button>
   </div>
 
   <!-- পরীক্ষার রুটিন (সবার জন্য) -->
@@ -128,6 +153,21 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
         <tbody id="tb"></tbody>
       </table>
     </div>
+  </div>
+
+  <!-- সীট প্লান স্লিপ (শুধু লগইন করা শিক্ষক/অ্যাডমিন) -->
+  <div id="sv" class="hide">
+    <div class="card sel sctl">
+      <select id="spc" onchange="spCls(this.value)"></select>
+      <input id="spi" placeholder="মাদ্রাসার নাম" oninput="spIn()">
+      <input id="spe" list="spel" placeholder="পরীক্ষার নাম (যেমন: বার্ষিক পরীক্ষা)" oninput="spIn()"><datalist id="spel"></datalist>
+      <div class="db"><input id="spy" placeholder="সাল" oninput="spIn()"><select id="sps" onchange="spIn()"><option>সকাল</option><option>দুপুর</option><option>বিকাল</option></select><input id="spr" placeholder="রুম নং (ঐচ্ছিক)" oninput="spIn()"></div>
+      <div class="db"><select id="spn" onchange="spIn()"><option value="blank">সিট নং ফাঁকা (হাতে লিখব)</option><option value="roll">সিট নং = রোল নং</option></select></div>
+      <div class="db"><select id="spg" onchange="spIn()"><option value="auto">লিঙ্গ অনুযায়ী (ছাত্র = ছবি, ছাত্রী = প্লেসহোল্ডার)</option><option value="boys">সবাই ছাত্র (সবার ছবি)</option><option value="girls">সবাই ছাত্রী (প্লেসহোল্ডার)</option></select></div>
+      <button class="sp-pr" onclick="window.print()">🖨️ প্রিন্ট (A4, প্রতি পেজে ১০টি)</button>
+    </div>
+    <div class="mu" id="spm" style="text-align:center;margin:6px 0"></div>
+    <div id="spo"></div>
   </div>
 
   <div class="ptitle" id="ptitle"></div>
@@ -221,7 +261,7 @@ function renderR() {
 // ===== ডিউটি: শুধু লগইন করা শিক্ষক/অ্যাডমিন =====
 auth.onAuthStateChanged(u => {
   unsubs.forEach(f => f()); unsubs = []; duties = []; teachers = []; gotD = gotT = false; errMsg = ''; sel = '';
-  dutyAuto = false; user = u; isAdmin = !!u && (u.email || '').toLowerCase() === ADMIN_EMAIL;
+  dutyAuto = false; stu = []; gotS = false; stuErr = ''; stuStart = false; user = u; isAdmin = !!u && (u.email || '').toLowerCase() === ADMIN_EMAIL;
   if (u) {
     unsubs.push(db.collection('teachers').onSnapshot(s => { teachers = s.docs.map(d => ({ id: d.id, ...d.data() })); gotT = true; render(); }, fail));
     unsubs.push(db.collection('examDuties').onSnapshot(s => { duties = s.docs.map(d => ({ id: d.id, ...d.data() })); gotD = true; render(); }, fail));
@@ -282,16 +322,86 @@ function renderD() {
     rows: data.map(r => [[bn(r.room)], r.names, r.time.split('\n')]) } : null;
 }
 
+// ===== সীট প্লান স্লিপ: প্রতি A4 (portrait) পেজে ২ কলামে ১০টি =====
+let stu = [], gotS = false, stuErr = '', stuStart = false, spInit = false, spKey = '';
+const SP = { cls: '', inst: '', exam: '', year: '', shift: 'সকাল', room: '', seat: 'blank', gmode: 'auto' };
+try { SP.inst = localStorage.getItem('spInst') || ''; } catch (e) {}
+if (!SP.inst) SP.inst = 'চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা';
+function loadStu() {
+  if (stuStart) return; stuStart = true;
+  db.collection('students').get().then(s => { stu = s.docs.map(d => ({ id: d.id, ...d.data() })); gotS = true; render(); })
+    .catch(e => { console.error(e); stuErr = (e && e.code === 'permission-denied') ? 'শিক্ষার্থীর তথ্য দেখার অনুমতি নেই।' : 'শিক্ষার্থীর তথ্য লোড করা যায়নি: ' + esc((e && (e.code || e.message)) || e); gotS = true; render(); });
+}
+// শ্রেণি বাছলে সেই শ্রেণির রুটিন থেকে পরীক্ষার নাম, সাল ও শিফট আগে থেকে বসে (বদলানো যাবে)
+function spDefaults() {
+  const t0 = today(), by = {};
+  exs.filter(e => e.class === SP.cls && e.exam && e.date).forEach(e => (by[e.exam] = by[e.exam] || []).push(e));
+  const names = Object.keys(by), ds = n => by[n].map(e => e.date).sort();
+  const upc = names.filter(n => ds(n).some(d => d >= t0)).sort((a, b) => ds(a).find(d => d >= t0).localeCompare(ds(b).find(d => d >= t0)));
+  const past = names.filter(n => !upc.includes(n)).sort((a, b) => ds(b).pop().localeCompare(ds(a).pop()));
+  const n = upc[0] || past[0] || '';
+  SP.exam = n; SP.year = bn(new Date().getFullYear());
+  if (n) {
+    const l = by[n].slice().sort((a, b) => a.date.localeCompare(b.date));
+    SP.year = bn(l[0].date.slice(0, 4));
+    const st = l.find(e => e.start); if (st) SP.shift = shiftOf(st.start);
+  }
+  $('spel').innerHTML = names.map(x => `<option value="${esc(x)}">`).join('');
+}
+function spSync() {
+  $('spi').value = SP.inst; $('spe').value = SP.exam; $('spy').value = SP.year; $('sps').value = SP.shift;
+  $('spr').value = SP.room; $('spn').value = SP.seat; $('spg').value = SP.gmode;
+}
+function spCls(v) { SP.cls = v; spDefaults(); spSync(); renderSlips(); }
+function spIn() {
+  SP.inst = $('spi').value.trim(); SP.exam = $('spe').value.trim(); SP.year = $('spy').value.trim(); SP.shift = $('sps').value;
+  SP.room = $('spr').value.trim(); SP.seat = $('spn').value; SP.gmode = $('spg').value;
+  try { localStorage.setItem('spInst', SP.inst); } catch (e) {}
+  renderSlips();
+}
+const okImg = p => typeof p === 'string' && /^(data:image\/|https?:)/.test(p);
+const isGirl = s => SP.gmode === 'girls' || (SP.gmode === 'auto' && String(s.gender || '').includes('ছাত্রী'));
+const PH_SVG = '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" opacity=".4"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8z"/></svg>ছবি';
+function renderS() {
+  loadStu();
+  const have = [...new Set(stu.map(s => s.class).filter(Boolean))].sort((a, b) => clsRank(a) - clsRank(b) || a.localeCompare(b, 'bn'));
+  const opts = have.length ? have : CLS_ORDER, key = opts.join('|');
+  if (key !== spKey) { spKey = key; $('spc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + opts.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join(''); }
+  $('spc').value = SP.cls;
+  if (!spInit) { spInit = true; spSync(); }
+  renderSlips();
+}
+function renderSlips() {
+  const m = $('spm'), o = $('spo');
+  const msg = stuErr || (!gotS ? 'লোড হচ্ছে...' : !SP.cls ? 'শ্রেণি বেছে নিলে স্লিপ তৈরি হবে' : '');
+  if (msg) { m.textContent = msg; o.innerHTML = ''; return; }
+  const list = stu.filter(s => s.class === SP.cls && s.name).sort((a, b) => (+a.roll || 0) - (+b.roll || 0));
+  m.textContent = list.length ? bn(list.length) + ' জনের স্লিপ — ' + bn(Math.ceil(list.length / 10)) + 'টি পেজ' : 'এই শ্রেণিতে কোনো ছাত্র/ছাত্রী নেই';
+  const title = [SP.exam, SP.year].filter(Boolean).join(' – ');
+  const slip = s => {
+    const ph = !isGirl(s) && okImg(s.photo) ? `<img src="${esc(s.photo)}" alt="">` : PH_SVG;
+    const seat = SP.seat === 'roll' ? bn(s.roll || '') : '';
+    return `<div class="sp-slip"><div class="sp-h"><img src="logo.jpg" alt="" onerror="this.style.visibility='hidden'"><div><b>${esc(SP.inst)}</b><span>${esc(title)}</span><br><span><b style="display:inline">সীট প্লান</b></span></div></div>`
+      + `<div class="sp-b"><div class="sp-ph">${ph}</div><div class="sp-d"><div class="nm">${esc(s.name)}</div>`
+      + `<div>শ্রেণি: ${esc(s.class)}</div><div>রোল: <b>${bn(s.roll || '')}</b> &nbsp; শিফট: <b>${esc(SP.shift)}</b></div>`
+      + `<div>রুম: <b>${SP.room ? esc(bn(SP.room)) : '_____'}</b> &nbsp; সিট: <b>${seat || '_____'}</b></div></div></div></div>`;
+  };
+  let h = '';
+  for (let i = 0; i < list.length; i += 10) h += '<div class="sp-page">' + list.slice(i, i + 10).map(slip).join('') + '</div>';
+  o.innerHTML = h;
+}
+
 function setView(v) { view = v; render(); }
 function render() {
   const cd = canDuty();
   $('tabs').classList.toggle('hide', !cd);
   // লগইন করা শিক্ষক/অ্যাডমিন প্রথমবার ঢুকলে ডিউটি সেকশন আগে দেখাবে (পরে রুটিন ট্যাবে গেলে জোর করে ফেরাবে না)
   if (cd && !dutyAuto) { dutyAuto = true; view = 'd'; }
-  if (view === 'd' && !cd) view = 'r';
-  $('v1').classList.toggle('on', view === 'r'); $('v2').classList.toggle('on', view === 'd');
-  $('rv').classList.toggle('hide', view !== 'r'); $('dv').classList.toggle('hide', view !== 'd');
-  if (view === 'r') renderR(); else renderD();
+  if ((view === 'd' || view === 's') && !cd) view = 'r';
+  $('v1').classList.toggle('on', view === 'r'); $('v2').classList.toggle('on', view === 'd'); $('v3').classList.toggle('on', view === 's');
+  $('rv').classList.toggle('hide', view !== 'r'); $('dv').classList.toggle('hide', view !== 'd'); $('sv').classList.toggle('hide', view !== 's');
+  $('btns').classList.toggle('hide', view === 's');
+  if (view === 'r') renderR(); else if (view === 'd') renderD(); else { $('ptitle').textContent = ''; shareData = null; renderS(); }
   smsg('');
 }
 function pick(d) { if (!d) return; sel = d; render(); }

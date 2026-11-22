@@ -260,6 +260,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
         <h3 id="sh" style="margin-top:0">নতুন ছাত্র/ছাত্রী যোগ করুন</h3>
         <input id="sn" placeholder="ছাত্র/ছাত্রীর নাম">
         <select id="sc"></select>
+        <select id="sg"><option value="">-- ছাত্র / ছাত্রী (ঐচ্ছিক) --</option><option>ছাত্র</option><option>ছাত্রী</option></select>
         <div class="row2"><input id="sr" type="number" min="1" placeholder="রোল নং"><input id="sp" placeholder="অভিভাবকের মোবাইল"></div>
         <input id="sf" placeholder="পিতার নাম (ঐচ্ছিক)">
         <div class="mu">📷 ছবি (ঐচ্ছিক) — ঠিক ৩০০×৩০০ পিক্সেল, সর্বোচ্চ ১০০ কেবি (JPG/PNG/WebP)</div>
@@ -270,6 +271,16 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
         </div>
         <button id="sbtn" class="act" onclick="saveStudent()">সংরক্ষণ করুন</button>
         <button id="scan" class="act sec hide" onclick="cancelS()">বাতিল</button>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">📂 ফাইল থেকে ছাত্র/ছাত্রী আপলোড</h3>
+        <div class="mu">Excel (.xlsx/.xls) বা CSV (.csv) ফাইল। প্রথম কলাম: <b>রোল নং</b> | দ্বিতীয় কলাম: <b>নাম</b> | ৩য় কলাম (ঐচ্ছিক): <b>ছাত্র/ছাত্রী</b>। প্রথম সারি হেডার হলে নিজে থেকেই বাদ যাবে। শ্রেণি নিচের তালিকা থেকে বেছে নিন।</div>
+        <select id="ubc"></select>
+        <select id="ubg"><option value="">লিঙ্গ: ফাইলের ৩য় কলাম / ফাঁকা</option><option>ছাত্র</option><option>ছাত্রী</option></select>
+        <input type="file" id="suf" accept=".csv,.xlsx,.xls,text/csv" onchange="pickStuFile(this)">
+        <div id="suprev" class="hide"></div>
+        <button id="supb" class="act hide" onclick="uploadStudents()">✅ সংরক্ষণ করুন</button>
+        <div class="mu">ওই শ্রেণিতে একই রোল আগে থেকে থাকলে শুধু নাম আপডেট হবে (মোবাইল, পিতার নাম, ছবি অপরিবর্তিত থাকবে)।</div>
       </div>
       <h2>ছাত্র/ছাত্রীর তালিকা <span id="scnt" class="mu"></span></h2>
       <select id="sfc"></select>
@@ -803,6 +814,7 @@ const ALL_CLASSES = GROUPS.flatMap(x => x.items);
 const optGroups = GROUPS.map(x => `<optgroup label="${x.g}">${x.items.map(c => `<option>${c}</option>`).join('')}</optgroup>`).join('');
 $('sc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
 $('sfc').innerHTML = '<option value="">সব শ্রেণি</option>' + optGroups;
+$('ubc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
 $('tcl').innerHTML = '<option value="">-- শ্রেণি শিক্ষক নন --</option>' + optGroups;
 $('rc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
 $('pc').innerHTML = '<option value="">-- শ্রেণি বেছে নিন --</option>' + optGroups;
@@ -838,7 +850,7 @@ $('sq').oninput = renderStudents;
 
 function saveStudent(){
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
-  const d = {name:$('sn').value.trim(), class:$('sc').value, roll:+$('sr').value, phone:$('sp').value.trim(), father:$('sf').value.trim()};
+  const d = {name:$('sn').value.trim(), class:$('sc').value, roll:+$('sr').value, phone:$('sp').value.trim(), father:$('sf').value.trim(), gender:$('sg').value};
   if (!d.name || !d.class || !d.roll) return showMsg('নাম, শ্রেণি ও রোল নং দিন');
   if (students.some(s => s.id !== editS && s.class === d.class && +s.roll === d.roll)) return showMsg('এই শ্রেণিতে ' + bn(d.roll) + ' নং রোল আগে থেকেই আছে');
   if (PH.s.mode === 'new' && PH.s.img) d.photo = PH.s.img;
@@ -846,23 +858,81 @@ function saveStudent(){
   const wasEdit = !!editS;
   const p = editS ? db.collection('students').doc(editS).update(d) : db.collection('students').add(d);
   guard(p).then(() => {
-    const keep = d.class, next = d.roll + 1;
+    const keep = d.class, next = d.roll + 1, kg = d.gender;
     cancelS(); loadStats(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok');
-    if (!wasEdit) { $('sc').value = keep; $('sr').value = next; }
+    if (!wasEdit) { $('sc').value = keep; $('sr').value = next; $('sg').value = kg; }
   }).catch(fail);
 }
 function editStudent(id){
   const s = students.find(x => x.id === id); if (!s) return;
-  editS = id; $('sn').value = s.name||''; $('sc').value = s.class||''; $('sr').value = s.roll||''; $('sp').value = s.phone||''; $('sf').value = s.father||''; resetPhoto('s', s.photo);
+  editS = id; $('sn').value = s.name||''; $('sc').value = s.class||''; $('sr').value = s.roll||''; $('sp').value = s.phone||''; $('sf').value = s.father||''; $('sg').value = s.gender||''; resetPhoto('s', s.photo);
   $('sh').textContent = '✏️ তথ্য এডিট'; $('sbtn').textContent = '✅ আপডেট করুন'; $('scan').classList.remove('hide');
   $('sn').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function cancelS(){
-  editS = null; $('sn').value = $('sr').value = $('sp').value = $('sf').value = ''; $('sc').value = ''; resetPhoto('s');
+  editS = null; $('sn').value = $('sr').value = $('sp').value = $('sf').value = ''; $('sc').value = ''; $('sg').value = ''; resetPhoto('s');
   $('sh').textContent = 'নতুন ছাত্র/ছাত্রী যোগ করুন'; $('sbtn').textContent = 'সংরক্ষণ করুন'; $('scan').classList.add('hide');
 }
 function delStudent(id){
   if (confirm('এই ছাত্র/ছাত্রীর তথ্য মুছবেন?')) db.collection('students').doc(id).delete().then(() => { if (editS === id) cancelS(); loadStats(); }).catch(fail);
+}
+
+// ===== ফাইল (CSV/Excel) থেকে ছাত্র/ছাত্রী আপলোড (শ্রেণি: ড্রপডাউন; ফাইল: রোল | নাম) =====
+var sRows = [], sBad = [];
+function toRoll(v){ const t = enDigits(String(v == null ? '' : v).trim()); return /^\d+$/.test(t) && +t > 0 ? +t : null; }
+function resetSUp(){ sRows = []; sBad = []; $('suf').value = ''; $('suprev').classList.add('hide'); $('supb').classList.add('hide'); }
+function renderSPrev(){
+  if (!sRows.length && !sBad.length) return;
+  const cls = $('ubc').value, ex = r => cls ? students.find(s => s.class === cls && +s.roll === r.roll) : null;
+  const nNew = cls ? sRows.filter(r => !ex(r)).length : sRows.length, nUp = cls ? sRows.length - nNew : 0;
+  $('suprev').innerHTML = `<div style="font-weight:700;color:var(--pr);margin:8px 0">✅ ${bn(sRows.length)} জন পাওয়া গেছে${cls ? ' (নতুন ' + bn(nNew) + ', নাম আপডেট ' + bn(nUp) + ')' : ''}</div>` +
+    (cls ? '' : '<div class="warn">⚠️ উপরের তালিকা থেকে শ্রেণি বেছে নিন</div>') +
+    (sBad.length ? `<div class="warn">⚠️ ${bn(sBad.length)}টি সারি বাদ:<br>${sBad.slice(0,10).map(esc).join('<br>')}${sBad.length > 10 ? '<br>...' : ''}</div>` : '') +
+    sRows.slice(0,30).map(r => `<div class="row"><div><span class="roll">${bn(r.roll)}</span><b>${esc(r.name)}</b></div><div class="mu">${cls ? (ex(r) ? 'আপডেট' : 'নতুন') : ''}</div></div>`).join('') +
+    (sRows.length > 30 ? `<div class="mu">...আরও ${bn(sRows.length - 30)} জন</div>` : '');
+  $('suprev').classList.remove('hide');
+  $('supb').classList.toggle('hide', !(sRows.length && cls));
+}
+$('ubc').onchange = renderSPrev;
+async function pickStuFile(inp){
+  const f = inp.files && inp.files[0]; if (!f) return;
+  sRows = []; sBad = []; $('suprev').classList.add('hide'); $('supb').classList.add('hide');
+  try {
+    let raw;
+    if (/\.csv$/i.test(f.name) || f.type === 'text/csv') raw = parseCSV(await f.text());
+    else { await loadXLSX(); const wb = XLSX.read(await f.arrayBuffer(), {type:'array'}); raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:true, defval:''}); }
+    const map = {}; let dup = 0;
+    raw.forEach((r, i) => {
+      if (!r || !r.some(x => String(x).trim())) return;
+      let roll = toRoll(r[0]), name = String(r[1] == null ? '' : r[1]).trim();
+      if (roll == null && toRoll(r[1]) != null) { roll = toRoll(r[1]); name = String(r[0] == null ? '' : r[0]).trim(); }   // কলাম উল্টো থাকলেও চলবে
+      if (roll == null) { if (i === 0) return; sBad.push(bn(i + 1) + ' নং সারি: রোল ঠিক নয়'); return; }
+      if (!name) { sBad.push(bn(i + 1) + ' নং সারি: নাম নেই'); return; }
+      const gr = String(r[2] == null ? '' : r[2]).trim(), gen = /ছাত্রী|girl|female|^f$/i.test(gr) ? 'ছাত্রী' : /ছাত্র|boy|male|^m$/i.test(gr) ? 'ছাত্র' : '';
+      if (map[roll]) { dup++; sBad.push(bn(i + 1) + ' নং সারি: রোল ' + bn(roll) + ' ফাইলে একাধিকবার (শেষেরটি নেওয়া হয়েছে)'); }
+      map[roll] = {name, gender: gen};
+    });
+    sRows = Object.keys(map).map(Number).sort((a, b) => a - b).map(k => ({roll: k, name: map[k].name, gender: map[k].gender}));
+    if (!sRows.length) { renderSPrev(); $('suprev').classList.remove('hide'); return showMsg('কোনো সঠিক সারি পাওয়া যায়নি। ফরমেট: রোল | নাম'); }
+    renderSPrev();
+  } catch(e){ fail(e); }
+}
+function uploadStudents(){
+  if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
+  const cls = $('ubc').value;
+  if (!cls) return showMsg('আগে শ্রেণি বেছে নিন');
+  if (!sRows.length) return;
+  const ops = sRows.map(r => { const ex = students.find(s => s.class === cls && +s.roll === r.roll);
+    const g = r.gender || $('ubg').value;
+    return ex ? {ref: db.collection('students').doc(ex.id), upd: g ? {name: r.name, gender: g} : {name: r.name}}
+              : {ref: db.collection('students').doc(), set: {name: r.name, class: cls, roll: r.roll, phone: '', father: '', gender: g}}; });
+  const nUp = ops.filter(o => o.upd).length, chunks = [];
+  for (let i = 0; i < ops.length; i += 400) chunks.push(ops.slice(i, i + 400));
+  const p = Promise.all(chunks.map(ch => { const b = db.batch(); ch.forEach(o => o.upd ? b.update(o.ref, o.upd) : b.set(o.ref, o.set)); return b.commit(); }));
+  guard(p).then(() => {
+    const n = ops.length; resetSUp(); loadStats();
+    showMsg('✅ ' + bn(n) + ' জন সংরক্ষিত হয়েছে (নতুন ' + bn(n - nUp) + (nUp ? ', আপডেট ' + bn(nUp) : '') + ')', 'ok');
+  }).catch(fail);
 }
 
 // ===== পরীক্ষার রুটিন (examRoutines কালেকশন: exam, class, subject, date, start, end) =====
