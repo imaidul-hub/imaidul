@@ -297,6 +297,7 @@
   #tblc tbody tr.fail { background:#fff7f7; }
   #tblc tbody tr.absent { background:#f4f4f4; color:#777; }
   @media screen { #trans .tr { zoom:var(--trz,1); } }
+  @media screen { #tbl { zoom:var(--tbz,1); } }
   #trans .tr { -webkit-touch-callout:none; }
   .toast { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#17241c; color:#fff; padding:8px 16px; border-radius:999px; font-size:14px; z-index:99; display:none; max-width:90vw; text-align:center; }
 </style>
@@ -342,20 +343,8 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <h3>📊 প্রকাশিত ফলাফল</h3>
     <div class="row" style="margin:0">
       <select id="pubSel"><option value="">শ্রেণি নির্বাচন করুন</option></select>
-      <button class="adm-only" id="pubTog" style="display:none">👁️ প্রকাশ করুন</button>
-      <button class="adm-only" id="pubDel" style="color:#b00020">🗑️ মুছুন</button>
     </div>
     <div class="hint" id="pubMsg"></div>
-  </div>
-
-  <div class="panel no-print adm-only" id="saveBox" style="display:none">
-    <h3>💾 ডাটাবেসে প্রকাশ করুন</h3>
-    <div class="row" style="margin:0">
-      <input id="pubTitle" placeholder="শিরোনাম (যেমন: দাখিল ৯ম শ্রেণি বার্ষিক ২০২৬)">
-      <label class="chk"><input type="checkbox" id="pubPubl"> সেভের সাথেই প্রকাশ করুন</label>
-      <button class="primary" id="pubSave">💾 ডাটাবেসে সেভ করুন</button>
-    </div>
-    <div class="hint">সেভ করলে এই Excel ও উপরের সেটিং (বিষয়, শ্রেণি, পরীক্ষা, সাল ইত্যাদি) ডাটাবেসে জমা হবে। প্রকাশ না করা পর্যন্ত ফলাফল শুধু অ্যাডমিন দেখতে পাবে; প্রকাশ করলে সবাই দেখতে পাবে। পরে উপরের তালিকা থেকে নির্বাচন করে প্রকাশ/অপ্রকাশিত করা যাবে।</div>
   </div>
 
   <div class="panel no-print" id="ctrl">
@@ -370,11 +359,6 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <label class="chk">সাল:
         <input id="yr" style="font:inherit;padding:7px 10px;border:1px solid #9aa3b5;border-radius:8px;width:90px">
       </label>
-    </div>
-    <div class="drop adm-only" id="drop">
-      <div><b>Excel (.xlsx) ফাইল</b> এখানে ছেড়ে দিন, অথবা ট্যাপ/ক্লিক করে বেছে নিন</div>
-      <small>ফাইল আপনার ডিভাইসেই প্রসেস হয়, কোথাও আপলোড হয় না।</small>
-      <input type="file" id="file" accept=".xlsx,.xlsm" hidden>
     </div>
     <div class="row" id="opts" style="display:none">
       <label class="chk adm-only"><input type="checkbox" id="mergeqh" checked> কোরআন ও হাদীস একসাথে (একটি বিষয়, গ্রেড ও পাস/ফেল)</label>
@@ -398,7 +382,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <summary>শনাক্ত হওয়া বিষয় (দরকার হলে ঠিক করুন)</summary>
     <div class="hint" id="layoutInfo"></div>
     <div class="cfgscroll"><table id="cfg"></table></div>
-    <div class="hint">ঐচ্ছিক বিষয় শীটে দেখায়, কিন্তু GPA ও পাস/ফেলে ধরা হয় না। "MCQ/CQ ন্যূনতম" ফাঁকা থাকলে শুধু মোট নম্বর দেখা হয়।</div>
+    <div class="hint">ঐচ্ছিক বিষয় শীটে দেখায়, কিন্তু GPA ও পাস/ফেলে ধরা হয় না। "পাসের নিয়ম": <b>মোট নম্বরে</b> = শুধু মোট নম্বরের ৩৩%; <b>আলাদা আলাদা</b> = MCQ, CQ, ব্যবহারিক প্রতিটিতে আলাদা পাস নম্বর লাগবে। "পাস" ঘর ফাঁকা রাখলে ঐ অংশের পূর্ণমানের ৩৩% ধরা হয় (ধূসর সংখ্যাটি)। পূর্ণমান ও পাস নম্বর সব পত্র মিলিয়ে বিষয়ের মোট হিসেবে ধরা হয়।</div>
   </details>
 
   <details class="panel no-print adm-only" id="trBox" style="display:none" open>
@@ -579,7 +563,7 @@ function parseName(raw) {
 const kindOf = s => RX('অভি|mcq|বহু|objective','i').test(s) ? 'mcq'
                   : RX('সৃজ|cq|রচনা|লিখিত|written','i').test(s) ? 'cq'
                   : RX('ব্যব|prac','i').test(s) ? 'prac' : 'part';
-const KIND_LABEL = { mcq:'MCQ', cq:'CQ', prac:'ব্যবহারিক' };
+const KIND_LABEL = { mcq:'MCQ', cq:'CQ', prac:'ব্যাব:' };
 
 function buildPlan(s) {
     const plan = [];
@@ -667,23 +651,31 @@ function parseLayout(grid) {
     s.plan = buildPlan(s);
     s.hasMcq = s.papers.some(p => p.parts.some(x => x.kind === 'mcq'));
     s.hasCq = s.papers.some(p => p.parts.some(x => x.kind === 'cq'));
-    // ডিফল্ট কনফিগ
+    s.hasPrac = s.papers.some(p => p.parts.some(x => x.kind === 'prac'));
+    s.ict = isIct(s.name);
+    // ডিফল্ট কনফিগ: মোট পূর্ণমান আগে থেকেই বসানো থাকে; পাসের নিয়ম ডিফল্টে "মোট নম্বরে"
     const strictSubj = RX('গণিত|ইসঃ|ইসলামের ইতিহাস|ইতিহাস|math','i').test(s.name);
     s.cfg = {
       include: s.hasData,
-      full: s.fullHint || (RX('আইসিটি|ict|তথ্য','i').test(s.name) ? 25 : 100 * s.papers.length),
+      full: s.fullHint || (s.ict ? 25 : 100 * s.papers.length),
       optional: RX('কৃষি|মানতিক|ঐচ্ছিক|৪র্থ|চতুর্থ|optional|logic|agri','i').test(s.name),
+      passMode: 'total',
       minMcq: strictSubj && s.hasMcq ? 10 : null,
-      minCq: strictSubj && s.hasCq ? 23 : null
+      minCq: strictSubj && s.hasCq ? 23 : null,
+      minPrac: null, fullMcq: null, fullCq: null, fullPrac: null
     };
-    s.ict = isIct(s.name);
-    s.hasPrac = s.papers.some(p => p.parts.some(x => x.kind === 'prac'));
-    if (s.ict && s.hasMcq && s.hasPrac) {   // অভি ও ব্যব-এর পূর্ণমান (না জানা থাকলে সমান ভাগ; নিচের সেটিংসে বদলানো যাবে)
-      const F = s.cfg.full, lab = k => { for (const p of s.papers) for (const x of p.parts) if (x.kind === k) { const m = String(x.label || '').match(/[0-9০-৯]+/); if (m) return num(m[0]); } return null; };
-      const fm = lab('mcq'), fp = lab('prac');
-      s.cfg.fullMcq = fm != null ? fm : (fp != null ? F - fp : Math.ceil(F / 2));
-      s.cfg.fullPrac = fp != null ? fp : F - s.cfg.fullMcq;
-    }
+    // MCQ/CQ/ব্যবহারিকের পূর্ণমান: হেডারের সংখ্যা থেকে, না পেলে হিসাব করে (বদলানো যাবে)
+    const F = s.cfg.full, has = { mcq:s.hasMcq, cq:s.hasCq, prac:s.hasPrac };
+    const FK = { mcq:'fullMcq', cq:'fullCq', prac:'fullPrac' };
+    const lab = k => { for (const p of s.papers) for (const x of p.parts) if (x.kind === k) { const m = String(x.label || '').match(/[0-9০-৯]+/); if (m) return num(m[0]); } return null; };
+    const ks = Object.keys(has).filter(k => has[k]);
+    ks.forEach(k => { const v = lab(k); if (v != null) s.cfg[FK[k]] = v; });
+    const miss = ks.filter(k => s.cfg[FK[k]] == null);
+    if (ks.length === 1 && miss.length) s.cfg[FK[ks[0]]] = F;
+    else if (miss.length === 1) { const r = F - ks.reduce((a, k) => a + n0(s.cfg[FK[k]]), 0); if (r > 0) s.cfg[FK[miss[0]]] = r; }
+    else if (miss.length === 2 && s.ict && has.mcq && has.prac) { s.cfg.fullMcq = Math.ceil(F / 2); s.cfg.fullPrac = F - s.cfg.fullMcq; }
+    // আগে থেকে আলাদা পাসের নিয়ম ছিল এমন বিষয় (গণিত/ইতিহাস, আইসিটি অভি+ব্যব) আগের মতোই থাকে
+    if ((s.cfg.minMcq != null || s.cfg.minCq != null) || (s.ict && has.mcq && has.prac && s.cfg.fullMcq != null && s.cfg.fullPrac != null)) s.cfg.passMode = 'sep';
   });
   const metaCol = re => { for (let c = 1; c <= maxCol; c++) if (c !== nameCol && RX(re, 'i').test(T(c, H))) return c; return 0; };
   return { H, subRow, dataStart, nameCol, rollCol, subjects, rows, titles,
@@ -704,16 +696,15 @@ function evalSubject(grid, s, r, grp) {
   if (P.every(p => p.tot == null) && s.totalCol) { const v = num(grid[cl(s.totalCol) + r]); if (v != null) { total = v; hasAny = true; } }
   const present = P.some(p => p.any) || total > 0;
   let ok = true;
-  s.papers.forEach((p, pi) => p.parts.forEach((x, qi) => {
-    const v = n0(P[pi].vals[qi]);
-    if (grp === 'mid') return;   // ৬–৮: শুধু মোট নম্বরের ৩৩% (অংশভিত্তিক ন্যূনতম নয়)
-    if (x.kind === 'mcq' && c.minMcq != null && v < c.minMcq) ok = false;
-    if (x.kind === 'cq' && c.minCq != null && v < c.minCq) ok = false;
-  }));
-  if (grp === 'high' && s.ict && c.fullMcq != null && c.fullPrac != null) {   // ৯/১০: আইসিটি — অভি ও ব্যব আলাদা ৩৩%
-    let am = null, ap = null;
-    s.papers.forEach((p, pi) => p.parts.forEach((x, qi) => { const v = P[pi].vals[qi]; if (v == null) return; if (x.kind === 'mcq') am = n0(am) + v; else if (x.kind === 'prac') ap = n0(ap) + v; }));
-    if (hasAny && (n0(am) < Math.round(c.fullMcq * 33 / 100) || n0(ap) < Math.round(c.fullPrac * 33 / 100))) ok = false;
+  // পাসের নিয়ম: 'total' = শুধু মোট নম্বরের ৩৩%; 'sep' = MCQ/CQ/ব্যবহারিক আলাদা আলাদা ন্যূনতম (ফাঁকা থাকলে ঐ অংশের পূর্ণমানের ৩৩%)
+  // ৬–৮ শ্রেণিতে অ্যাডমিন নিজে নিয়ম না বদলালে অংশভিত্তিক ন্যূনতম ধরা হয় না
+  if (c.passMode === 'sep' && !(grp === 'mid' && !c.manual)) {
+    const sum = { mcq:null, cq:null, prac:null };
+    s.papers.forEach((p, pi) => p.parts.forEach((x, qi) => { const v = P[pi].vals[qi]; if (v != null && x.kind in sum) sum[x.kind] = n0(sum[x.kind]) + v; }));
+    for (const [k, mk, fk] of [['mcq', 'minMcq', 'fullMcq'], ['cq', 'minCq', 'fullCq'], ['prac', 'minPrac', 'fullPrac']]) {
+      const mn = c[mk] != null ? c[mk] : (c[fk] ? Math.round(c[fk] * 33 / 100) : null);
+      if (mn != null && n0(sum[k]) < mn) ok = false;
+    }
   }
   const gp = (c.optional && !hasAny) ? null : (ok ? gpFor(total, c.full) : 0);
   const cells = s.plan.map(it => it.t === 'part' ? P[it.pi].vals[it.qi] : it.t === 'ptot' ? n0(P[it.pi].tot) : total);
@@ -731,7 +722,7 @@ function effSubjects(L, merge) {
   const q = subs[qi], h = subs[hi];
   const m = { name: q.name + ' ও ' + h.name, merged: true, flat: false, totalCol: null,
     papers: [...q.papers.map(p => ({ ...p, ord: q.name })), ...h.papers.map(p => ({ ...p, ord: h.name }))],
-    cfg: { include: true, optional: false, full: q.cfg.full + h.cfg.full, minMcq: null, minCq: null } };
+    cfg: { include: true, optional: false, full: q.cfg.full + h.cfg.full, passMode: 'total', minMcq: null, minCq: null, minPrac: null, fullMcq: null, fullCq: null, fullPrac: null } };
   m.plan = buildPlan(m);
   const out = subs.filter((s, k) => k !== qi && k !== hi);
   out.splice(Math.min(qi, hi), 0, m);
@@ -850,17 +841,18 @@ function buildTitle() {
   $('exam').textContent = `${c ? c + ' ' : ''}${$('etype').value} পরীক্ষার ফলাফল${y ? '-' + y : ''}`;
 }
 function renderCfg() {
-  let h = '<tr><th>নিন</th><th>বিষয়</th><th>কলাম</th><th>পূর্ণমান</th><th>ঐচ্ছিক</th><th>MCQ ন্যূনতম</th><th>CQ ন্যূনতম</th><th>আইসিটি: অভি পূর্ণ</th><th>আইসিটি: ব্যব পূর্ণ</th></tr>';
+  let h = '<tr><th>নিন</th><th>বিষয়</th><th>কলাম</th><th>পূর্ণমান (মোট)</th><th>ঐচ্ছিক</th><th>MCQ পূর্ণ</th><th>CQ পূর্ণ</th><th>ব্যব. পূর্ণ</th><th>পাসের নিয়ম</th><th>MCQ পাস</th><th>CQ পাস</th><th>ব্যব. পাস</th></tr>';
   LAYOUT.subjects.forEach((s, i) => {
-    const c = s.cfg;
+    const c = s.cfg, sep = c.passMode === 'sep';
+    const full = (has, k) => has ? `<input type="number" min="0" data-i="${i}" data-k="${k}" value="${c[k] ?? ''}">` : '—';
+    const min = (has, k, fk) => has ? `<input type="number" min="0" data-i="${i}" data-k="${k}" value="${c[k] ?? ''}" placeholder="${c[fk] ? Math.round(c[fk] * 33 / 100) : ''}" ${sep ? '' : 'disabled'}>` : '—';
     h += `<tr class="${c.include ? '' : 'off'}"><td><input type="checkbox" data-i="${i}" data-k="include" ${c.include ? 'checked' : ''}></td>`
       + `<td class="l">${esc(s.name)}${s.hasData ? '' : ' <small>(ডাটা নেই)</small>'}</td><td>${s.colRange}</td>`
       + `<td><input type="number" min="1" data-i="${i}" data-k="full" value="${c.full}"></td>`
       + `<td><input type="checkbox" data-i="${i}" data-k="optional" ${c.optional ? 'checked' : ''}></td>`
-      + `<td>${s.hasMcq ? `<input type="number" min="0" data-i="${i}" data-k="minMcq" value="${c.minMcq ?? ''}">` : '—'}</td>`
-      + `<td>${s.hasCq ? `<input type="number" min="0" data-i="${i}" data-k="minCq" value="${c.minCq ?? ''}">` : '—'}</td>`
-      + `<td>${c.fullMcq != null ? `<input type="number" min="1" data-i="${i}" data-k="fullMcq" value="${c.fullMcq}">` : '—'}</td>`
-      + `<td>${c.fullPrac != null ? `<input type="number" min="1" data-i="${i}" data-k="fullPrac" value="${c.fullPrac}">` : '—'}</td></tr>`;
+      + `<td>${full(s.hasMcq, 'fullMcq')}</td><td>${full(s.hasCq, 'fullCq')}</td><td>${full(s.hasPrac, 'fullPrac')}</td>`
+      + `<td><select data-i="${i}" data-k="passMode"><option value="total" ${sep ? '' : 'selected'}>মোট নম্বরে</option><option value="sep" ${sep ? 'selected' : ''}>আলাদা আলাদা</option></select></td>`
+      + `<td>${min(s.hasMcq, 'minMcq', 'fullMcq')}</td><td>${min(s.hasCq, 'minCq', 'fullCq')}</td><td>${min(s.hasPrac, 'minPrac', 'fullPrac')}</td></tr>`;
   });
   $('cfg').innerHTML = h;
   $('layoutInfo').textContent = `হেডার সারি ${bn(LAYOUT.H)}${LAYOUT.subRow ? '–' + bn(LAYOUT.subRow) : ''}, ডাটা ${bn(LAYOUT.dataStart)} নম্বর সারি থেকে, ${bn(LAYOUT.rows.length)} জন পরীক্ষার্থী।`;
@@ -928,10 +920,6 @@ function render() {
       + `<td>${st.grade ?? '—'}</td>${resCell}<td>${st.rank ? bn(st.rank) : '—'}</td></tr>`;
   }
   $('tbl').innerHTML = '<thead>' + h1 + h2 + h3 + '</thead>' + body + '</tbody>';
-  $('note').innerHTML = 'ক্রম সাজানো: উত্তীর্ণ (GPA বেশি থেকে কম) → অনুত্তীর্ণ (Fail-1, Fail-2… ফেল বিষয়ের সংখ্যা অনুযায়ী) → অনুপস্থিত। '
-    + 'Fail-এর ঘরের উপর ধরলে (মোবাইলে চেপে ধরলে) ফেল করা বিষয়ের নাম দেখা যায়।'
-    + `<br>GPA = ${bn(R.reg.length)}টি বিষয়ের মোট gp ÷ ${bn(R.reg.length)}। সব বিষয়ে পাস না করলে অনুত্তীর্ণ।`
-    + (R.opt.length ? `<br>ঐচ্ছিক বিষয় (${esc(R.opt.map(s => s.name).join(', '))}) শীটে দেখানো হয়েছে, কিন্তু GPA ও পাস/ফেলে যোগ হয়নি।` + ($('opttot').checked ? ' মোট নম্বরে যোগ করা হয়েছে।' : '') : '');
   $('report').style.display = 'block';
   const cv = $('cls').value.trim();
   $('clsline').textContent = '';
@@ -1234,10 +1222,6 @@ async function processBuffer(buf, st) {
     $('err').textContent = 'ত্রুটি: ' + (e.message || e) + ' (শুধু .xlsx ফাইল সমর্থিত)';
   }
 }
-async function handleFile(file) {
-  try { lastBuf = await file.arrayBuffer(); } catch (e) { $('err').textContent = 'ত্রুটি: ' + e.message; return; }
-  await processBuffer(lastBuf, null);
-}
 function captureSettings() {
   const g = id => $(id) ? $(id).value : '';
   return { inst: $('inst').textContent, exam: $('exam').textContent, examEdited, cls: g('cls'), etype: g('etype'), yr: g('yr'),
@@ -1255,18 +1239,17 @@ function applySettings(st) {
   $('skipabs').checked = st.skipabs !== false;
   if (st.view && [...$('view').options].some(o => o.value === st.view)) $('view').value = st.view;
   if (isPublic) $('view').value = 'transcript';
-  (st.cfgs || []).forEach((c, i) => { if (LAYOUT.subjects[i]) Object.assign(LAYOUT.subjects[i].cfg, c); });
+  (st.cfgs || []).forEach((c, i) => {
+    const sj = LAYOUT.subjects[i]; if (!sj) return;
+    const old = c.passMode == null;   // আগের সেভ করা ফলাফলে passMode নেই: আগের নিয়ম বজায় রাখা
+    Object.assign(sj.cfg, c);
+    if (old) sj.cfg.passMode = (c.minMcq != null || c.minCq != null || (sj.ict && c.fullMcq != null && c.fullPrac != null)) ? 'sep' : 'total';
+  });
   ['tgroup', 'tsign', 'tlang', 'tmedium', 'tshift', 'tsection', 'tsub'].forEach(k => { if (st[k] != null && $(k)) $(k).value = st[k]; });
   if ($('tcol')) $('tcol').checked = st.tcol === true || st.tcol === 'col';
   renderCfg(); buildAdmitBox(); render();
 }
 
-const drop = $('drop'), fileIn = $('file');
-drop.addEventListener('click', () => fileIn.click());
-fileIn.addEventListener('change', () => fileIn.files[0] && handleFile(fileIn.files[0]));
-['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('on'); }));
-['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('on'); }));
-drop.addEventListener('drop', e => e.dataTransfer.files[0] && handleFile(e.dataTransfer.files[0]));
 $('opttot').addEventListener('change', () => GRID && render());
 $('mergeqh').addEventListener('change', () => GRID && render());
 $('sorto').addEventListener('change', () => GRID && render());
@@ -1430,6 +1413,18 @@ function fitTr(){
 window.addEventListener('orientationchange', () => setTimeout(fitTr, 250));
 window.addEventListener('load', fitTr);
 
+// মেধা তালিকা (এক সারণি): স্ক্রিনে ডিভাইসের প্রস্থে ফিট; পিঞ্চ করে জুম করে বড় করে দেখা যায় (প্রিন্ট/PDF অপরিবর্তিত)
+function fitTbl(){
+  const t = $('tbl'), box = t && t.parentElement; if (!t || !box || !box.clientWidth) return;
+  t.style.zoom = '';
+  const nat = t.offsetWidth; if (!nat) return;
+  const z = Math.max(0.3, Math.min(1, (box.clientWidth - 2) / nat));
+  t.style.zoom = z < 1 ? z.toFixed(4) : '';
+}
+{ const _render = render; render = function () { const r = _render.apply(this, arguments); fitTbl(); return r; }; }
+{ let lw = 0; const b = $('tbl').parentElement; new ResizeObserver(en => { const w = Math.round(en[0].contentRect.width); if (w && w !== lw) { lw = w; fitTbl(); } }).observe(b); }
+window.addEventListener('orientationchange', () => setTimeout(fitTbl, 250));
+
 /* ---------- ট্রান্সক্রিপ্টে লং প্রেস (বা ডান-ক্লিক) → ছবি ডাউনলোডের পপ-আপ ---------- */
 (function () {
   const box = $('trans'); let timer = null, sx = 0, sy = 0, lastShow = 0;
@@ -1539,8 +1534,11 @@ $('cfg').addEventListener('input', e => {
   const t = e.target, s = LAYOUT.subjects[+t.dataset.i]; if (!s) return;
   const k = t.dataset.k;
   if (t.type === 'checkbox') s.cfg[k] = t.checked;
+  else if (k === 'passMode') s.cfg[k] = t.value;
   else { const v = num(t.value); s.cfg[k] = (k === 'full') ? (v || s.cfg.full) : v; }
   if (k === 'include') t.closest('tr').classList.toggle('off', !t.checked);
+  if (/^(passMode|min|full)/.test(k)) s.cfg.manual = true;
+  if (k === 'passMode') renderCfg();
   render();
 });
 </script>
@@ -1560,29 +1558,20 @@ const fdb = firebase.firestore(), fauth = firebase.auth();
 // ⚡ দ্রুত ও স্থিতিশীল লোডিং: ধীর/ব্লকড নেটওয়ার্কে স্বয়ংক্রিয় long-polling + অফলাইন ক্যাশ
 try { fdb.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) {}
 fdb.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-// অ্যাডমিনের ইমেইল জানা থাকলে এখানে লিখুন, যেমন ['admin@example.com']। ফাঁকা থাকলে মোবাইল-নম্বর ভিত্তিক শিক্ষক অ্যাকাউন্ট বাদে যেকোনো লগইন করা ব্যবহারকারী অ্যাডমিন ধরা হবে।
-const ADMIN_EMAILS = [];
 let isAdmin = false, pubDocs = [], curPubId = null, pubUnsub = null;
 let isPublic = true, PUB_ROLL = null;   // লগইন ছাড়া: শুধু শ্রেণি+রোল দিয়ে ১টি ট্রান্সক্রিপ্ট
 const PUB = id => $(id);
-const isAdminUser = u => {
-  if (!u || !u.email) return false;
-  if (ADMIN_EMAILS.length) return ADMIN_EMAILS.map(x => x.toLowerCase()).includes(u.email.toLowerCase());
-  return !/^\+?\d{10,13}$/.test(u.email.split('@')[0]);
-};
 function msg(t, ok) { ['pubMsg', 'lkMsg'].forEach(id => { const m = $(id); if (!m) return; m.textContent = t || ''; m.className = 'hint' + (ok ? ' okmsg' : ''); }); }
 function updateCtrl() { $('ctrl').style.display = (isAdmin || GRID) ? '' : 'none'; }
-function afterLoad() { updateCtrl(); if (isAdmin && GRID) $('saveBox').style.display = 'block'; }
+function afterLoad() { updateCtrl(); }
 
-const b64FromBuf = buf => { const u = new Uint8Array(buf); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
 const bufFromB64 = b => { const s = atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u.buffer; };
 
 function fillSelect(selectId) {
   const sel = $('pubSel');
-  if (!pubDocs.length) { sel.innerHTML = '<option value="">এখনো কোনো ফলাফল প্রকাশ হয়নি</option>'; updateTog(); return; }
+  if (!pubDocs.length) { sel.innerHTML = '<option value="">এখনো কোনো ফলাফল প্রকাশ হয়নি</option>'; return; }
   sel.innerHTML = '<option value="">শ্রেণি নির্বাচন করুন</option>' + pubDocs.map(d => `<option value="${esc(d.id)}">${d.published === true ? '' : '🔒 (অপ্রকাশিত) '}${esc(d.title || 'ফলাফল')}</option>`).join('');
   sel.value = selectId && pubDocs.some(d => d.id === selectId) ? selectId : (curPubId && pubDocs.some(d => d.id === curPubId) ? curPubId : '');
-  updateTog();
 }
 async function loadPublished(id) {
   const d = pubDocs.find(x => x.id === id); if (!d) return false;
@@ -1595,16 +1584,14 @@ async function loadPublished(id) {
     try { ATT_R = d.attRoll ? JSON.parse(d.attRoll) : {}; } catch (e) { ATT_R = {}; } ATT_KEY = '';
     lastBuf = buf; curPubId = id;
     await processBuffer(buf, d.settings ? JSON.parse(d.settings) : null);
-    $('pubTitle').value = d.title || '';
     msg('', true);
     return true;
   } catch (e) { console.error(e); msg('❌ ফলাফল লোড করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); return false; }
 }
 function startList() {
   if (pubUnsub) pubUnsub();
-  // অ্যাডমিন সব দেখে; অন্যরা শুধু published == true (নিরাপত্তা Firestore Rules দিয়েও নিশ্চিত করতে হবে)
-  const col = fdb.collection('results');
-  const qy = isAdmin ? col : col.where('published', '==', true);
+  // শুধু published == true (নিরাপত্তা Firestore Rules দিয়েও নিশ্চিত করতে হবে)
+  const qy = fdb.collection('results').where('published', '==', true);
   const ts = d => (d.createdAt && d.createdAt.seconds) || 0;
   pubUnsub = qy.onSnapshot(s => {
     pubDocs = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => ts(b) - ts(a));
@@ -1612,58 +1599,6 @@ function startList() {
   }, e => { console.error(e); $('pubSel').innerHTML = '<option value="">লোড করা যায়নি</option>'; msg('❌ তালিকা লোড করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); });
 }
 $('pubSel').addEventListener('change', e => e.target.value && loadPublished(e.target.value));
-
-$('pubSave').addEventListener('click', async () => {
-  if (!isAdmin) return;
-  if (!lastBuf || !GRID) { msg('আগে একটি Excel ফাইল দিন।'); return; }
-  const btn = $('pubSave'); btn.disabled = true;
-  try {
-    render();   // ATT_R হালনাগাদ
-    const title = $('pubTitle').value.trim() || $('exam').textContent.trim() || 'ফলাফল';
-    const b64 = b64FromBuf(lastBuf), SZ = 700000, n = Math.ceil(b64.length / SZ);
-    const ref = fdb.collection('results').doc();
-    for (let i = 0; i < n; i++) {
-      msg(`সেভ হচ্ছে... (${bn(i + 1)}/${bn(n)})`);
-      await ref.collection('parts').doc(String(i).padStart(3, '0')).set({ i, data: b64.slice(i * SZ, (i + 1) * SZ) });
-    }
-    await ref.set({ title, cls: $('cls').value, exam: $('exam').textContent, yr: $('yr').value, size: lastBuf.byteLength, partCount: n,
-      published: !!$('pubPubl').checked, attData: JSON.stringify(ATT || {}), attRoll: JSON.stringify(ATT_R || {}), settings: JSON.stringify(captureSettings()), by: (fauth.currentUser && fauth.currentUser.email) || '',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    curPubId = ref.id;
-    msg($('pubPubl').checked ? '✅ সেভ ও প্রকাশ হয়েছে। এখন সবাই এই পেজে ফলাফল দেখতে পারবে।' : '✅ অপ্রকাশিত অবস্থায় সেভ হয়েছে (শুধু অ্যাডমিন দেখছে)। উপরের তালিকা থেকে নির্বাচন করে "প্রকাশ করুন" চাপুন।', true);
-    setTimeout(() => fillSelect(ref.id), 600);
-  } catch (e) { console.error(e); msg('❌ সেভ করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); }
-  btn.disabled = false;
-});
-
-function updateTog() {
-  const b = $('pubTog'); if (!b) return;
-  const d = pubDocs.find(x => x.id === $('pubSel').value);
-  b.style.display = (isAdmin && d) ? '' : 'none';
-  if (d) b.textContent = d.published === true ? '⏸️ অপ্রকাশিত করুন' : '👁️ প্রকাশ করুন';
-}
-$('pubSel').addEventListener('change', updateTog);
-$('pubTog').addEventListener('click', async () => {
-  const id = $('pubSel').value, d = pubDocs.find(x => x.id === id); if (!isAdmin || !d) return;
-  const to = d.published !== true;
-  if (!confirm('"' + (d.title || '') + '" ফলাফলটি ' + (to ? 'প্রকাশ করবেন? সবাই দেখতে পারবে।' : 'অপ্রকাশিত করবেন? শুধু অ্যাডমিন দেখতে পারবে।'))) return;
-  const b = $('pubTog'); b.disabled = true;
-  try { await fdb.collection('results').doc(id).update({ published: to }); msg(to ? '✅ প্রকাশ করা হয়েছে।' : '✅ অপ্রকাশিত করা হয়েছে।', true); }
-  catch (e) { console.error(e); msg('❌ পরিবর্তন করা যায়নি: ' + (e.code || '') + ' ' + (e.message || '')); }
-  b.disabled = false;
-});
-$('pubDel').addEventListener('click', async () => {
-  const id = $('pubSel').value; if (!isAdmin || !id) return;
-  const d = pubDocs.find(x => x.id === id);
-  if (!confirm('"' + (d ? d.title : '') + '" ফলাফলটি ডাটাবেস থেকে মুছে ফেলবেন?')) return;
-  try {
-    const parts = await fdb.collection('results').doc(id).collection('parts').get();
-    for (const p of parts.docs) await p.ref.delete();
-    await fdb.collection('results').doc(id).delete();
-    if (curPubId === id) { curPubId = null; GRID = null; $('report').style.display = 'none'; $('opts').style.display = 'none'; $('cfgBox').style.display = 'none'; $('saveBox').style.display = 'none'; updateCtrl(); }
-    msg('মুছে ফেলা হয়েছে।', true);
-  } catch (e) { console.error(e); msg('❌ মুছতে পারেনি: ' + (e.code || '') + ' ' + (e.message || '')); }
-});
 
 /* ---------- লগইন ছাড়া: শ্রেণি + রোল দিয়ে ১টি ট্রান্সক্রিপ্ট ---------- */
 const docCls = d => { let c = d.cls; if (!c && d.settings) { try { c = JSON.parse(d.settings).cls; } catch (e) {} } return clsKey(c); };
@@ -1713,15 +1648,15 @@ $('lkRoll').addEventListener('keydown', e => { if (e.key === 'Enter') lookupResu
 $('lkGo').addEventListener('click', lookupResult);
 
 fauth.onAuthStateChanged(u => {
-  isAdmin = isAdminUser(u);
+  isAdmin = false;   // আপলোড/প্রকাশ-সংক্রান্ত অ্যাডমিন অংশ এখন admin.html-এর 'ফলাফল আপলোড' ট্যাবে
+  // লগইন করা ব্যবহারকারী পুরো শ্রেণির ফলাফল (মেধা তালিকা/ট্রান্সক্রিপ্ট) দেখতে পাবে; লগইন ছাড়া শুধু শ্রেণি+রোল
   isPublic = !u; document.body.classList.toggle('is-public', isPublic);
   if (!isPublic) PUB_ROLL = null;
-  document.body.classList.toggle('is-admin', isAdmin);
   $('admLink').style.display = u ? 'none' : '';
+  document.body.classList.toggle('is-admin', isAdmin);
   [...$('view').options].forEach(o => { if (o.value === 'admit') { o.hidden = !isAdmin; o.disabled = !isAdmin; } });
   if (!isAdmin && $('view').value === 'admit') { $('view').value = 'table'; if (GRID) render(); }
   ['inst', 'exam'].forEach(id => $(id).contentEditable = isAdmin ? 'true' : 'false');
-  if (!isAdmin) $('saveBox').style.display = 'none'; else if (GRID) $('saveBox').style.display = 'block';
   updateCtrl();
   startList();
 });
