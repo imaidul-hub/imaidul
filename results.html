@@ -1307,6 +1307,26 @@ const snap = (el, sc) => html2canvas(el, { scale: sc, backgroundColor: '#fff', u
 const nextFrame = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
 const fname = suffix => (($('exam').textContent || 'ফলাফল').trim().replace(/[\\/:*?"<>|\s]+/g, '_') || 'result') + '_' + suffix + '.pdf';
 
+// html2canvas-এর বাগ: rowspan-ওয়ালা ঘর (গ্রেড/GP/মন্তব্য) প্রথম সারির উচ্চতায় কেটে যায়।
+// তাই ছবি তোলার আগে ওই ঘরগুলো লুকিয়ে একই মাপ-জায়গায় আলাদা এক-সারির ঘর বসিয়ে দেওয়া হয়।
+function fixSpans(el) {
+  const er = el.getBoundingClientRect();
+  [...el.querySelectorAll('td[rowspan]')].forEach(td => {
+    if ((td.rowSpan || 1) < 2) return;
+    const r = td.getBoundingClientRect(), cs = getComputedStyle(td), tb = td.closest('table');
+    const ov = document.createElement('table');
+    ov.className = tb.className;
+    ov.style.cssText = `position:absolute;margin:0;left:${r.left - er.left - el.clientLeft}px;top:${r.top - er.top - el.clientTop}px;width:${r.width}px;height:${r.height}px;table-layout:fixed;z-index:5;background:${cs.backgroundColor}`;
+    const nt = document.createElement('td');
+    nt.className = td.className; nt.innerHTML = td.innerHTML;
+    nt.setAttribute('style', td.getAttribute('style') || '');
+    nt.style.height = r.height + 'px'; nt.style.width = r.width + 'px';
+    const tr = document.createElement('tr'); tr.appendChild(nt); ov.appendChild(tr);
+    el.appendChild(ov);
+    td.style.visibility = 'hidden';
+  });
+}
+
 // কার্ড (ট্রান্সক্রিপ্ট/মার্কশীট/এডমিট): A4 পোর্ট্রেট, পেজে ফিট
 async function pdfCards(nodes, o) {
   const { jsPDF } = window.jspdf;
@@ -1321,6 +1341,7 @@ async function pdfCards(nodes, o) {
     el.style.cssText += `;width:${o.w}px;max-width:none;margin:0;box-sizing:border-box;` + ((o.fixedH || o.fit) ? `height:${Math.round(o.w * boxH / CW)}px;` : '');
     st.appendChild(el);
     await nextFrame();
+    fixSpans(el);
     const cv = await snap(el, land ? 1.8 : (o.w > 900 ? 1.3 : 1.6));
     const ratio = cv.height / cv.width;
     let dw = CW, dh = CW * ratio; if (dh > boxH) { dh = boxH; dw = boxH / ratio; }
@@ -1421,9 +1442,10 @@ window.addEventListener('load', fitTr);
       if (!window.html2canvas) await loadJs(CDN.h2c);
       const st = stageClear(), el = card.cloneNode(true);
       el.classList.add('fit');
-      el.style.cssText += ';width:1100px;max-width:none;margin:0;box-sizing:border-box;height:782px;';
+      el.style.cssText += ';width:1100px;max-width:none;margin:0;box-sizing:border-box;min-height:782px;height:auto;';
       st.appendChild(el);
       await nextFrame();
+      fixSpans(el);   // rowspan ঘর কেটে যাওয়া ঠেকাতে
       const cv = await snap(el, 2);
       stageClear();
       const name = ('ট্রান্সক্রিপ্ট_' + (card.dataset.roll || '') + (card.dataset.name ? '_' + card.dataset.name : '')).replace(/[\\/:*?"<>|\s]+/g, '_') + '.png';
@@ -1458,18 +1480,26 @@ window.addEventListener('load', fitTr);
       $('err').textContent = (e && e.name === 'NotAllowedError') ? 'শেয়ার চালু হয়নি — আবার চেষ্টা করুন।' : 'শেয়ার ব্যর্থ: ' + ((e && e.message) || e);
     }
   }
-  function show(card) {
+  function show(card, px, py) {
     if (Date.now() - lastShow < 700) return; lastShow = Date.now();
     close();
     const o = document.createElement('div'); o.id = 'imgPop'; o.className = 'no-print';
-    o.style.cssText = 'position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+    o.style.cssText = 'position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.35)';
     const who = (card.dataset.name ? card.dataset.name + ' — ' : '') + 'রোল ' + bn(card.dataset.roll || '');
-    o.innerHTML = `<div style="background:#fff;color:#111;border-radius:14px;padding:16px;width:min(320px,100%);box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:center">`
+    o.innerHTML = `<div id="imgPopBox" style="position:absolute;left:0;top:0;background:#fff;color:#111;border-radius:14px;padding:16px;width:min(300px,calc(100vw - 24px));box-sizing:border-box;box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:center">`
       + `<div style="font-weight:700;margin-bottom:12px">${esc(who)}</div>`
       + `<button id="imgPopDl" class="primary" style="width:100%;padding:11px;cursor:pointer;margin-bottom:8px">⬇️ ছবি ডাউনলোড করুন</button>`
       + `<button id="imgPopSh" class="primary" style="width:100%;padding:11px;cursor:pointer;margin-bottom:8px;display:none">📤 শেয়ার করুন</button>`
       + `<button id="imgPopX" style="width:100%;padding:10px;cursor:pointer">বাতিল</button></div>`;
-    document.body.appendChild(o);
+    // <html>-এ বসানো হয় (body-তে অ্যানিমেশন থাকায় fixed পজিশন পুরো পেজের হিসাবে চলে যেত)
+    document.documentElement.appendChild(o);
+    const pb = $('imgPopBox'), vw = window.innerWidth, vh = window.innerHeight, w = pb.offsetWidth, h = pb.offsetHeight;
+    const cx = px == null ? vw / 2 : px, cy = py == null ? vh / 2 : py;
+    let left = Math.min(Math.max(cx - w / 2, 12), Math.max(12, vw - w - 12));
+    let top = cy - h - 18;                       // যেখানে চেপেছেন তার ঠিক উপরে
+    if (top < 12) top = cy + 18;                 // উপরে জায়গা না থাকলে নিচে
+    top = Math.min(Math.max(top, 12), Math.max(12, vh - h - 12));
+    pb.style.left = left + 'px'; pb.style.top = top + 'px';
     o.addEventListener('click', e => { if (e.target === o) close(); });
     $('imgPopX').addEventListener('click', close);
     $('imgPopDl').addEventListener('click', () => { close(); saveImg(card); });
@@ -1485,11 +1515,11 @@ window.addEventListener('load', fitTr);
   }
   box.addEventListener('pointerdown', e => {
     const c = e.target.closest('.tr'); if (!c || (e.pointerType === 'mouse' && e.button !== 0)) return;
-    sx = e.clientX; sy = e.clientY; clearTimeout(timer); timer = setTimeout(() => show(c), 600);
+    sx = e.clientX; sy = e.clientY; clearTimeout(timer); timer = setTimeout(() => show(c, sx, sy), 600);
   });
   box.addEventListener('pointermove', e => { if (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10) clearTimeout(timer); });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => box.addEventListener(ev, () => clearTimeout(timer)));
-  box.addEventListener('contextmenu', e => { const c = e.target.closest('.tr'); if (!c) return; e.preventDefault(); clearTimeout(timer); show(c); });
+  box.addEventListener('contextmenu', e => { const c = e.target.closest('.tr'); if (!c) return; e.preventDefault(); clearTimeout(timer); show(c, e.clientX || sx, e.clientY || sy); });
 })();
 
 $('cfg').addEventListener('input', e => {
