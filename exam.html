@@ -262,9 +262,9 @@ function renderD() {
   $('pv').disabled = !dates.some(d => d < sel); $('nx').disabled = !dates.some(d => d > sel);
 
   const rows = {};
-  duties.filter(x => x.date === sel).forEach(x => { const k = x.shift + '|' + (x.room || '—'); (rows[k] = rows[k] || { shift: x.shift, room: x.room || '—', ids: [] }).ids.push(x.teacherId); });
+  duties.filter(x => x.date === sel).forEach(x => { const k = x.shift + '|' + (x.room || '—') + '|' + (x.time || ''); (rows[k] = rows[k] || { shift: x.shift, room: x.room || '—', time: x.time || '', ids: [] }).ids.push(x.teacherId); });
   const list = Object.values(rows).sort((a, b) => shRank(a.shift) - shRank(b.shift) || String(a.room).localeCompare(String(b.room), 'bn', { numeric: true }));
-  const data = list.map(r => ({ room: r.room, time: timeFor(sel, r.shift), ids: r.ids, names: r.ids.map(tName).sort((a, b) => a.localeCompare(b, 'bn')) }));
+  const data = list.map(r => ({ room: r.room, time: r.time ? fmt(r.time) : timeFor(sel, r.shift), ids: r.ids, names: r.ids.map(tName).sort((a, b) => a.localeCompare(b, 'bn')) }));
   $('tb').innerHTML = list.length ? list.map((r, i) => {
     const mine = me && r.ids.includes(me.id);
     const names = r.ids.map(id => ({ id, n: tName(id) })).sort((a, b) => a.n.localeCompare(b.n, 'bn'));

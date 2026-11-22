@@ -339,6 +339,8 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
           <option>দুপুর</option>
           <option>বিকাল</option>
         </select>
+        <div class="mu">⏰ ডিউটির সময় (শিফটের জন্য একবার বেছে নিলে এই ডিভাইসে মনে থাকবে)</div>
+        <input id="dtm" type="time">
         <button id="dbtn" class="act" onclick="saveDuty()">ডিউটি সংরক্ষণ</button>
         <button id="dcan" class="act sec hide" onclick="cancelD()">বাতিল</button>
         <div class="mu">একই রুমে একই তারিখ ও শিফটে একাধিক শিক্ষক দেওয়া যাবে। তবে একই শিক্ষককে একই তারিখ ও শিফটে দুইবার দেওয়া যাবে না।</div>
@@ -1045,6 +1047,10 @@ var duties = [], unsubD = null, editD = null;
 const SHIFTS = ['সকাল','দুপুর','বিকাল'];
 $('dft').innerHTML = '<option value="">সব শিফট</option>' + SHIFTS.map(x => `<option>${x}</option>`).join('');
 $('dd').value = today();
+// সময় ডিভাইসে মনে রাখা (প্রতিটি শিফটের জন্য আলাদা)
+const dtKey = s => 'dutyTime_' + s;
+function loadDTime(){ try { $('dtm').value = localStorage.getItem(dtKey($('dsh').value)) || ''; } catch (e) {} }
+$('dsh').onchange = loadDTime;
 $('dfd').onchange = $('dft').onchange = () => renderDuties();
 function startDuties(){
   unsubD = db.collection('examDuties').onSnapshot(s => {
@@ -1062,25 +1068,26 @@ function renderDuties(){
   let html = '', cur = null;
   list.forEach(x => {
     if (x.date !== cur) { cur = x.date; html += `<div style="font-weight:700;color:var(--pr);margin:10px 0 2px">📅 ${dfmt(x.date)}${wday(x.date) ? ' (' + wday(x.date) + ')' : ''}</div>`; }
-    html += `<div class="row"><div><b>${esc(tn(x.teacherId))}</b><div class="mu">🕒 ${esc(x.shift)} শিফট • 🚪 রুম ${bn(esc(x.room))}</div></div>
+    html += `<div class="row"><div><b>${esc(tn(x.teacherId))}</b><div class="mu">🕒 ${esc(x.shift)} শিফট${x.time ? ' (' + fmt(x.time) + ')' : ''} • 🚪 রুম ${bn(esc(x.room))}</div></div>
       <div style="white-space:nowrap"><button class="ed" onclick="editDuty('${x.id}')">✏️</button><button class="del" onclick="delDuty('${x.id}')">✕</button></div></div>`;
   });
   $('dlist').innerHTML = html;
 }
 function saveDuty(){
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
-  const d = {date:$('dd').value, room:$('dr').value.trim(), teacherId:$('dt').value, shift:$('dsh').value};
+  const d = {date:$('dd').value, room:$('dr').value.trim(), teacherId:$('dt').value, shift:$('dsh').value, time:$('dtm').value};
   if (!d.date || !d.room || !d.teacherId || !d.shift) return showMsg('তারিখ, রুম নং, শিক্ষক ও শিফট দিন');
+  try { if (d.time) localStorage.setItem(dtKey(d.shift), d.time); else localStorage.removeItem(dtKey(d.shift)); } catch (e) {}
   if (duties.some(x => x.id !== editD && x.date === d.date && x.shift === d.shift && x.teacherId === d.teacherId))
     return showMsg(tn(d.teacherId) + '-এর ' + dfmt(d.date) + ' তারিখে ' + d.shift + ' শিফটে ডিউটি আগে থেকেই আছে');
   const wasEdit = !!editD;
   const q = editD ? db.collection('examDuties').doc(editD).update(d) : db.collection('examDuties').add(d);
-  guard(q).then(() => { cancelD(); $('dd').value = d.date; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); if (!wasEdit) $('dsh').value = d.shift; })
+  guard(q).then(() => { cancelD(); $('dd').value = d.date; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); if (!wasEdit) $('dsh').value = d.shift; loadDTime(); })
     .catch(fail);
 }
 function editDuty(id){
   const x = duties.find(v => v.id === id); if (!x) return;
-  editD = id; $('dd').value = x.date; $('dr').value = x.room || ''; $('dt').value = x.teacherId; $('dsh').value = x.shift;
+  editD = id; $('dd').value = x.date; $('dr').value = x.room || ''; $('dt').value = x.teacherId; $('dsh').value = x.shift; $('dtm').value = x.time || '';
   $('dh').textContent = '✏️ ডিউটি এডিট'; $('dbtn').textContent = '✅ আপডেট করুন'; $('dcan').classList.remove('hide');
   $('dd').scrollIntoView({behavior:'smooth', block:'center'});
 }
