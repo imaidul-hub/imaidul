@@ -117,6 +117,7 @@ h3{margin:0 0 6px}
 .pbtn{font:inherit;padding:10px;border-radius:10px;border:0;background:var(--pr);color:#fff;width:100%;margin-top:8px;cursor:pointer;font-weight:700}
 .rcbt{display:flex;gap:8px;margin-top:6px}
 
+@media screen{html.rc-lock,html.rc-lock body{overflow:hidden}}
 @page{size:A4 portrait;margin:12mm 10mm}
 @media print{
 html,body{width:190mm;margin:0;padding:0}
@@ -337,7 +338,7 @@ function buildAtt(){
     }
   });
 }
-function shiftY(n){ if (rcId && !auth.currentUser) return; Y += n; att = {}; attDocs = []; asDocs = []; attDirty = true; render(); if (rcId) openRC(rcId); loadAtt(); }
+function shiftY(n){ if (rcId && !auth.currentUser) return; Y += n; att = {}; attDocs = []; asDocs = []; coDocs = []; attDirty = true; render(); if (rcId) openRC(rcId); loadAtt(); }
 function tg(id, t){ openId[id] = openId[id] === t ? null : t; render(); }
 function tags(id){
   const x = att[id], ta = x ? x.ta : 0, tl = x ? x.tl : 0, o = openId[id];
@@ -359,7 +360,7 @@ function mergeS(){
 }
 auth.onAuthStateChanged(u => {
   if (unsubS) { unsubS(); unsubS = null; }
-  rawS = []; students = []; att = {}; attDocs = []; asDocs = []; attDirty = true; attBlocked = false;
+  rawS = []; students = []; att = {}; attDocs = []; asDocs = []; coDocs = []; attDirty = true; attBlocked = false;
   closeRC();
   $('q').placeholder = u ? '🔍 এই শ্রেণিতে নাম, রোল বা মোবাইল দিয়ে খুঁজুন' : '🔍 এই শ্রেণিতে নাম বা রোল দিয়ে খুঁজুন';
   loadAtt();
@@ -415,7 +416,7 @@ function printTable(list, fc){
 var rcId = null;
 const rcKey = id => 'rc_' + Y + '_' + id;
 function rcLoad(id){ try { return JSON.parse(localStorage.getItem(rcKey(id))); } catch(e){ return null; } }
-function closeRC(){ rcId = null; $('rcm').classList.add('hide'); document.body.classList.remove('rc-open'); }
+function closeRC(){ rcId = null; $('rcm').classList.add('hide'); document.body.classList.remove('rc-open'); document.documentElement.classList.remove('rc-lock'); }
 var rcFb = '', LOGO_DU = '';
 (function(){
   const im = new Image();
@@ -485,7 +486,8 @@ function openRC(id){
   if (attBlocked) { showMsg('🔒 রিপোর্ট কার্ড দেখতে লগইন করুন', 'err'); return; }
   const s = students.find(x => x.id === id); if (!s) return;
   if (attDirty) buildAtt();
-  const keep = $('rcm').classList.contains('hide') ? 0 : $('rcm').scrollTop;
+  const wasHidden = $('rcm').classList.contains('hide');
+  const keep = wasHidden ? 0 : $('rcm').scrollTop;
   rcId = id;
   const pub = !auth.currentUser;   // লগইন ছাড়া: শুধু প্রিন্ট ভার্সন (ডাউনলোড/সম্পাদনা/বছর বদল নেই)
   const x = att[id] || {a:Array(12).fill(0), l:Array(12).fill(0), p:Array(12).fill(0), ta:0, tl:0, tp:0};
@@ -536,7 +538,9 @@ function openRC(id){
   </div>`;
   $('rcm').classList.remove('hide');
   document.body.classList.add('rc-open');
+  document.documentElement.classList.add('rc-lock');
   $('rcm').scrollTop = keep;
+  if (wasHidden) requestAnimationFrame(() => { if (rcId === id) $('rcm').scrollTop = 0; });
   rcFit();
 }
 
