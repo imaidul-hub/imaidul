@@ -80,7 +80,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
       <label class="l">শিক্ষক</label><select id="pt"></select>
       <div class="two">
         <div><label class="l">শ্রেণি</label><select id="pc"></select></div>
-        <div><label class="l">বিষয়</label><input class="f" id="ps" list="sl" placeholder="যেমন: গণিত"><datalist id="sl"></datalist></div>
+        <div><label class="l">বিষয়</label><input class="f" id="ps" list="subjList" placeholder="যেমন: গণিত"><datalist id="subjList"></datalist></div>
       </div>
       <button class="sbtn" style="margin-top:10px;width:100%" onclick="addPerm()">➕ পারমিশন দিন</button>
       <div id="pl" style="margin-top:10px"></div>
@@ -263,7 +263,7 @@ function renderPerms(){
   $('pc').innerHTML = opts(classList(), '-- শ্রেণি --');
   const subs = new Set(); teachers.forEach(t => { if (t.subject && typeof t.subject === 'string') subs.add(t.subject); });
   Object.values(permsAll).forEach(p => (p.items || []).forEach(x => subs.add(x.s)));
-  $('sl').innerHTML = [...subs].map(x => `<option value="${esc(x)}">`).join('');
+  $('subjList').innerHTML = [...subs].map(x => `<option value="${esc(x)}">`).join('');
   const ids = Object.keys(permsAll).filter(id => (permsAll[id].items || []).length);
   $('pl').innerHTML = ids.length ? ids.map(id => `<div class="pt"><b>${esc(permsAll[id].name)}</b><div>` +
     permsAll[id].items.map((x, i) => `<span class="chip">${esc(x.c)} • ${esc(x.s)}<button onclick="delPerm('${id}',${i})" title="মুছুন">✕</button></span>`).join('') + '</div></div>').join('')
