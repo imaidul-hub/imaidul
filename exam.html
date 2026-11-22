@@ -256,8 +256,8 @@ function renderD() {
   }
   g.classList.add('hide'); mn.classList.remove('hide');
   const me = myTeacher(), dates = datesList(), t0 = today();
-  // ডিফল্ট তারিখ: আজ (ডিউটি থাকলে) → পরের ডিউটির তারিখ → শেষ তারিখ → আজ
-  if (!sel) sel = dates.includes(t0) ? t0 : (dates.find(d => d > t0) || dates[dates.length - 1] || t0);
+  // ডিফল্ট তারিখ: আজের পরের ডিউটির তারিখ (পরীক্ষা শুরুর আগে হলে প্রথম ডিউটির তারিখ) → না থাকলে আজ (ডিউটি থাকলে) → শেষ তারিখ → আজ
+  if (!sel) sel = dates.find(d => d > t0) || (dates.includes(t0) ? t0 : (dates[dates.length - 1] || t0));
   $('dd').value = sel; $('dlab').textContent = dLong(sel) + (sel === t0 ? ' — আজ' : '');
   $('pv').disabled = !dates.some(d => d < sel); $('nx').disabled = !dates.some(d => d > sel);
 
