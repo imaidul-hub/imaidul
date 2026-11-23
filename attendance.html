@@ -286,6 +286,8 @@ function save(){
   const st = {}; list.forEach(s => { st[s.id] = marks[s.id] === 'p' || marks[s.id] === 'l' ? marks[s.id] : 'a'; });
   const l = Object.values(st).filter(v => v === 'l').length, p = Object.values(st).filter(v => v === 'p').length, a = list.length - p - l;
   if (!p && !l && !confirm('কাউকে উপস্থিত বা ছুটি দেওয়া হয়নি। সবাইকে অনুপস্থিত ধরে সংরক্ষণ করবেন?')) return;
+  if (!confirm(bn(list.length) + ' জনের হাজিরা সাবমিট করবেন?\n\nউপস্থিত: ' + bn(p) + ', অনুপস্থিত: ' + bn(a) + ', ছুটি: ' + bn(l))) return;
+  if (!confirm(bn(list.length) + ' জনের হাজিরা সাবমিট করবেন?\n\nউপস্থিত: ' + bn(p) + ', অনুপস্থিত: ' + bn(a) + ', ছুটি: ' + bn(l))) return;
   const rec = {v:2, date:d, class:c, st, total:list.length, absent:a, leave:l, present:p,
     byName: isAdmin ? 'অ্যাডমিন' : (me.name || ''), by: auth.currentUser.uid, ts: firebase.firestore.FieldValue.serverTimestamp()};
   saving = true; $('sv').disabled = true;

@@ -233,6 +233,8 @@ async function save(){
     else if (m.n !== '') { const n = parseFloat(m.n); if (isNaN(n) || n > total) bad++; else out[st.id] = {...base, n}; }
   });
   if (bad) return alert(bad + ' জনের নম্বর মোট নম্বরের চেয়ে বেশি বা ভুল। লাল ঘরগুলো ঠিক করুন।');
+  if (!confirm(bn(Object.keys(out).length) + ' জনের নম্বর (' + c + ' • ' + s + ') সাবমিট করবেন?')) return;
+  if (!confirm(bn(Object.keys(out).length) + ' জনের নম্বর (' + c + ' • ' + s + ') সাবমিট করবেন?')) return;
   const b = $('svbtn'); b.disabled = true; $('st').textContent = 'সেভ হচ্ছে...';
   try {
     await db.collection('assessments').doc(docId(c, s, d)).set({

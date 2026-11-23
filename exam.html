@@ -383,7 +383,7 @@ function renderSlips() {
     const seat = SP.seat === 'roll' ? bn(s.roll || '') : '';
     return `<div class="sp-slip"><div class="sp-h"><img src="logo.jpg" alt="" onerror="this.style.visibility='hidden'"><div><b>${esc(SP.inst)}</b><span>${esc(title)}</span><br><span><b style="display:inline">সীট প্লান</b></span></div></div>`
       + `<div class="sp-b"><div class="sp-ph">${ph}</div><div class="sp-d"><div class="nm">${esc(s.name)}</div>`
-      + `<div>শ্রেণি: ${esc(s.class)}</div><div>রোল: <b>${bn(s.roll || '')}</b> &nbsp; শিফট: <b>${esc(SP.shift)}</b></div>`
+      + `<div>শ্রেণি: ${esc(s.class)} &nbsp; <b>(${isGirl(s) ? 'ছাত্রী' : 'ছাত্র'})</b></div><div>রোল: <b>${bn(s.roll || '')}</b> &nbsp; শিফট: <b>${esc(SP.shift)}</b></div>`
       + `<div>রুম: <b>${SP.room ? esc(bn(SP.room)) : '_____'}</b> &nbsp; সিট: <b>${seat || '_____'}</b></div></div></div></div>`;
   };
   let h = '';

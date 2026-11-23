@@ -579,6 +579,7 @@ function addNotice(){
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
   const n = {title:$('nt').value.trim(), body:$('nb').value.trim(), date:$('nd').value};
   if (!n.title || !n.date) return showMsg('শিরোনাম ও তারিখ দিন');
+  if (!confirm('"' + n.title + '" নোটিশটি প্রকাশ করবেন?')) return;
   guard(db.collection('notices').add(n)).then(() => { $('nt').value = $('nb').value = ''; loadStats(); showMsg('✅ নোটিশ প্রকাশ হয়েছে', 'ok'); }).catch(fail);
 }
 function delNotice(id){ if (confirm('নোটিশটি মুছবেন?')) db.collection('notices').doc(id).delete().then(loadStats); }
@@ -683,6 +684,7 @@ function saveTeacher(){
   if (!d.name) return showMsg('শিক্ষকের নাম দিন');
   if (teachers.some(t => t.id !== editT && t.name === d.name && (t.phone||'') === d.phone)) return showMsg('এই নাম ও মোবাইলের শিক্ষক আগে থেকেই আছে');
   if (d.classOf) { const o = teachers.find(t => t.id !== editT && t.classOf === d.classOf); if (o) return showMsg(d.classOf + '-এর শ্রেণি শিক্ষক হিসেবে ' + o.name + ' আগে থেকেই আছেন'); }
+  if (!confirm(d.name + '-এর তথ্য ' + (editT ? 'আপডেট' : 'সংরক্ষণ') + ' করবেন?')) return;
   if (PH.t.mode === 'new' && PH.t.img) d.photo = PH.t.img;
   else if (PH.t.mode === 'remove' && editT) d.photo = firebase.firestore.FieldValue.delete();
   const p = editT ? db.collection('teachers').doc(editT).update(d) : db.collection('teachers').add(d);
@@ -719,6 +721,7 @@ function saveRoutine(){
     const clash = days.filter(dy => rts.some(x => x.id !== editR && x.day === dy && x.period === base.period));
     if (clash.length) return showMsg('এই শিক্ষকের ' + base.period + 'ম পিরিয়ডে রুটিন আগে থেকেই আছে: ' + clash.map(dy => DAYS[dy]).join(', ') + '\nসেই বার বাদ দিন বা এডিট করুন।');
   }
+  if (!confirm((editR ? 'রুটিনটি আপডেট' : bn(days.length) + 'টি বারে রুটিন সংরক্ষণ') + ' করবেন?')) return;
   const wasEdit = !!editR;
   let p;
   if (editR) p = db.collection('routines').doc(editR).update({...base, day: days[0]});
@@ -846,6 +849,7 @@ function saveProxy(){
   if (!p.date || !p.period || !p.subId || !p.class || !p.subject) return showMsg('তারিখ, পিরিয়ড, প্রক্সি শিক্ষক, শ্রেণি ও বিষয় দিন');
   if (p.absentId === p.subId) return showMsg('অনুপস্থিত ও প্রক্সি শিক্ষক একই হতে পারে না');
   if (p.date === $('pd').value && pxs.some(x => x.id !== editP && p.subId !== NOTEACHER && x.subId === p.subId && x.period === p.period)) return showMsg('এই শিক্ষকের ওই পিরিয়ডে প্রক্সি আগে থেকেই আছে');
+  if (!confirm(bn(p.period) + 'ম পিরিয়ডের প্রক্সি (' + tn(p.subId) + ') ' + (editP ? 'আপডেট' : 'সংরক্ষণ') + ' করবেন?')) return;
   const wasEdit = !!editP;
   const q = editP ? db.collection('proxies').doc(editP).update(p) : db.collection('proxies').add(p);
   guard(q).then(() => { cancelP(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); $('pd').value = p.date; if (!wasEdit) $('pp').value = p.period + 1; loadProxies(); })
@@ -923,6 +927,7 @@ function saveStudent(){
   const d = {name:$('sn').value.trim(), class:$('sc').value, roll:+$('sr').value, phone:$('sp').value.trim(), father:$('sf').value.trim(), gender:$('sg').value};
   if (!d.name || !d.class || !d.roll) return showMsg('নাম, শ্রেণি ও রোল নং দিন');
   if (students.some(s => s.id !== editS && s.class === d.class && +s.roll === d.roll)) return showMsg('এই শ্রেণিতে ' + bn(d.roll) + ' নং রোল আগে থেকেই আছে');
+  if (!confirm(d.name + ' (' + d.class + ', রোল ' + bn(d.roll) + ') ' + (editS ? 'আপডেট' : 'সংরক্ষণ') + ' করবেন?')) return;
   if (PH.s.mode === 'new' && PH.s.img) d.photo = PH.s.img;
   else if (PH.s.mode === 'remove' && editS) d.photo = firebase.firestore.FieldValue.delete();
   const wasEdit = !!editS;
@@ -992,6 +997,7 @@ function uploadStudents(){
   const cls = $('ubc').value;
   if (!cls) return showMsg('আগে শ্রেণি বেছে নিন');
   if (!sRows.length) return;
+  if (!confirm(bn(sRows.length) + ' জন ছাত্র/ছাত্রী (' + cls + ') সংরক্ষণ করবেন?')) return;
   const ops = sRows.map(r => { const ex = students.find(s => s.class === cls && +s.roll === r.roll);
     const g = r.gender || $('ubg').value;
     return ex ? {ref: db.collection('students').doc(ex.id), upd: g ? {name: r.name, gender: g} : {name: r.name}}
@@ -1078,6 +1084,7 @@ function saveExam(){
   if (!d.exam || !d.class || !d.subject || !d.date || !d.start) return showMsg('পরীক্ষার নাম, শ্রেণি, বিষয়, তারিখ ও সময় দিন');
   if (d.end && d.end <= d.start) return showMsg('শেষ সময় শুরুর সময়ের পরে হতে হবে');
   if (exs.some(e => e.id !== editX && e.exam === d.exam && e.class === d.class && e.subject === d.subject)) return showMsg('এই পরীক্ষায় ' + d.class + '-এর "' + d.subject + '" বিষয় আগে থেকেই আছে');
+  if (!confirm(d.class + '-এর "' + d.subject + '" পরীক্ষার রুটিন ' + (editX ? 'আপডেট' : 'সংরক্ষণ') + ' করবেন?')) return;
   const wasEdit = !!editX;
   const p = editX ? db.collection('examRoutines').doc(editX).update(d) : db.collection('examRoutines').add(d);
   guard(p).then(() => {
@@ -1098,6 +1105,7 @@ function saveExamBulk(){
     rows.push({subject: sb, date, start, end});
   }
   if (!rows.length) return showMsg('কমপক্ষে একটি বিষয়ের তারিখ ও সময় দিন');
+  if (!confirm(cls + '-এর ' + bn(rows.length) + 'টি বিষয়ের পরীক্ষার রুটিন সংরক্ষণ করবেন?')) return;
   const batch = db.batch(); let nu = 0, up = 0;
   rows.forEach(r => {
     const d = {exam, class: cls, subject: r.subject, date: r.date, start: r.start, end: r.end}, ex = xFind(exam, cls, r.subject);
@@ -1162,12 +1170,14 @@ function saveSubject(){
   if (editB) {
     if (cls.length > 1) return showMsg('এডিটের সময় একটি শ্রেণিই বেছে নিন। একাধিক শ্রেণিতে যোগ করতে নতুন করে যোগ করুন।');
     if (sbs.some(b => b.id !== editB && b.class === cls[0] && b.name === name)) return showMsg(cls[0] + '-এ "' + name + '" আগে থেকেই আছে');
+    if (!confirm('বিষয়টি আপডেট করবেন?')) return;
     guard(db.collection('subjects').doc(editB).update({name, class: cls[0]})).then(() => { cancelB(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
     return;
   }
   const fresh = cls.filter(c => !sbs.some(b => b.class === c && b.name === name));
   const skip = cls.length - fresh.length;
   if (!fresh.length) return showMsg('"' + name + '" বিষয়টি বেছে নেওয়া সব শ্রেণিতে আগে থেকেই আছে');
+  if (!confirm('"' + name + '" বিষয়টি ' + bn(fresh.length) + 'টি শ্রেণিতে যোগ করবেন?')) return;
   const batch = db.batch();
   fresh.forEach(c => batch.set(db.collection('subjects').doc(), {name, class: c}));
   guard(batch.commit()).then(() => {
@@ -1228,6 +1238,7 @@ function saveDuty(){
   try { if (d.time) localStorage.setItem(dtKey(d.shift), d.time); else localStorage.removeItem(dtKey(d.shift)); } catch (e) {}
   if (duties.some(x => x.id !== editD && x.date === d.date && x.shift === d.shift && x.teacherId === d.teacherId))
     return showMsg(tn(d.teacherId) + '-এর ' + dfmt(d.date) + ' তারিখে ' + d.shift + ' শিফটে ডিউটি আগে থেকেই আছে');
+  if (!confirm(tn(d.teacherId) + '-এর ডিউটি (রুম ' + d.room + ', ' + d.shift + ') ' + (editD ? 'আপডেট' : 'সংরক্ষণ') + ' করবেন?')) return;
   const wasEdit = !!editD;
   const q = editD ? db.collection('examDuties').doc(editD).update(d) : db.collection('examDuties').add(d);
   guard(q).then(() => { cancelD(); $('dd').value = d.date; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); if (!wasEdit) $('dsh').value = d.shift; loadDTime(); })
@@ -1324,6 +1335,7 @@ async function pickHoliday(inp){
 function uploadHolidays(){
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
   if (!hRows.length) return;
+  if (!confirm(bn(hRows.length) + 'টি ছুটি সংরক্ষণ করবেন?')) return;
   const rows = hRows.slice(), chunks = [];
   for (let i = 0; i < rows.length; i += 400) chunks.push(rows.slice(i, i + 400));
   const up = rows.filter(r => hols.some(h => h.id === r.date)).length;
@@ -1337,6 +1349,7 @@ function saveHoliday(){
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
   const date = $('hd').value, reason = $('hr').value.trim();
   if (!date || !reason) return showMsg('তারিখ ও কারণ দিন');
+  if (!confirm(dfmt(date) + ' তারিখের ছুটি (' + reason + ') সংরক্ষণ করবেন?')) return;
   guard(db.collection('holidays').doc(date).set({date, reason})).then(() => { $('hr').value = ''; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
 }
 function delHoliday(id){ if (confirm('এই ছুটিটি মুছবেন?')) db.collection('holidays').doc(id).delete().catch(fail); }
@@ -1404,6 +1417,7 @@ function apAdd(){
   if (!tid || !c || !s) return showMsg('শিক্ষক, শ্রেণি ও বিষয় দিন');
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
   const t = teachers.find(x => x.id === tid) || {}, items = ((permsAll[tid] || {}).items || []).slice();
+  if (!confirm((t.name || '') + '-কে ' + c + ' • ' + s + ' এর নম্বর দেওয়ার পারমিশন দিবেন?')) return;
   if (!items.some(x => x.c === c && x.s === s)) items.push({c, s});
   guard(db.collection('assessPerms').doc(tid).set({name: t.name || '', items}))
     .then(() => { $('apS').value = ''; showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok'); }).catch(fail);
@@ -1452,6 +1466,7 @@ function coAddSub(){
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
   const fresh = cls.filter(c => !coSubs.some(x => x.class === c && x.name === name));
   if (!fresh.length) return showMsg('এই বিষয়টি সব বাছাই করা শ্রেণিতে আগে থেকেই আছে');
+  if (!confirm('"' + name + '" ' + bn(fresh.length) + 'টি শ্রেণিতে যুক্ত করবেন?')) return;
   const batch = db.batch();
   fresh.forEach(c => batch.set(db.collection('coSubjects').doc(), {name, class: c}));
   guard(batch.commit()).then(() => { $('coN').value = ''; coSetCl(false); showMsg('✅ ' + bn(fresh.length) + 'টি শ্রেণিতে যুক্ত হয়েছে', 'ok'); }).catch(fail);
@@ -1464,6 +1479,7 @@ function coAddPerm(){
   if (!tid || !c || !s) return showMsg('শিক্ষক, শ্রেণি ও বিষয় বেছে নিন');
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
   const t = teachers.find(x => x.id === tid) || {}, items = ((coPerms[tid] || {}).items || []).slice();
+  if (!confirm((t.name || '') + '-কে ' + c + ' • ' + s + ' (কো-কারিকুলাম) এর পারমিশন দিবেন?')) return;
   if (!items.some(x => x.c === c && x.s === s)) items.push({c, s});
   guard(db.collection('coCurPerms').doc(tid).set({name: t.name || '', items})).then(() => showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok')).catch(fail);
 }
@@ -1485,6 +1501,7 @@ function epAdd(){
   const name = $('epN').value.trim(), from = $('epF').value, to = $('epT').value;
   if (!name || !from || !to) return showMsg('পরীক্ষার নাম, শুরু ও শেষ তারিখ দিন');
   if (to < from) return showMsg('শেষ তারিখ শুরুর তারিখের আগে হতে পারে না');
+  if (!confirm('"' + name + '" পরীক্ষার সময়সীমা সংরক্ষণ করবেন?')) return;
   if (busy) return showMsg('সেভ হচ্ছে, একটু অপেক্ষা করুন...');
   guard(db.collection('examPeriods').add({name, from, to})).then(() => { $('epN').value = $('epF').value = $('epT').value = ''; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
 }
