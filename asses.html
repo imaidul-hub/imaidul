@@ -134,6 +134,10 @@ function findTeacher(u){
     || (local && (normPhone(t.phone) === local || normPhone(t.mobile) === local))) || null;
 }
 const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+// হাজিরার ডক আইডি attendance.html এর সাথে হুবহু এক
+const ALL = ['ইবতেদায়ী ১ম শ্রেণি','ইবতেদায়ী ২য় শ্রেণি','ইবতেদায়ী ৩য় শ্রেণি','ইবতেদায়ী ৪র্থ শ্রেণি','ইবতেদায়ী ৫ম শ্রেণি','দাখিল ৬ষ্ঠ শ্রেণি','দাখিল ৭ম শ্রেণি','দাখিল ৮ম শ্রেণি','দাখিল ৯ম শ্রেণি','দাখিল ১০ম শ্রেণি','আলিম ১ম বর্ষ','আলিম ২য় বর্ষ','ফাজিল ১ম বর্ষ','ফাজিল ২য় বর্ষ','ফাজিল ৩য় বর্ষ'];
+const attKey = (d, c) => d + '_' + ALL.indexOf(c);
+var emptyMsg = '';
 const docId = (c, s, d) => (c + '__' + s + '__' + d).replace(/\//g, '-');
 
 function classList(){
@@ -163,8 +167,20 @@ async function loadSheet(){
   marks = {}; $('tot').value = ''; $('st').textContent = '';
   if (!c || !s || !d) { cur = []; renderList(); return; }
   if (!isAdmin && !myPerms.some(x => x.c === c && x.s === s)) { cur = []; renderList(); return; }
-  cur = students.filter(x => sCls(x) === c).sort(cmpStu);
+  cur = []; emptyMsg = ''; $('list').innerHTML = '<div class="empty">হাজিরা দেখা হচ্ছে...</div>'; $('svb').classList.add('hide');
+  try {
+    const at = await db.collection('attendance').doc(attKey(d, c)).get();
+    if (t !== tok) return;
+    if (!at.exists) {
+      emptyMsg = 'এই দিনের হাজিরা এখনো নেওয়া হয়নি।<br>আগে হাজিরা নিন, তারপর নম্বর দিন।';
+    } else {
+      const st = at.data().st || {};
+      cur = students.filter(x => sCls(x) === c && st[x.id] === 'p').sort(cmpStu);
+      if (!cur.length) emptyMsg = 'এই দিন এই শ্রেণিতে কেউ উপস্থিত ছিল না।';
+    }
+  } catch (e) { if (t !== tok) return; $('st').textContent = 'হাজিরা লোড করা যায়নি: ' + (e.code || e.message); }
   renderList();
+  if (!cur.length) return;
   try {
     const snap = await db.collection('assessments').doc(docId(c, s, d)).get();
     if (t !== tok) return;
@@ -184,7 +200,7 @@ function renderList(){
   $('svb').classList.toggle('hide', !has);
   if (!has) {
     $('info').textContent = '';
-    if ($('cls').value && $('sub').value && $('dt').value) $('list').innerHTML = '<div class="empty">এই শ্রেণিতে কোনো শিক্ষার্থী নেই</div>';
+    if ($('cls').value && $('sub').value && $('dt').value) $('list').innerHTML = '<div class="empty">' + (emptyMsg || 'এই শ্রেণিতে কোনো শিক্ষার্থী নেই') + '</div>';
     else if ($('cls').value || $('sub').value) $('list').innerHTML = '<div class="empty">শ্রেণি, বিষয় ও তারিখ বেছে নিন</div>';
     return;
   }
@@ -217,7 +233,7 @@ function onTot(){ document.querySelectorAll('.mk').forEach(chk); }
 function stats(){
   let g = 0, a = 0;
   cur.forEach(s => { const m = marks[s.id]; if (!m) return; if (m.abs) a++; else if (m.n !== '') g++; });
-  $('info').textContent = `মোট ${bn(cur.length)} জন • নম্বর দেওয়া ${bn(g)} জন • অনুপস্থিত ${bn(a)} জন`;
+  $('info').textContent = `ওই দিন উপস্থিত ${bn(cur.length)} জন • নম্বর দেওয়া ${bn(g)} জন • অনুপস্থিত ${bn(a)} জন`;
 }
 
 async function save(){
@@ -233,7 +249,6 @@ async function save(){
     else if (m.n !== '') { const n = parseFloat(m.n); if (isNaN(n) || n > total) bad++; else out[st.id] = {...base, n}; }
   });
   if (bad) return alert(bad + ' জনের নম্বর মোট নম্বরের চেয়ে বেশি বা ভুল। লাল ঘরগুলো ঠিক করুন।');
-  if (!confirm(bn(Object.keys(out).length) + ' জনের নম্বর (' + c + ' • ' + s + ') সাবমিট করবেন?')) return;
   if (!confirm(bn(Object.keys(out).length) + ' জনের নম্বর (' + c + ' • ' + s + ') সাবমিট করবেন?')) return;
   const b = $('svbtn'); b.disabled = true; $('st').textContent = 'সেভ হচ্ছে...';
   try {
