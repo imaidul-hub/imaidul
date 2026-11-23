@@ -1187,9 +1187,10 @@ function renderTranscript(R, subs) {
     let at = so ? ATT[so.id] : null;
     if (at) { ATT_R[rk] = at; if (!(st.roll in ATT_R)) ATT_R[st.roll] = at; }
     else if (!so) at = ATT_R[rk] || ATT_R[st.roll] || null;
-    const merit = `<table class="pr-merit"><tr><th style="width:17%">${T('Class Merit', 'শ্রেণি মেধাক্রম')}</th><th style="width:17%">${T('Section Merit', 'শাখা মেধাক্রম')}</th><th style="width:17%">${T('Group Merit', 'গ্রুপ মেধাক্রম')}</th>`
-      + `<th>${T('Attend', 'উপস্থিত')}</th><th>${T('Absent', 'অনুপস্থিত')}</th><th>${T('Discipline', 'শৃঙ্খলা')}</th><th>${T('Cleanliness', 'পরিচ্ছন্নতা')}</th></tr>`
-      + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${LAYOUT.sectionCol ? rankIn(st, sKey) : '—'}</td><td>${LAYOUT.groupCol ? rankIn(st, gKey) : '—'}</td><td>${at ? N(at[1]) : ''}</td><td>${at ? N(at[2]) : ''}</td><td></td><td></td></tr></table>`;
+    const avgMark = gFull ? gTotal / gFull * 100 : null;
+    const attTxt = at && at[0] ? N((at[1] / at[0] * 100).toFixed(2)) + '%' : '';
+    const merit = `<table class="pr-merit"><tr><th style="width:20%">${T('Class Merit', 'ক্লাস মেরিট')}</th><th style="width:20%">${T('Mark (Avg)', 'মার্ক (গড়) %')}</th><th style="width:20%">${T('Attendance', 'উপস্থিতি (%)')}</th><th style="width:20%">${T('Co-curricular', 'কো-কারিকুলাম (%)')}</th><th style="width:20%">${T('Discipline Rating', 'শৃঙ্খলা (রেটিং)')}</th></tr>`
+      + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${avgMark == null ? '' : f2(avgMark) + '%'}</td><td>${attTxt}</td><td><span contenteditable="true" style="display:inline-block;min-width:36px"></span>%</td><td><span contenteditable="true" style="display:inline-block;min-width:60px"></span></td></tr></table>`;
     const sg = en ? ['Signature of Teacher', 'Signature of Coordinator', 'Signature of ' + esc(signer)] : ['শিক্ষকের স্বাক্ষর', 'সমন্বয়কারীর স্বাক্ষর', esc(signer) + '-এর স্বাক্ষর'];
     return `<div class="tr${colMode ? ' col' : ''}" data-roll="${st.roll}" data-name="${esc(st.name)}">${wm}`
       + `<div class="pr-head"><div class="pr-left"><div class="pr-logo${logoCls}">${logo}</div><div class="pr-school"><h2>${inst}</h2>${subHtml ? `<div class="sub">${subHtml}</div>` : ''}`
