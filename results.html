@@ -108,9 +108,10 @@
     #trans .tr .pr-scale { font-size:12.5px; } #trans .tr .pr-scale td, #trans .tr .pr-scale th { padding:4px 5px; }
     #trans .tr .pr-stu { margin-top:12px; } #trans .tr .pr-info td { font-size:14.5px; padding:6px 8px; }
     #trans .tr .pr-tbl { margin-top:14px; font-size:15.5px; flex:1 1 auto; } #trans .tr .pr-tbl th { font-size:13.5px; padding:6px 5px; }
-    #trans .tr .pr-tbl td { padding:5px 5px; } #trans .tr .pr-tbl td.gpa b { font-size:18px; } #trans .tr .pr-tbl tr.gt td { font-size:15px; }
-    #trans .tr .pr-merit { margin-top:16px; font-size:14.5px; } #trans .tr .pr-merit th { font-size:14px; padding:6px; } #trans .tr .pr-merit td { height:52px; font-size:16px; }
-    #trans .tr .pr-foot { padding-top:44px; padding-bottom:6px; } #trans .tr .pr-foot span { font-size:16px; }
+    #trans .tr .pr-tbl td { padding:1.5px 5px; } #trans .tr .pr-tbl td.gpa b { font-size:18px; } #trans .tr .pr-tbl tr.gt td { font-size:15px; }
+    #trans .tr .pr-merit { margin-top:16px; font-size:14.5px; } #trans .tr .pr-merit th { font-size:14px; padding:6px; } #trans .tr .pr-merit td { height:38px; font-size:16px; }
+    #trans .tr .pr-foot { padding-top:20px; padding-bottom:6px; } #trans .tr .pr-foot span { font-size:16px; }
+    #trans .tr .pr-co { margin-top:10px; font-size:14.5px; } #trans .tr .pr-co td { padding:4px 8px; }
     .tr:last-child { break-after:auto; }
     .adm { max-width:none; margin:0 0 4mm; height:136mm; break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     #admit.p2 .adm:nth-child(2n) { break-after:page; margin-bottom:0; }
@@ -125,6 +126,10 @@
     .stu td.d { font-size:12.5px; }
     .stu .sum { font-size:13px; } .stu .sum b { font-size:16px; }
     .stu .sign { margin-top:34px; font-size:12px; }
+  }
+  @media print {
+    #trans .tr { width:calc(1100px / var(--f, 1)); height:calc(784px / var(--f, 1)); zoom:calc(.66 * var(--f, 1)); }
+    #trans .tr > * { flex-shrink:0; }
   }
   #students { display:none; }
   .stu { background:#fff; border:1.5px solid #333; border-radius:4px; padding:10px 12px; margin:0 auto 14px; max-width:760px; font-size:13px; }
@@ -224,6 +229,17 @@
   .pr-merit th, .pr-merit td { border:1px solid #a8a8a8; padding:4px 6px; text-align:center; }
   .pr-merit th { background:#e1e5ec; font-weight:600; font-size:12.5px; }
   .pr-merit td { height:40px; font-weight:600; font-size:14px; }
+  .pr-co { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; position:relative; z-index:1; }
+  .pr-co td { border:1px solid #a8a8a8; padding:3px 8px; text-align:center; font-weight:600; line-height:1.4; }
+  .pr-co td.cot { width:17%; background:#e1e5ec; font-size:12.5px; white-space:nowrap; }
+  .pr-co td.cob { text-align:left; padding-left:12px; }
+  .pr-co .cnf { font-weight:600; color:#666; }
+  .pr-co .ci { display:inline-block; white-space:nowrap; }
+  .pr-co .ci + .ci::before { content:"•"; margin:0 10px; font-weight:700; }
+  .pr-co .cl, .pr-co .cv { display:inline-block; }
+  .pr-co .cl:empty, .pr-co .cv:empty { min-width:28px; }
+  @media screen { .pr-co .cl:empty::before { content:"বিষয়"; color:#aaa; } .pr-co .cv:empty::before { content:"__"; color:#aaa; } }
+  @media print { .pr-co .ci.empty { display:none; } }
   .pr-foot { display:flex; justify-content:space-between; align-items:flex-end; margin-top:auto; padding:30px 24px 2px; position:relative; z-index:1; }
   .tr.fit .pr-logo { width:96px; height:96px; }
   .tr.fit .pr-school h2 { font-size:31px; } .tr.fit .pr-school .sub { font-size:15px; line-height:1.55; }
@@ -231,9 +247,10 @@
   .tr.fit .pr-scale { font-size:12.5px; } .tr.fit .pr-scale td, .tr.fit .pr-scale th { padding:4px 5px; }
   .tr.fit .pr-stu { margin-top:12px; } .tr.fit .pr-info td { font-size:14.5px; padding:6px 8px; }
   .tr.fit .pr-tbl { margin-top:14px; font-size:15.5px; flex:1 1 auto; } .tr.fit .pr-tbl th { font-size:13.5px; padding:6px 5px; }
-  .tr.fit .pr-tbl td { padding:5px 5px; } .tr.fit .pr-tbl td.gpa b { font-size:18px; } .tr.fit .pr-tbl tr.gt td { font-size:15px; }
-  .tr.fit .pr-merit { margin-top:16px; font-size:14.5px; } .tr.fit .pr-merit th { font-size:14px; padding:6px; } .tr.fit .pr-merit td { height:52px; font-size:16px; }
-  .tr.fit .pr-foot { padding-top:44px; padding-bottom:6px; } .tr.fit .pr-foot span { font-size:16px; }
+  .tr.fit .pr-tbl td { padding:1.5px 5px; } .tr.fit .pr-tbl td.gpa b { font-size:18px; } .tr.fit .pr-tbl tr.gt td { font-size:15px; }
+  .tr.fit .pr-merit { margin-top:16px; font-size:14.5px; } .tr.fit .pr-merit th { font-size:14px; padding:6px; } .tr.fit .pr-merit td { height:38px; font-size:16px; }
+  .tr.fit .pr-foot { padding-top:20px; padding-bottom:6px; } .tr.fit .pr-foot span { font-size:16px; }
+  .tr.fit .pr-co { margin-top:10px; font-size:14.5px; } .tr.fit .pr-co td { padding:4px 8px; }
 .tgl { display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
   .tgl input { position:absolute; opacity:0; width:0; height:0; }
   .tgl .sw { position:relative; width:46px; height:26px; border-radius:999px; background:#9aa3b5; transition:background .2s; flex:none; }
@@ -247,8 +264,9 @@
   .tr.col .pr-school h2 { color:#0b5c37; }
   .tr.col .pr-title { border-top-color:#c9a227; border-bottom-color:#0b5c37; color:#0b5c37; }
   .tr.col .pr-photo { border-color:#0f7a4a; background:#e3f2e9; }
-  .tr.col .pr-info td, .tr.col .pr-scale td, .tr.col .pr-tbl td, .tr.col .pr-merit td { border-color:#9bbfab; }
+  .tr.col .pr-info td, .tr.col .pr-scale td, .tr.col .pr-tbl td, .tr.col .pr-merit td, .tr.col .pr-co td { border-color:#9bbfab; }
   .tr.col .pr-info td.k { background:#dcefe3; color:#0b5c37; }
+  .tr.col .pr-co td.cot { background:#0f7a4a; color:#fff; border-color:#0b5c37; }
   .tr.col .pr-scale th, .tr.col .pr-tbl th, .tr.col .pr-merit th { background:#0f7a4a; color:#fff; border-color:#0b5c37; }
   .tr.col .pr-tbl td.gpa, .tr.col .pr-tbl td.gpa b { color:#0b5c37; }
   .tr.col .pr-tbl td.fl, .tr.col .pr-tbl td.fl b { color:#b00020; }
@@ -413,7 +431,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <div class="row">
       <label class="chk">সেকশন: <input type="text" id="tsection" style="width:150px" placeholder="যেমন: Boys (Science)"></label>
       <label class="chk">গ্রুপ: <input type="text" id="tgroup" style="width:120px" placeholder="যেমন: Science"></label>
-      <label class="chk">প্রধান স্বাক্ষরকারী: <input type="text" id="tsign" value="Headmaster" style="width:130px"></label>
+      <label class="chk">প্রধান স্বাক্ষরকারী: <input type="text" id="tsign" value="Principal" style="width:130px"></label>
     </div>
     <div class="row" style="align-items:flex-start">
       <label class="chk" style="align-items:flex-start">নামের নিচের লাইন (প্রতি লাইনে একটি):
@@ -518,7 +536,7 @@ function stuName(roll, sec) { const o = stuObj(roll, sec); return o ? o.name : '
 // ATT[শিক্ষার্থীর id] = [কার্যদিবস, উপস্থিত, অনুপস্থিত(ছুটি সহ)] — সাল: ট্রান্সক্রিপ্টের "সাল" ঘর, জানুয়ারি–ডিসেম্বর
 let ATT = {}, ATT_KEY = '', ATT_R = {};   // ATT_R: রোল|শাখা অনুযায়ী কপি — লগইন ছাড়া students কালেকশন পড়া যায় না, তাই
 const sameCls = (a, b) => !!a && !!b && (a === b || a.endsWith(' ' + b) || a.startsWith(b + ' ') || b.endsWith(' ' + a) || b.startsWith(a + ' '));
-async function loadAtt() {
+async function loadAtt0() {
   if (!fauth.currentUser || !GRID) return false;   // লগইন ছাড়া পড়া যায় না; তখন প্রকাশিত ফলাফলের সংরক্ষিত তথ্য ব্যবহার হয়
   const k = clsKey($('cls').value), y = num($('yr').value) || new Date().getFullYear(), key = y + '|' + k;
   if (!k || ATT_KEY === key) return false;
@@ -538,6 +556,37 @@ async function loadAtt() {
   } catch (e) { console.error(e); ATT_KEY = ''; }
   return false;
 }
+/* ---------- কো-কারিকুলাম (coCurMarks কালেকশন: প্রতিদিনের নম্বর → বিষয়ভিত্তিক শতাংশ) ---------- */
+// CO[শিক্ষার্থীর id] = [[বিষয়, শতাংশ], ...] — শতাংশ = প্রাপ্ত নম্বরের যোগফল ÷ মোট নম্বরের যোগফল × ১০০ (যে দিন নম্বর দেওয়া হয়নি/অনুপস্থিত, সে দিন ধরা হয় না)
+let CO = {}, CO_KEY = '', CO_R = {};
+async function loadCo() {
+  if (!fauth.currentUser || !GRID) return false;
+  const k = clsKey($('cls').value), y = num($('yr').value) || new Date().getFullYear(), key = y + '|' + k;
+  if (!k || CO_KEY === key) return false;
+  CO_KEY = key;
+  try {
+    await loadStudents();
+    const q = await fdb.collection('coCurMarks').where('date', '>=', y + '-01-01').where('date', '<=', y + '-12-31').get();
+    if (CO_KEY !== key) return false;
+    const acc = {};
+    q.docs.forEach(d => {
+      const r = d.data(); if (!r.marks || !r.subject || !(+r.total > 0)) return;
+      if (!sameCls(clsKey(r.cls), k)) return;
+      Object.keys(r.marks).forEach(id => {
+        const m = r.marks[id]; if (!m || m.n == null || isNaN(+m.n)) return;
+        const a = (acc[id] = acc[id] || {}), x = (a[r.subject] = a[r.subject] || [0, 0]);
+        x[0] += +m.n; x[1] += +r.total;
+      });
+    });
+    const out = {};
+    Object.keys(acc).forEach(id => {
+      out[id] = Object.keys(acc[id]).sort((a, b) => a.localeCompare(b, 'bn')).filter(n => acc[id][n][1] > 0).map(n => [n, acc[id][n][0] / acc[id][n][1] * 100]);
+    });
+    if (Object.keys(out).length) { CO = out; return true; }
+  } catch (e) { console.error(e); CO_KEY = ''; }
+  return false;
+}
+async function loadAtt() { const r = await Promise.all([loadAtt0(), loadCo()]); return r[0] || r[1]; }
 function setCls(v) {
   const sel = $('cls'); v = clsKey(v);
   if (v && ![...sel.options].some(o => o.value === v)) {
@@ -1108,7 +1157,7 @@ function renderTranscript(R, subs) {
   const wm = LOGO ? `<img class="pr-wm" src="${LOGO}" alt="" onerror="this.style.display='none'">` : '';
   const subHtml = ($('tsub').value || '').split('\n').map(x => x.trim()).filter(Boolean).map(esc).join('<br>');
   const tmed = $('tmedium').value.trim(), tshift = $('tshift').value.trim(), tsec = $('tsection').value.trim(), tgrp = $('tgroup').value.trim();
-  const signer = $('tsign').value.trim() || 'Headmaster';
+  const signer = $('tsign').value.trim() || 'Principal';
   const rowOf = new Map(); LAYOUT.rows.forEach(r => rowOf.set(num(GRID[cl(LAYOUT.rollCol) + r]), r));
   const rawOf = (st, col) => { const r = rowOf.get(st.roll); return (r && col) ? String(GRID[cl(col) + r] ?? '').trim() : ''; };
   const gKey = st => LAYOUT.groupCol ? rawOf(st, LAYOUT.groupCol) : '';
@@ -1187,20 +1236,37 @@ function renderTranscript(R, subs) {
     let at = so ? ATT[so.id] : null;
     if (at) { ATT_R[rk] = at; if (!(st.roll in ATT_R)) ATT_R[st.roll] = at; }
     else if (!so) at = ATT_R[rk] || ATT_R[st.roll] || null;
+    let coD = so ? CO[so.id] : null;
+    if (coD) { CO_R[rk] = coD; if (!(st.roll in CO_R)) CO_R[st.roll] = coD; }
+    else if (!so) coD = CO_R[rk] || CO_R[st.roll] || null;
+    const pf = v => N((+(+v).toFixed(2)).toString());
+    const coItems = coD && coD.length ? coD.map(x => [x[0], pf(x[1])]) : [];
+    const coAvg = coD && coD.length ? pf(coD.reduce((p, x) => p + x[1], 0) / coD.length) + '%' : '';
     const avgMark = gFull ? gTotal / gFull * 100 : null;
     const attTxt = at && at[0] ? N((at[1] / at[0] * 100).toFixed(2)) + '%' : '';
     const merit = `<table class="pr-merit"><tr><th style="width:20%">${T('Class Merit', 'ক্লাস মেরিট')}</th><th style="width:20%">${T('Mark (Avg)', 'মার্ক (গড়) %')}</th><th style="width:20%">${T('Attendance', 'উপস্থিতি (%)')}</th><th style="width:20%">${T('Co-curricular', 'কো-কারিকুলাম (%)')}</th><th style="width:20%">${T('Discipline Rating', 'শৃঙ্খলা (রেটিং)')}</th></tr>`
-      + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${avgMark == null ? '' : f2(avgMark) + '%'}</td><td>${attTxt}</td><td><span contenteditable="true" style="display:inline-block;min-width:36px"></span>%</td><td><span contenteditable="true" style="display:inline-block;min-width:60px"></span></td></tr></table>`;
+      + `<tr><td>${rankTxt(st.rank, R.present)}</td><td>${avgMark == null ? '' : f2(avgMark) + '%'}</td><td>${attTxt}</td><td class="cop">${coAvg}</td><td><span contenteditable="true" style="display:inline-block;min-width:60px"></span></td></tr></table>`;
+    const co = `<table class="pr-co"><tr><td class="cot">${T('Co-curriculum', 'কো-কারিকুলাম')}</td><td class="cob">` + (coItems.length ? coItems : [null]).map(l => !l ? `<span class="cnf">${T('Co-curriculum not found', 'কো-কারিকুলাম পাওয়া যায়নি')}</span>` : `<span class="ci${l[0] || l[1] ? '' : ' empty'}"><span class="cl" contenteditable="true">${esc(l[0])}</span>: <span class="cv" contenteditable="true">${l[1]}</span>%</span>`).join('') + `</td></tr></table>`;
     const sg = en ? ['Signature of Teacher', 'Signature of Coordinator', 'Signature of ' + esc(signer)] : ['শিক্ষকের স্বাক্ষর', 'সমন্বয়কারীর স্বাক্ষর', esc(signer) + '-এর স্বাক্ষর'];
-    return `<div class="tr${colMode ? ' col' : ''}" data-roll="${st.roll}" data-name="${esc(st.name)}">${wm}`
+    return `<div class="tr${colMode ? ' col' : ''}" data-en="${en ? 1 : 0}" data-roll="${st.roll}" data-name="${esc(st.name)}">${wm}`
       + `<div class="pr-head"><div class="pr-left"><div class="pr-logo${logoCls}">${logo}</div><div class="pr-school"><h2>${inst}</h2>${subHtml ? `<div class="sub">${subHtml}</div>` : ''}`
       + `<div class="pr-title">${T('Progress Report', 'প্রগ্রেস রিপোর্ট')} : ${exam}</div></div></div>`
       + `<div class="pr-right">${scaleHtml}</div></div>`
       + `<div class="pr-stu"><div class="pr-photo"></div>${infoHtml}</div>`
-      + `<table class="pr-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>${merit}`
+      + `<table class="pr-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>${co}${merit}`
       + `<div class="pr-foot"><span>${sg[0]}</span><span>${sg[1]}</span><span>${sg[2]}</span></div></div>`;
   }).join('');
 }
+
+$('trans').addEventListener('input', e => {
+  const el = e.target.closest && e.target.closest('.pr-co .ci'); if (!el) return;
+  const tr = el.closest('.tr'), tb = el.closest('.pr-co'), en = tr.dataset.en === '1';
+  el.classList.toggle('empty', !el.querySelector('.cl').textContent.trim() && !el.querySelector('.cv').textContent.trim());
+  const num = t => { const v = parseFloat(String(t).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/[^0-9.]/g, '')); return isFinite(v) ? v : null; };
+  const vals = [...tb.querySelectorAll('.cv')].map(x => num(x.textContent)).filter(v => v != null);
+  const c = tr.querySelector('.cop');
+  if (c) { if (!vals.length) c.textContent = ''; else { const x = (+(vals.reduce((p, q) => p + q, 0) / vals.length).toFixed(2)).toString(); c.textContent = (en ? x : bn(x)) + '%'; } }
+});
 
 async function loadSheet(path) {
   GRID = await readGrid(ZIP, path);
@@ -1290,7 +1356,7 @@ $('trBox').addEventListener('input', e => {
   if (e.target.id === 'tlogo' && e.target.files[0]) { const fr = new FileReader(); fr.onload = () => { LOGO = fr.result; render(); }; fr.readAsDataURL(e.target.files[0]); return; }
   GRID && render();
 });
-function doPrint(){ if (window.AndroidPrint && typeof AndroidPrint.print === 'function') AndroidPrint.print(); else window.print(); }
+function doPrint(){ try { fitPrintTr(); } catch (e) {} if (window.AndroidPrint && typeof AndroidPrint.print === 'function') AndroidPrint.print(); else window.print(); }
 $('print').addEventListener('click', () => {
   if (GRID) renderAdmit();
   if (GRID) render(); if (GRID) renderStudents(window.__results, [...window.__results.reg, ...window.__results.opt]); doPrint(); });
@@ -1456,6 +1522,32 @@ window.addEventListener('beforeprint', () => {
   t.style.setProperty('--pz', nat > AVAIL ? (AVAIL / nat * 0.985).toFixed(4) : '1');
 });
 
+/* ট্রান্সক্রিপ্ট প্রিন্ট: কার্ডের কনটেন্ট নির্ধারিত উচ্চতায় না ধরলে পুরো কার্ড আনুপাতিক ছোট হয় (স্বাক্ষর/টেবিল যেন একটার ওপর আরেকটা না পড়ে) */
+function fitPrintTr() {
+  const box = $('trans'); if (!box) return;
+  const cards = [...box.querySelectorAll('.tr')]; if (!cards.length) return;
+  const st = document.createElement('div');
+  st.style.cssText = 'position:fixed;left:-99999px;top:0;width:1100px;visibility:hidden;pointer-events:none;';
+  document.body.appendChild(st);
+  try {
+    cards.forEach(c => {
+      let f = 1;
+      for (let i = 0; i < 4; i++) {
+        const el = c.cloneNode(true);
+        el.classList.add('fit'); el.removeAttribute('style');
+        el.style.cssText = 'width:' + (1100 / f).toFixed(1) + 'px;max-width:none;margin:0;height:auto;zoom:1;';
+        st.appendChild(el);
+        const H = el.offsetHeight;
+        st.removeChild(el);
+        if (H <= 784 * 0.97 / f) break;   // এই মাপে ধরে গেছে
+        f = Math.max(0.55, Math.min(1, 784 / H * 0.96));
+      }
+      c.style.setProperty('--f', f.toFixed(4));
+    });
+  } finally { st.remove(); }
+}
+window.addEventListener('beforeprint', () => { try { fitPrintTr(); } catch (e) { console.error(e); } });
+
 /* ---------- ট্রান্সক্রিপ্টে লং প্রেস (বা ডান-ক্লিক) → ছবি ডাউনলোডের পপ-আপ ---------- */
 (function () {
   const box = $('trans'); let timer = null, sx = 0, sy = 0, lastShow = 0;
@@ -1613,6 +1705,7 @@ async function loadPublished(id) {
     const buf = bufFromB64(b64);
     try { ATT = d.attData ? JSON.parse(d.attData) : {}; } catch (e) { ATT = {}; }
     try { ATT_R = d.attRoll ? JSON.parse(d.attRoll) : {}; } catch (e) { ATT_R = {}; } ATT_KEY = '';
+    try { CO_R = d.coRoll ? JSON.parse(d.coRoll) : {}; } catch (e) { CO_R = {}; } CO_KEY = '';
     lastBuf = buf; curPubId = id;
     await processBuffer(buf, d.settings ? JSON.parse(d.settings) : null);
     msg('', true);
