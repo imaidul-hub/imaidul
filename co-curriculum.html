@@ -185,7 +185,7 @@ async function loadSheet(){
       const v = snap.data();
       $('tot').value = v.total != null ? bn(v.total) : '';
       marks = {};
-      Object.keys(v.marks || {}).forEach(id => { const m = v.marks[id]; marks[id] = {n: m.n != null ? String(m.n) : '', abs: !!m.abs}; });
+      Object.keys(v.marks || {}).forEach(id => { const m = v.marks[id]; marks[id] = {n: m.n != null ? String(m.n) : ''}; });
       $('st').textContent = '✔ আগে সেভ করা নম্বর দেখানো হচ্ছে';
       renderList();
     }
@@ -205,8 +205,7 @@ function renderList(){
     const m = marks[s.id] || {n: '', abs: false}, rl = sRoll(s);
     return `<div class="r"><span class="no">${bn(i + 1)}</span>
       <div class="nm"><b>${esc(s.name)}</b><span class="mu">${rl ? 'রোল: ' + bn(esc(rl)) : '&nbsp;'}</span></div>
-      <label class="ac"><input type="checkbox" ${m.abs ? 'checked' : ''} onchange="setAbs('${s.id}',this)">অনু.</label>
-      <input class="mk" inputmode="decimal" placeholder="–" value="${esc(m.n ? bn(m.n) : '')}" ${m.abs ? 'disabled' : ''} oninput="setN('${s.id}',this)"></div>`;
+      <input class="mk" inputmode="decimal" placeholder="–" value="${esc(m.n ? bn(m.n) : '')}" oninput="setN('${s.id}',this)"></div>`;
   }).join('');
   document.querySelectorAll('.mk').forEach(chk);
   stats();
@@ -218,19 +217,11 @@ function setN(id, el){
   (marks[id] = marks[id] || {n: '', abs: false}).n = v;
   chk(el); stats();
 }
-function setAbs(id, el){
-  const m = marks[id] = marks[id] || {n: '', abs: false};
-  m.abs = el.checked;
-  const inp = el.closest('.r').querySelector('.mk');
-  inp.disabled = m.abs;
-  if (m.abs) { m.n = ''; inp.value = ''; inp.classList.remove('bad'); }
-  stats();
-}
 function onTot(){ document.querySelectorAll('.mk').forEach(chk); }
 function stats(){
-  let g = 0, a = 0;
-  cur.forEach(s => { const m = marks[s.id]; if (!m) return; if (m.abs) a++; else if (m.n !== '') g++; });
-  $('info').textContent = `ওই দিন উপস্থিত ${bn(cur.length)} জন • নম্বর দেওয়া ${bn(g)} জন • অনুপস্থিত ${bn(a)} জন`;
+  let g = 0;
+  cur.forEach(s => { const m = marks[s.id]; if (m && m.n !== '') g++; });
+  $('info').textContent = `ওই দিন উপস্থিত ${bn(cur.length)} জন • নম্বর দেওয়া ${bn(g)} জন • ফাঁকা (অনুপস্থিত) ${bn(cur.length - g)} জন`;
 }
 
 async function save(){
@@ -240,10 +231,10 @@ async function save(){
   if (!isAdmin && !myPerms.some(x => x.c === c && x.s === s)) return alert('এই শ্রেণি ও বিষয়ে নম্বর দেওয়ার পারমিশন আপনার নেই');
   const out = {}; let bad = 0;
   cur.forEach(st => {
-    const m = marks[st.id]; if (!m) return;
+    const m = marks[st.id] || {n: ''};
     const base = {name: st.name || '', roll: sRoll(st)};
-    if (m.abs) out[st.id] = {...base, abs: true};
-    else if (m.n !== '') { const n = parseFloat(m.n); if (isNaN(n) || n > total) bad++; else out[st.id] = {...base, n}; }
+    if (m.n === '') out[st.id] = {...base, abs: true};
+    else { const n = parseFloat(m.n); if (isNaN(n) || n > total) bad++; else out[st.id] = {...base, n}; }
   });
   if (bad) return alert(bad + ' জনের নম্বর মোট নম্বরের চেয়ে বেশি বা ভুল। লাল ঘরগুলো ঠিক করুন।');
   const ab = Object.values(out).filter(x => x.abs).length;
