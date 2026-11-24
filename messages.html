@@ -115,6 +115,25 @@ firebase.initializeApp({
 const auth = firebase.auth(), db = firebase.firestore();
 try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) {}
 
+// Cloudflare Worker এর ঠিকানা (deploy এর পর পাওয়া URL এখানে বসান)
+const PUSH_URL = 'https://cfm-push.imaidul.workers.dev';
+
+// ── পুশ নোটিফিকেশন: এই ডিভাইসের FCM টোকেন শিক্ষকের আইডির সাথে সংরক্ষণ ──
+let fcmTok = '';
+function saveToken(){
+  try {
+    const u = auth.currentUser;
+    if (!fcmTok || !u || typeof me === 'undefined' || !me) return;
+    db.collection('fcmTokens').doc(fcmTok).set({
+      token: fcmTok, teacherId: me.id, uid: u.uid,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(() => {});
+  } catch (e) {}
+}
+// অ্যান্ড্রয়েড অ্যাপ পেজ লোড হলে/টোকেন বদলালে এটি কল করে
+window.onFcmToken = t => { fcmTok = t || ''; saveToken(); };
+try { if (window.AndroidPrint && AndroidPrint.getFcmToken) window.onFcmToken(AndroidPrint.getFcmToken()); } catch (e) {}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
@@ -168,6 +187,7 @@ auth.onAuthStateChanged(u => {
     me = findMe(u);
     if (!me) { gate('আপনার অ্যাকাউন্ট শিক্ষক তালিকার সাথে মেলেনি, তাই বার্তা ব্যবহার করা যাচ্ছে না।'); return; }
     $('gate').classList.add('hide');
+    saveToken();
     if (first) {
       unsubIn = db.collection('messages').where('toId', '==', me.id).onSnapshot(q => {
         inMsgs = q.docs.map(d => ({ id: d.id, ...d.data() })); refresh();
@@ -286,7 +306,14 @@ function sendMsg(){
   db.collection('messages').add({
     fromId: me.id, fromName: me.name || '', toId: openWith, body, read: false,
     ts: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
+  }).then(ref => {
+    // প্রাপককে নোটিফিকেশন পাঠাতে Worker কে জানানো (ব্যর্থ হলে মেসেজ পাঠানো আটকায় না)
+    try {
+      auth.currentUser.getIdToken().then(t => fetch(PUSH_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: t, msgId: ref.id })
+      }).catch(() => {})).catch(() => {});
+    } catch (e) {}
     ta.value = ''; ta.style.height = '42px'; ta.focus();
     $('thread').dataset.fresh = '1';
   }).catch(() => alert('পাঠানো যায়নি, আবার চেষ্টা করুন')).finally(() => { b.disabled = false; });
