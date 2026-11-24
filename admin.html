@@ -776,7 +776,10 @@ function notifyT(ids, title, body){
     auth.currentUser.getIdToken().then(t => fetch(PUSH_URL, {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({idToken: t, type: 'admin', teacherIds: ids, title, body})
-    }).catch(() => {})).catch(() => {});
+    }).then(r => r.json().then(j => ({st: r.status, j}))).then(({st, j}) => {
+      if (j && j.ok) showMsg(j.sent ? '🔔 নোটিফিকেশন গেছে (' + bn(j.sent) + '/' + bn(j.devices) + ' ডিভাইস)' : (j.devices ? '⚠️ নোটিফিকেশন পাঠানো যায়নি: ' + ((j.errors || [])[0] || '') : '⚠️ নোটিফিকেশন যায়নি: এই শিক্ষকের কোনো ডিভাইস টোকেন নেই (অ্যাপে লগইন করেননি)'), j.sent ? 'ok' : 'err');
+      else showMsg('⚠️ নোটিফিকেশন ব্যর্থ [' + st + ']: ' + ((j && j.error) || ''), 'err');
+    }).catch(() => showMsg('⚠️ নোটিফিকেশন Worker-এ পৌঁছায়নি (Worker deploy/ALLOWED_ORIGIN দেখুন)', 'err'))).catch(() => {});
   } catch (e) {}
 }
 const tn = id => id === NOTEACHER ? 'শিক্ষক নেই' : ((teachers.find(t => t.id === id) || {}).name || '—');
