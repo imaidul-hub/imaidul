@@ -769,17 +769,25 @@ var pxs = [], unsubP = null, editP = null;
 const NOTEACHER = '__none__';
 // ── শিক্ষকের মোবাইলে পুশ নোটিফিকেশন (Cloudflare Worker এর মাধ্যমে) ──
 const PUSH_URL = 'https://cfm-push.imaidul.workers.dev';
-function notifyT(ids, title, body){
+function notifyT(ids, title, body, type){
   try {
     ids = [...new Set([].concat(ids).filter(x => x && x !== NOTEACHER))];
     if (!ids.length || !auth.currentUser) return;
+    // ১) শিক্ষকের নোটিফিকেশন পেজের জন্য Firestore এ সংরক্ষণ
+    const b = db.batch();
+    ids.forEach(id => b.set(db.collection('notifications').doc(), {
+      teacherId: id, title, body, type: type || 'admin', read: false,
+      ts: firebase.firestore.FieldValue.serverTimestamp()
+    }));
+    b.commit().catch(() => showMsg('⚠️ নোটিফিকেশন পেজে সংরক্ষণ হয়নি (Firestore Rules এ notifications কালেকশন অনুমোদন করুন)', 'err'));
+    // ২) মোবাইলে পুশ
     auth.currentUser.getIdToken().then(t => fetch(PUSH_URL, {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({idToken: t, type: 'admin', teacherIds: ids, title, body})
     }).then(r => r.json().then(j => ({st: r.status, j}))).then(({st, j}) => {
-      if (j && j.ok) showMsg(j.sent ? '🔔 নোটিফিকেশন গেছে (' + bn(j.sent) + '/' + bn(j.devices) + ' ডিভাইস)' : (j.devices ? '⚠️ নোটিফিকেশন পাঠানো যায়নি: ' + ((j.errors || [])[0] || '') : '⚠️ নোটিফিকেশন যায়নি: এই শিক্ষকের কোনো ডিভাইস টোকেন নেই (অ্যাপে লগইন করেননি)'), j.sent ? 'ok' : 'err');
-      else showMsg('⚠️ নোটিফিকেশন ব্যর্থ [' + st + ']: ' + ((j && j.error) || ''), 'err');
-    }).catch(() => showMsg('⚠️ নোটিফিকেশন Worker-এ পৌঁছায়নি (Worker deploy/ALLOWED_ORIGIN দেখুন)', 'err'))).catch(() => {});
+      if (j && j.ok) { if (!j.sent) showMsg(j.devices ? '⚠️ পুশ পাঠানো যায়নি: ' + ((j.errors || [])[0] || '') : 'ℹ️ নোটিফিকেশন পেজে গেছে, কিন্তু এই শিক্ষকের ফোনে পুশ যায়নি (অ্যাপে লগইন/টোকেন নেই)', 'err'); }
+      else showMsg('⚠️ পুশ ব্যর্থ [' + st + ']: ' + ((j && j.error) || ''), 'err');
+    }).catch(() => showMsg('⚠️ পুশ Worker-এ পৌঁছায়নি', 'err'))).catch(() => {});
   } catch (e) {}
 }
 const tn = id => id === NOTEACHER ? 'শিক্ষক নেই' : ((teachers.find(t => t.id === id) || {}).name || '—');
@@ -1437,7 +1445,7 @@ function apAdd(){
   if (!confirm((t.name || '') + '-কে ' + c + ' • ' + s + ' এর নম্বর দেওয়ার পারমিশন দিবেন?')) return;
   if (!items.some(x => x.c === c && x.s === s)) items.push({c, s});
   guard(db.collection('assessPerms').doc(tid).set({name: t.name || '', items}))
-    .then(() => { notifyT(tid, '🔑 নম্বর এন্ট্রির পারমিশন', c + ' • ' + s + ' এর নম্বর দেওয়ার পারমিশন পেয়েছেন।'); $('apS').value = ''; showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok'); }).catch(fail);
+    .then(() => { notifyT(tid, '🔑 মূল্যায়নের পারমিশন', 'আপনাকে ' + c.replace(/\s*শ্রেণি$/, '') + ' শ্রেণির (' + s + ') মূল্যায়ন করার পারমিশন দেওয়া হয়েছে।', 'perm'); $('apS').value = ''; showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok'); }).catch(fail);
 }
 function apDel(tid, i){
   if (!confirm('এই পারমিশন মুছবেন?')) return;
