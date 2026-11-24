@@ -40,6 +40,9 @@ a{color:inherit;text-decoration:none}
 .row.un .rt span{color:var(--pr);font-weight:700}
 .row.un .pv{color:var(--tx);font-weight:600}
 .cnt{background:var(--pr);color:#fff;border-radius:999px;font-size:12px;min-width:20px;line-height:20px;text-align:center;padding:0 6px;flex:none}
+.av.grp{background:var(--gd);font-size:20px}
+.sn{font-size:12px;font-weight:700;color:var(--pr);margin-bottom:2px}
+.row.pin{background:linear-gradient(0deg,var(--card),var(--card))}
 .empty{padding:40px 20px;text-align:center;color:var(--mu)}
 .fab{position:fixed;right:max(18px,calc(50% - 332px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--pr);color:#fff;font-size:24px;box-shadow:0 4px 12px rgba(0,0,0,.3);cursor:pointer;z-index:5}
 /* চ্যাট স্ক্রিন */
@@ -173,6 +176,7 @@ function gate(msg){
 function setBar(id){
   const bar = $('bar');
   if (!id) { bar.innerHTML = '<b>✉️ মেসেজ</b><a class="lk" href="index.html">হোম</a>'; return; }
+  if (id === 'GROUP') { bar.innerHTML = '<button class="back" onclick="goBack()">←</button><div class="av grp">👥</div><b>গ্রুপ চ্যাট</b>'; return; }
   const t = tById(id), nm = nameOf(id) || (convMsgs(id)[0] || {}).fromName || 'শিক্ষক';
   bar.innerHTML = '<button class="back" onclick="goBack()">←</button>' + avatar(t, nm) + '<b>' + esc(nm) + '</b>';
 }
@@ -211,10 +215,20 @@ function allMsgs(){
   const m = new Map();
   inMsgs.forEach(x => m.set(x.id, x));
   outMsgs.forEach(x => m.set(x.id, x));
-  return [...m.values()];
+  // নিজের পাঠানো গ্রুপ বার্তার প্রতিটি সদস্যের কপি একটি বার্তা হিসেবে দেখানো
+  const res = [], g = new Map();
+  m.forEach(x => {
+    if (x.grp && x.fromId === me.id) {
+      const k = x.gid || x.id; let o = g.get(k);
+      if (!o) { o = { ...x, id: k, ids: [x.id], read: !!x.read }; g.set(k, o); res.push(o); }
+      else { o.ids.push(x.id); o.read = o.read && !!x.read; }
+    } else res.push(x);
+  });
+  return res;
 }
 const otherOf = m => m.fromId === me.id ? m.toId : m.fromId;
-const convMsgs = id => allMsgs().filter(m => otherOf(m) === id).sort((a, b) => ms(a.ts) - ms(b.ts));
+const convKey = m => m.grp ? 'GROUP' : otherOf(m);
+const convMsgs = id => allMsgs().filter(m => convKey(m) === id).sort((a, b) => ms(a.ts) - ms(b.ts));
 
 function refresh(){
   if (!me) return;
@@ -225,13 +239,20 @@ function refresh(){
 
 function renderList(){
   const by = {};
-  allMsgs().forEach(m => { (by[otherOf(m)] = by[otherOf(m)] || []).push(m); });
-  const rows = Object.keys(by).map(id => {
+  allMsgs().forEach(m => { (by[convKey(m)] = by[convKey(m)] || []).push(m); });
+  const rows = Object.keys(by).filter(id => id !== 'GROUP').map(id => {
     const l = by[id].sort((a, b) => ms(a.ts) - ms(b.ts));
     return { id, last: l[l.length - 1], un: l.filter(m => m.toId === me.id && !m.read).length };
   }).sort((a, b) => ms(b.last.ts) - ms(a.last.ts));
-  if (!rows.length) { $('chats').innerHTML = '<div class="empty">কোনো কথোপকথন নেই।<br>নিচের ✏️ বাটনে চাপ দিয়ে নতুন চ্যাট শুরু করুন।</div>'; return; }
-  $('chats').innerHTML = rows.map(r => {
+  // উপরে স্থায়ীভাবে গ্রুপ চ্যাট
+  const gl = (by.GROUP || []).sort((a, b) => ms(a.ts) - ms(b.ts)), gLast = gl[gl.length - 1];
+  const gUn = gl.filter(m => m.toId === me.id && !m.read).length;
+  const gSender = gLast ? (gLast.fromId === me.id ? 'আপনি' : (nameOf(gLast.fromId) || gLast.fromName || 'শিক্ষক')) + ': ' : '';
+  const gRow = '<div class="row pin' + (gUn ? ' un' : '') + '" onclick="openChat(\'GROUP\')"><div class="av grp">👥</div>' +
+    '<div class="ri"><div class="rt"><b>গ্রুপ চ্যাট</b><span>' + (gLast ? listTime(ms(gLast.ts)) : '') + '</span></div>' +
+    '<div class="rb"><div class="pv">' + (gLast ? esc(gSender + gLast.body) : 'সব শিক্ষকের সাথে কথা বলুন') + '</div>' + (gUn ? '<span class="cnt">' + bn(gUn) + '</span>' : '') + '</div></div></div>';
+  if (!rows.length) { $('chats').innerHTML = gRow + '<div class="empty">কোনো ব্যক্তিগত কথোপকথন নেই।<br>নিচের ✏️ বাটনে চাপ দিয়ে নতুন চ্যাট শুরু করুন।</div>'; return; }
+  $('chats').innerHTML = gRow + rows.map(r => {
     const t = tById(r.id), nm = nameOf(r.id) || r.last.fromName || 'শিক্ষক', mine = r.last.fromId === me.id;
     return '<div class="row' + (r.un ? ' un' : '') + '" onclick="openChat(\'' + jq(r.id) + '\')">' + avatar(t, nm) +
       '<div class="ri"><div class="rt"><b>' + esc(nm) + '</b><span>' + listTime(ms(r.last.ts)) + '</span></div>' +
@@ -247,7 +268,7 @@ function renderThread(){
   list.forEach(m => {
     const t = ms(m.ts), dl = dayLbl(t), out = m.fromId === me.id;
     if (dl !== lastDay) { html += '<div class="day">' + dl + '</div>'; lastDay = dl; }
-    html += '<div class="b ' + (out ? 'out' : 'in') + '" onclick="selMsg(\'' + jq(m.id) + '\')">' + esc(m.body) +
+    html += '<div class="b ' + (out ? 'out' : 'in') + '" onclick="selMsg(\'' + jq(m.id) + '\')">' + (m.grp && !out ? '<div class="sn">' + esc(nameOf(m.fromId) || m.fromName || 'শিক্ষক') + '</div>' : '') + esc(m.body) +
       '<span class="t">' + hm(t) + (out ? '<span class="tk' + (m.read ? ' rd' : '') + '">' + (m.read ? '✓✓' : '✓') + '</span>' : '') + '</span></div>';
     if (selId === m.id) html += '<div class="acts' + (out ? '' : ' l') + '"><button onclick="delMsg(\'' + jq(m.id) + '\')">🗑️ মুছুন</button></div>';
   });
@@ -276,7 +297,9 @@ function selMsg(id){ selId = selId === id ? null : id; renderThread(); }
 function delMsg(id){
   if (!confirm('বার্তাটি মুছে ফেলবেন?')) return;
   selId = null;
-  db.collection('messages').doc(id).delete().catch(() => alert('মোছা যায়নি'));
+  const m = allMsgs().find(x => x.id === id), ids = m && m.ids ? m.ids : [id];
+  const b = db.batch(); ids.forEach(i => b.delete(db.collection('messages').doc(i)));
+  b.commit().catch(() => alert('মোছা যায়নি'));
 }
 
 // নতুন চ্যাট
@@ -298,22 +321,38 @@ ta.addEventListener('input', () => { ta.style.height = '42px'; ta.style.height =
 ta.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); sendMsg(); }
 });
+// প্রাপককে নোটিফিকেশন পাঠাতে Worker কে জানানো (ব্যর্থ হলে মেসেজ পাঠানো আটকায় না)
+function notify(msgId){
+  try {
+    auth.currentUser.getIdToken().then(t => fetch(PUSH_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: t, msgId })
+    }).catch(() => {})).catch(() => {});
+  } catch (e) {}
+}
 function sendMsg(){
   if (!me || !openWith) return;
   const body = ta.value.trim();
   if (!body) return;
   const b = $('sendBtn'); b.disabled = true;
-  db.collection('messages').add({
-    fromId: me.id, fromName: me.name || '', toId: openWith, body, read: false,
-    ts: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(ref => {
-    // প্রাপককে নোটিফিকেশন পাঠাতে Worker কে জানানো (ব্যর্থ হলে মেসেজ পাঠানো আটকায় না)
-    try {
-      auth.currentUser.getIdToken().then(t => fetch(PUSH_URL, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: t, msgId: ref.id })
-      }).catch(() => {})).catch(() => {});
-    } catch (e) {}
+  const ts = firebase.firestore.FieldValue.serverTimestamp();
+  let job;
+  if (openWith === 'GROUP') {
+    // প্রতিটি সদস্যের জন্য একটি করে বার্তা (একই gid) — ফলে নোটিফিকেশন আগের মতোই কাজ করে
+    const rec = teachers.filter(t => t.id !== me.id);
+    if (!rec.length) { b.disabled = false; alert('গ্রুপে অন্য কোনো সদস্য নেই'); return; }
+    const gid = db.collection('messages').doc().id, batch = db.batch(), ids = [];
+    rec.forEach(t => {
+      const r = db.collection('messages').doc(); ids.push(r.id);
+      batch.set(r, { fromId: me.id, fromName: me.name || '', toId: t.id, body, read: false, grp: 'all', gid, ts });
+    });
+    job = batch.commit().then(() => ids.forEach(notify));
+  } else {
+    job = db.collection('messages').add({
+      fromId: me.id, fromName: me.name || '', toId: openWith, body, read: false, ts
+    }).then(ref => notify(ref.id));
+  }
+  job.then(() => {
     ta.value = ''; ta.style.height = '42px'; ta.focus();
     $('thread').dataset.fresh = '1';
   }).catch(() => alert('পাঠানো যায়নি, আবার চেষ্টা করুন')).finally(() => { b.disabled = false; });
