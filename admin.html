@@ -688,7 +688,8 @@ function saveTeacher(){
   if (PH.t.mode === 'new' && PH.t.img) d.photo = PH.t.img;
   else if (PH.t.mode === 'remove' && editT) d.photo = firebase.firestore.FieldValue.delete();
   const p = editT ? db.collection('teachers').doc(editT).update(d) : db.collection('teachers').add(d);
-  guard(p).then(() => { cancelT(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
+  const tid0 = editT, tnm = d.name;
+  guard(p).then(() => { if (tid0) notifyT(tid0, '👤 আপনার তথ্য আপডেট হয়েছে', tnm + '-এর প্রোফাইল তথ্য অ্যাডমিন আপডেট করেছেন।'); cancelT(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); }).catch(fail);
 }
 function editTeacher(id){
   const t = teachers.find(x => x.id === id); if (!t) return;
@@ -728,6 +729,7 @@ function saveRoutine(){
   else { const batch = db.batch(); days.forEach(dy => batch.set(db.collection('routines').doc(), {...base, day: dy})); p = batch.commit(); }
   guard(p).then(() => {
     $('lt').value = base.teacherId; loadRoutines();
+    notifyT(base.teacherId, wasEdit ? '🗓️ রুটিন আপডেট হয়েছে' : '🗓️ নতুন রুটিন যোগ হয়েছে', bn(base.period) + 'ম পিরিয়ড • ' + base.class + ' (' + base.subject + ')' + (wasEdit ? '' : ' — ' + days.map(dy => DAYS[dy]).join(', ')));
     cancelR(); showMsg('✅ ' + (wasEdit ? 'সংরক্ষিত হয়েছে' : bn(days.length) + 'টি বারে রুটিন যোগ হয়েছে'), 'ok');
     if (!wasEdit) { $('rt').value = base.teacherId; setDays(days); $('rp').value = base.period + 1; }
   }).catch(fail);
@@ -765,6 +767,18 @@ function loadRoutines(){
 // --- প্রক্সি ---
 var pxs = [], unsubP = null, editP = null;
 const NOTEACHER = '__none__';
+// ── শিক্ষকের মোবাইলে পুশ নোটিফিকেশন (Cloudflare Worker এর মাধ্যমে) ──
+const PUSH_URL = 'https://cfm-push.imaidul.workers.dev';
+function notifyT(ids, title, body){
+  try {
+    ids = [...new Set([].concat(ids).filter(x => x && x !== NOTEACHER))];
+    if (!ids.length || !auth.currentUser) return;
+    auth.currentUser.getIdToken().then(t => fetch(PUSH_URL, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({idToken: t, type: 'admin', teacherIds: ids, title, body})
+    }).catch(() => {})).catch(() => {});
+  } catch (e) {}
+}
 const tn = id => id === NOTEACHER ? 'শিক্ষক নেই' : ((teachers.find(t => t.id === id) || {}).name || '—');
 $('pd').value = today();
 var absRts = [], PC_FULL = '', yearPx = [], yearOf = null, unsubY = null;
@@ -852,7 +866,7 @@ function saveProxy(){
   if (!confirm(bn(p.period) + 'ম পিরিয়ডের প্রক্সি (' + tn(p.subId) + ') ' + (editP ? 'আপডেট' : 'সংরক্ষণ') + ' করবেন?')) return;
   const wasEdit = !!editP;
   const q = editP ? db.collection('proxies').doc(editP).update(p) : db.collection('proxies').add(p);
-  guard(q).then(() => { cancelP(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); $('pd').value = p.date; if (!wasEdit) $('pp').value = p.period + 1; loadProxies(); })
+  guard(q).then(() => { notifyT(p.subId, wasEdit ? '🔁 প্রক্সি আপডেট হয়েছে' : '🔁 নতুন প্রক্সি ক্লাস', bn(p.date) + ' • ' + bn(p.period) + 'ম পিরিয়ড • ' + p.class + ' (' + p.subject + ')' + (p.room ? ' • রুম ' + p.room : '')); cancelP(); showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); $('pd').value = p.date; if (!wasEdit) $('pp').value = p.period + 1; loadProxies(); })
     .catch(fail);
 }
 function editProxy(id){
@@ -1241,7 +1255,7 @@ function saveDuty(){
   if (!confirm(tn(d.teacherId) + '-এর ডিউটি (রুম ' + d.room + ', ' + d.shift + ') ' + (editD ? 'আপডেট' : 'সংরক্ষণ') + ' করবেন?')) return;
   const wasEdit = !!editD;
   const q = editD ? db.collection('examDuties').doc(editD).update(d) : db.collection('examDuties').add(d);
-  guard(q).then(() => { cancelD(); $('dd').value = d.date; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); if (!wasEdit) $('dsh').value = d.shift; loadDTime(); })
+  guard(q).then(() => { notifyT(d.teacherId, wasEdit ? '📝 পরীক্ষা ডিউটি আপডেট হয়েছে' : '📝 নতুন পরীক্ষা ডিউটি', bn(d.date) + ' • ' + d.shift + ' শিফট • রুম ' + bn(d.room)); cancelD(); $('dd').value = d.date; showMsg('✅ সংরক্ষিত হয়েছে', 'ok'); if (!wasEdit) $('dsh').value = d.shift; loadDTime(); })
     .catch(fail);
 }
 function editDuty(id){
@@ -1420,7 +1434,7 @@ function apAdd(){
   if (!confirm((t.name || '') + '-কে ' + c + ' • ' + s + ' এর নম্বর দেওয়ার পারমিশন দিবেন?')) return;
   if (!items.some(x => x.c === c && x.s === s)) items.push({c, s});
   guard(db.collection('assessPerms').doc(tid).set({name: t.name || '', items}))
-    .then(() => { $('apS').value = ''; showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok'); }).catch(fail);
+    .then(() => { notifyT(tid, '🔑 নম্বর এন্ট্রির পারমিশন', c + ' • ' + s + ' এর নম্বর দেওয়ার পারমিশন পেয়েছেন।'); $('apS').value = ''; showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok'); }).catch(fail);
 }
 function apDel(tid, i){
   if (!confirm('এই পারমিশন মুছবেন?')) return;
@@ -1481,7 +1495,7 @@ function coAddPerm(){
   const t = teachers.find(x => x.id === tid) || {}, items = ((coPerms[tid] || {}).items || []).slice();
   if (!confirm((t.name || '') + '-কে ' + c + ' • ' + s + ' (কো-কারিকুলাম) এর পারমিশন দিবেন?')) return;
   if (!items.some(x => x.c === c && x.s === s)) items.push({c, s});
-  guard(db.collection('coCurPerms').doc(tid).set({name: t.name || '', items})).then(() => showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok')).catch(fail);
+  guard(db.collection('coCurPerms').doc(tid).set({name: t.name || '', items})).then(() => { notifyT(tid, '🔑 কো-কারিকুলাম পারমিশন', c + ' • ' + s + ' (কো-কারিকুলাম) এর পারমিশন পেয়েছেন।'); showMsg('✅ পারমিশন দেওয়া হয়েছে', 'ok'); }).catch(fail);
 }
 function coDelPerm(tid, i){
   if (!confirm('এই পারমিশন মুছবেন?')) return;
