@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="চাটপাড়া মাদ্রাসা">
-  <link rel="icon" type="image/jpeg" href="logo.jpg">
+<link rel="icon" type="image/jpeg" href="logo.jpg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df}
@@ -25,8 +25,9 @@ a{color:inherit;text-decoration:none}
 .bis{font-size:12px;opacity:.9;line-height:1.3}
 .logo{flex:none;width:42px;height:42px;border-radius:50%;object-fit:cover;background:#fff;border:2px solid var(--gd)}
 .top h1{margin:0;font-size:16px;line-height:1.3}
-.btns{display:flex;justify-content:center;gap:6px;margin-top:6px}
-.login{display:inline-block;background:var(--gd);color:#2b2200;font-weight:700;font-size:12px;padding:2px 12px;border-radius:999px;line-height:1.5}
+.btns{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:6px}
+.login{display:inline-block;background:var(--gd);color:#2b2200;font-weight:700;font-size:12px;padding:2px 12px;border-radius:999px;line-height:1.5;border:0;cursor:pointer}
+.push-btn{display:inline-block;background:#e8fff3;color:#0b5c37;font-weight:700;font-size:12px;padding:2px 12px;border-radius:999px;line-height:1.5;border:0;cursor:pointer}
 .wrap{max-width:900px;margin:-8px auto 0;padding:0 12px 24px}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media(min-width:640px){.grid{grid-template-columns:repeat(4,1fr)}}
@@ -79,7 +80,12 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <img class="logo" src="logo.jpg" alt="লোগো">
     <div><div class="bis">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><h1>চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h1></div>
   </div>
-  <div class="btns"><a class="login" id="tLoginBtn" href="teacher.html">👨‍🏫 শিক্ষক লগইন</a><a class="inb" id="inboxBtn" href="messages.html" aria-label="ইনবক্স" title="ইনবক্স">✉️<span id="msgBadge" class="bdg hide"></span></a><a class="login" href="admin.html" style="background:#fff;color:#0b5c37">🔐 অ্যাডমিন</a></div>
+  <div class="btns">
+    <a class="login" id="tLoginBtn" href="teacher.html">👨‍🏫 শিক্ষক লগইন</a>
+    <a class="inb" id="inboxBtn" href="messages.html" aria-label="ইনবক্স" title="ইনবক্স">✉️<span id="msgBadge" class="bdg hide"></span></a>
+    <a class="login" href="admin.html" style="background:#fff;color:#0b5c37">🔐 অ্যাডমিন</a>
+    <button type="button" class="push-btn" id="pushBtn" onclick="enableWebFcm()">🔔 নোটিফিকেশন</button>
+  </div>
 </div>
 
 <div class="wrap">
@@ -104,15 +110,19 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script>
-firebase.initializeApp({
+const firebaseConfig = {
   apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
   authDomain: "mmmmg-d02b8.firebaseapp.com",
   projectId: "mmmmg-d02b8",
   storageBucket: "mmmmg-d02b8.firebasestorage.app",
   messagingSenderId: "1001193607775",
   appId: "1:1001193607775:web:c4539574a49cddf59341ea"
-});
+};
+const WEB_PUSH_VAPID_KEY = "YOUR_WEB_PUSH_VAPID_KEY"; // Firebase Console -> Cloud Messaging -> Web Push certificates থেকে নিন (শুধু ব্রাউজারের জন্য, অ্যান্ড্রয়েড অ্যাপে লাগবে না)
+
+firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 // ⚡ দ্রুত ও স্থিতিশীল লোডিং: ধীর/ব্লকড নেটওয়ার্কে স্বয়ংক্রিয় long-polling + অফলাইন ক্যাশ
 try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) {}
@@ -138,10 +148,101 @@ const examOn = d => { const r = examR.find(x => d >= x.from && d <= x.to); retur
 const MY = () => document.getElementById('my');
 const mErr = e => { MY().innerHTML = '<div class="card mu">ক্লাসের তথ্য লোড করা যায়নি: ' + esc(e.code||'') + ' ' + esc(e.message) + '</div>'; };
 
+// ===== পুশ নোটিফিকেশন টোকেন (অ্যান্ড্রয়েড অ্যাপ + ব্রাউজার) → Firestore "fcmTokens" =====
+let webMessaging = null;
+try {
+  if (firebase.messaging.isSupported()) {
+    webMessaging = firebase.messaging();
+  }
+} catch (e) {}
+
+let curTok = '', curPlat = 'web';
+// টোকেন + শিক্ষকের আইডি একসাথে সেভ হয় (শিক্ষক চেনা না গেলে অপেক্ষা করে, pickMe() পরে আবার ডাকে)
+async function saveFcmTokenToFirestore(token, platform) {
+  if (token) curTok = token;
+  if (platform) curPlat = platform;
+  if (!curTok) return;
+  const u = auth.currentUser;
+  if (!u || !curMe || !curMe.id) return;
+  const payload = {
+    token: curTok,
+    platform: curPlat,
+    uid: u.uid,
+    teacherId: curMe.id,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  if (curMe.phone) payload.phone = normPhone(curMe.phone);
+  await db.collection("fcmTokens").doc(curTok).set(payload, { merge: true });
+}
+
+// অ্যান্ড্রয়েড অ্যাপ প্রতিবার পেজ লোডে/টোকেন বদলালে এটি কল করে
+window.onFcmToken = function(t) { saveFcmTokenToFirestore(t, 'android').catch(() => {}); };
+try {
+  if (window.AndroidPrint && AndroidPrint.getFcmToken) {
+    const t0 = AndroidPrint.getFcmToken();
+    if (t0) window.onFcmToken(t0);
+    // অ্যাপের ভেতরে ব্রাউজার-পুশ বাটন দরকার নেই
+    const pb = document.getElementById('pushBtn'); if (pb) pb.style.display = 'none';
+  }
+} catch (e) {}
+
+window.enableWebFcm = async function() {
+  try {
+    if (!curMe) { alert("আগে শিক্ষক হিসেবে লগইন করুন।"); return; }
+    if (!webMessaging || !("serviceWorker" in navigator) || !("Notification" in window)) {
+      alert("এই ব্রাউজারে পুশ নোটিফিকেশন সাপোর্ট করে না। Chrome ব্যবহার করুন।");
+      return;
+    }
+    if (!WEB_PUSH_VAPID_KEY || WEB_PUSH_VAPID_KEY === "YOUR_WEB_PUSH_VAPID_KEY") {
+      alert("আগে WEB_PUSH_VAPID_KEY বসান।");
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") {
+      alert("নোটিফিকেশন পারমিশন অনুমতি দেওয়া হয়নি।");
+      return;
+    }
+    const reg = await navigator.serviceWorker.register("firebase-messaging-sw.js");
+    const token = await webMessaging.getToken({
+      vapidKey: WEB_PUSH_VAPID_KEY,
+      serviceWorkerRegistration: reg
+    });
+    if (!token) {
+      alert("FCM টোকেন পাওয়া যায়নি।");
+      return;
+    }
+    await saveFcmTokenToFirestore(token, 'web');
+    const btn = document.getElementById("pushBtn");
+    if (btn) btn.textContent = "🔔 চালু আছে";
+    alert("✅ নোটিফিকেশন চালু হয়েছে!");
+  } catch (err) {
+    alert("নোটিফিকেশন চালু করা যায়নি: " + (err && err.message ? err.message : err));
+  }
+};
+
+if (webMessaging) {
+  webMessaging.onMessage((payload) => {
+    const title = (payload.notification && payload.notification.title) || (payload.data && payload.data.title) || "মাদ্রাসা নোটিশ";
+    const body = (payload.notification && payload.notification.body) || (payload.data && payload.data.body) || "";
+    if (Notification.permission === "granted" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.showNotification(title, {
+          body: body,
+          icon: "logo.jpg",
+          data: { url: (payload.data && payload.data.url) || "index.html" }
+        });
+      }).catch(() => {
+        alert(title + (body ? "\n" + body : ""));
+      });
+    } else {
+      alert(title + (body ? "\n" + body : ""));
+    }
+  });
+}
 
 // অডিও অবজেক্ট সেটআপ
 const audio = document.createElement('audio');
-audio.src = 'alarm.wav'; // ফোল্ডারে alarm.mp3 থাকতে হবে
+audio.src = 'alarm.wav'; // ফোল্ডারে alarm.wav থাকতে হবে
 audio.preload = 'auto';
 audio.loop = true;
 
@@ -262,6 +363,8 @@ function pickMe(){
     if (uM) { uM(); uM = null; } showPM(0);
     if (me) uM = db.collection('messages').where('toId','==',me.id).where('read','==',false).onSnapshot(s => showPM(s.size), () => {});
     if (me) uR = db.collection('routines').where('teacherId','==',me.id).onSnapshot(s => { myR = s.docs.map(d => d.data()); renderMy(); }, mErr);
+    // শিক্ষক চেনা গেলে এই ডিভাইসের টোকেন তার আইডির সাথে সেভ
+    if (me) saveFcmTokenToFirestore().catch(() => {});
   }
   renderMy();
 }
