@@ -161,7 +161,7 @@ function login(){
   const p = normPhone($('ph').value);
   if (!/^01\d{9}$/.test(p)) return showMsg('সঠিক মোবাইল নম্বর দিন (১১ সংখ্যা, 01 দিয়ে শুরু)');
   if (!$('pw').value) return showMsg('পাসওয়ার্ড দিন');
-  auth.signInWithEmailAndPassword(phoneEmail(p), $('pw').value).catch(fail);
+  auth.signInWithEmailAndPassword(phoneEmail(p), $('pw').value).then(() => { location.replace('index.html'); }).catch(fail);
 }
 function changePw(){
   const v = $('np').value;

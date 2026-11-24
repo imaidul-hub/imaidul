@@ -28,7 +28,9 @@ a{color:inherit;text-decoration:none}
 .btns{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;margin-top:8px}
 .login{display:inline-block;background:var(--gd);color:#2b2200;font-weight:700;font-size:12px;padding:2px 12px;border-radius:999px;line-height:1.5;border:0;cursor:pointer}
 .push-btn{display:inline-flex;align-items:center;justify-content:center;background:#e8fff3;color:#0b5c37;font-size:18px;width:38px;height:38px;border-radius:50%;line-height:1;border:0;cursor:pointer;padding:0}
-.login.ib{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:18px;border-radius:50%;line-height:1}
+.login.ib img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.login.ib{overflow:hidden;width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:18px;border-radius:50%;line-height:1}
+.login#tLoginBtn:not(.ib){font-size:14px;padding:6px 18px;line-height:1.3}
 .adm{display:inline-block;margin-bottom:8px;color:var(--pr);font-weight:700;font-size:14px}
 .wrap{max-width:900px;margin:-8px auto 0;padding:0 12px 24px}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -83,7 +85,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <div><div class="bis">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><h1>চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h1></div>
   </div>
   <div class="btns">
-    <a class="login ib" id="tLoginBtn" href="teacher.html" aria-label="শিক্ষক লগইন" title="শিক্ষক লগইন">👨‍🏫</a>
+    <a class="login" id="tLoginBtn" href="teacher.html" aria-label="শিক্ষক লগইন" title="শিক্ষক লগইন">লগইন</a>
     <a class="inb" id="inboxBtn" href="messages.html" aria-label="ইনবক্স" title="ইনবক্স">✉️<span id="msgBadge" class="bdg hide"></span></a>
     <a class="inb" id="notifBtn" href="notifications.html" aria-label="নোটিফিকেশন" title="নোটিফিকেশন">🔔<span id="ntfBadge" class="bdg hide"></span></a>
     <button type="button" class="push-btn" id="pushBtn" onclick="enableWebFcm()" aria-label="ব্রাউজারে পুশ চালু করুন" title="ব্রাউজারে পুশ চালু করুন">📲</button>
@@ -143,6 +145,18 @@ const ordBn = n => { const o = {1:'১ম',2:'২য়',3:'৩য়',4:'৪র
 const todayStr = ds(new Date());
 
 var uM = null, uN = null;
+// পোর্টাল বাটন: লগইন না থাকলে "লগইন" লেখা, থাকলে শিক্ষকের ছবি (ছবি না থাকলে আইকন)
+function setPortalBtn(){
+  const tb = document.getElementById('tLoginBtn'); if (!tb) return;
+  const u = auth.currentUser;
+  tb.classList.toggle('ib', !!u);
+  if (!u) { tb.textContent = 'লগইন'; return; }
+  if (curMe && curMe.photo) {
+    const im = document.createElement('img'); im.alt = ''; im.src = curMe.photo;
+    im.onerror = () => { tb.textContent = '👨‍🏫'; };
+    tb.textContent = ''; tb.appendChild(im);
+  } else tb.textContent = '👨‍🏫';
+}
 function showNB(n){ const b = document.getElementById('ntfBadge'); if (b) { b.textContent = bn(n); b.classList.toggle('hide', !n); } }
 function showPM(n){ const b = document.getElementById('msgBadge'); if (b) { b.textContent = bn(n); b.classList.toggle('hide', !n); } }
 var allT = [], myR = [], todayP = [], curMe = null, uT = null, uR = null, uP = null, uH = null, holMap = {}, uX = null, uEP = null, examR = [], exR = [], epR = [];
@@ -362,7 +376,7 @@ function pickMe(){
   const ph = normPhone((u.email||'').split('@')[0]);
   const me = allT.find(t => normPhone(t.phone) === ph) || null;
   if ((me && me.id) !== (curMe && curMe.id)) {
-    curMe = me; if (uR) { uR(); uR = null; } myR = [];
+    curMe = me; setPortalBtn(); if (uR) { uR(); uR = null; } myR = [];
     if (uM) { uM(); uM = null; } showPM(0); if (uN) { uN(); uN = null; } showNB(0);
     if (me) uM = db.collection('messages').where('toId','==',me.id).where('read','==',false).onSnapshot(s => showPM(s.size), () => {});
     if (me) uN = db.collection('notifications').where('teacherId','==',me.id).where('read','==',false).onSnapshot(s => showNB(s.size), () => {});
@@ -379,6 +393,7 @@ auth.onAuthStateChanged(u => {
   const tb = document.getElementById('tLoginBtn'); if (tb) { tb.title = u ? 'শিক্ষক পোর্টাল' : 'শিক্ষক লগইন'; tb.setAttribute('aria-label', tb.title); }
   [uT, uP, uH, uX, uEP].forEach(f => f && f()); uT = uP = uH = uX = uEP = null; if (uR) { uR(); uR = null; } curMe = null; myR = []; todayP = []; holMap = {}; examR = []; exR = []; epR = [];
   if (uM) { uM(); uM = null; } showPM(0); if (uN) { uN(); uN = null; } showNB(0);
+  setPortalBtn();
   renderMy();
   if (!u) return;
   uX = db.collection('examRoutines').onSnapshot(s => {
