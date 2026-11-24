@@ -38,6 +38,12 @@ a{color:inherit;text-decoration:none}
 h2{font-size:18px;margin:22px 0 8px;color:var(--pr);border-right:4px solid var(--gd);padding-right:8px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:8px}
 .mu{color:var(--mu);font-size:13px}
+.pmb{display:flex;align-items:center;gap:8px;background:var(--gd);color:#2b2200;font-weight:700;border-radius:12px;padding:10px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.pmb.hide{display:none}
+.inb{position:relative;background:#fff;color:#0b5c37;font-weight:700;font-size:14px;padding:2px 10px;border-radius:999px;line-height:1.5;display:none}
+.inb.show{display:inline-block}
+.inb .bdg{position:absolute;top:-6px;right:-6px;background:#b42318;color:#fff;font-size:11px;min-width:18px;line-height:18px;text-align:center;border-radius:999px;padding:0 5px;border:1.5px solid #0f7a4a}
+.inb .bdg.hide{display:none}
 .tw{overflow-x:auto}
 table.tb{width:100%;border-collapse:collapse;font-size:14px}
 table.tb th{background:var(--pr);color:#fff;padding:8px 6px;text-align:left;white-space:nowrap}
@@ -73,7 +79,7 @@ body.sl-leave{opacity:0;transition:opacity .18s ease}
     <img class="logo" src="logo.jpg" alt="লোগো">
     <div><div class="bis">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><h1>চাটপাড়া ফাযিল (ডিগ্রি) মাদ্রাসা</h1></div>
   </div>
-  <div class="btns"><a class="login" id="tLoginBtn" href="teacher.html">👨‍🏫 শিক্ষক লগইন</a><a class="login" href="admin.html" style="background:#fff;color:#0b5c37">🔐 অ্যাডমিন</a></div>
+  <div class="btns"><a class="login" id="tLoginBtn" href="teacher.html">👨‍🏫 শিক্ষক লগইন</a><a class="inb" id="inboxBtn" href="messages.html" aria-label="ইনবক্স" title="ইনবক্স">✉️<span id="msgBadge" class="bdg hide"></span></a><a class="login" href="admin.html" style="background:#fff;color:#0b5c37">🔐 অ্যাডমিন</a></div>
 </div>
 
 <div class="wrap">
@@ -124,11 +130,14 @@ const fmtT = t => { if (!t) return ''; let [h,m] = t.split(':').map(Number); con
 const ordBn = n => { const o = {1:'১ম',2:'২য়',3:'৩য়',4:'৪র্থ',6:'৬ষ্ঠ'}; return (o[n] || bn(n) + 'ম') + ' পিরিয়ড'; };
 const todayStr = ds(new Date());
 
+var uM = null;
+function showPM(n){ const b = document.getElementById('msgBadge'); if (b) { b.textContent = bn(n); b.classList.toggle('hide', !n); } }
 var allT = [], myR = [], todayP = [], curMe = null, uT = null, uR = null, uP = null, uH = null, holMap = {}, uX = null, uEP = null, examR = [], exR = [], epR = [];
 // পরীক্ষার সময়সীমা: প্রতিটি পরীক্ষার (examRoutines) প্রথম ও শেষ তারিখের মধ্যের সব দিন
 const examOn = d => { const r = examR.find(x => d >= x.from && d <= x.to); return r ? r.name : null; };
 const MY = () => document.getElementById('my');
 const mErr = e => { MY().innerHTML = '<div class="card mu">ক্লাসের তথ্য লোড করা যায়নি: ' + esc(e.code||'') + ' ' + esc(e.message) + '</div>'; };
+
 
 // অডিও অবজেক্ট সেটআপ
 const audio = document.createElement('audio');
@@ -250,14 +259,18 @@ function pickMe(){
   const me = allT.find(t => normPhone(t.phone) === ph) || null;
   if ((me && me.id) !== (curMe && curMe.id)) {
     curMe = me; if (uR) { uR(); uR = null; } myR = [];
+    if (uM) { uM(); uM = null; } showPM(0);
+    if (me) uM = db.collection('messages').where('toId','==',me.id).where('read','==',false).onSnapshot(s => showPM(s.size), () => {});
     if (me) uR = db.collection('routines').where('teacherId','==',me.id).onSnapshot(s => { myR = s.docs.map(d => d.data()); renderMy(); }, mErr);
   }
   renderMy();
 }
 
 auth.onAuthStateChanged(u => {
+  const ib = document.getElementById('inboxBtn'); if (ib) ib.classList.toggle('show', !!u);
   const tb = document.getElementById('tLoginBtn'); if (tb) tb.textContent = u ? '👨‍🏫 শিক্ষক পোর্টাল' : '👨‍🏫 শিক্ষক লগইন';
   [uT, uP, uH, uX, uEP].forEach(f => f && f()); uT = uP = uH = uX = uEP = null; if (uR) { uR(); uR = null; } curMe = null; myR = []; todayP = []; holMap = {}; examR = []; exR = []; epR = [];
+  if (uM) { uM(); uM = null; } showPM(0);
   renderMy();
   if (!u) return;
   uX = db.collection('examRoutines').onSnapshot(s => {

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>মেসেজ</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f7a4a">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--gd:#c9a227;--bd:#dbe7df;--er:#dc2626;
+--chat:#efeae2;--out:#d9fdd3;--in:#fff;--tick:#53bdeb}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1712;--card:#16231b;--tx:#e6f0ea;--mu:#94a89c;--pr:#34b57a;--pr2:#0b5c37;--bd:#254033;
+--chat:#0b141a;--out:#005c4b;--in:#202c33;--tick:#53bdeb}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.5}
+a{color:inherit;text-decoration:none}
+.hide{display:none!important}
+.app{height:100%;max-width:700px;margin:0 auto;display:flex;flex-direction:column;background:var(--bg);position:relative}
+.bar{flex:none;background:linear-gradient(135deg,var(--pr2),var(--pr));color:#fff;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:10px}
+.bar b{font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .lk,.bar .back{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.bar .back{padding:4px 10px;font-size:20px;line-height:1.2;background:none}
+.av{width:42px;height:42px;border-radius:50%;background:var(--pr);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;overflow:hidden}
+.bar .av{width:38px;height:38px;background:rgba(255,255,255,.25)}
+.av img{width:100%;height:100%;object-fit:cover}
+.gate{margin:10px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px}
+.mu{color:var(--mu);font-size:13px}
+/* চ্যাট তালিকা */
+#listView{flex:1;overflow-y:auto;position:relative}
+.row{display:flex;gap:12px;align-items:center;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bd);cursor:pointer}
+.row:active{background:rgba(15,122,74,.08)}
+.ri{flex:1;min-width:0}
+.rt{display:flex;justify-content:space-between;gap:8px}
+.rt b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rt span{font-size:12px;color:var(--mu);flex:none}
+.rb{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.pv{color:var(--mu);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row.un .rt span{color:var(--pr);font-weight:700}
+.row.un .pv{color:var(--tx);font-weight:600}
+.cnt{background:var(--pr);color:#fff;border-radius:999px;font-size:12px;min-width:20px;line-height:20px;text-align:center;padding:0 6px;flex:none}
+.empty{padding:40px 20px;text-align:center;color:var(--mu)}
+.fab{position:fixed;right:max(18px,calc(50% - 332px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--pr);color:#fff;font-size:24px;box-shadow:0 4px 12px rgba(0,0,0,.3);cursor:pointer;z-index:5}
+/* চ্যাট স্ক্রিন */
+#chatView{flex:1;min-height:0;display:flex;flex-direction:column}
+#thread{flex:1;overflow-y:auto;padding:10px 10px 6px;background:var(--chat);display:flex;flex-direction:column;gap:3px}
+.day{align-self:center;background:var(--card);color:var(--mu);font-size:12px;padding:2px 12px;border-radius:8px;margin:8px 0;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.b{max-width:82%;padding:6px 9px 4px;border-radius:10px;box-shadow:0 1px 1px rgba(0,0,0,.1);position:relative;word-break:break-word;white-space:pre-wrap;cursor:pointer}
+.b.in{align-self:flex-start;background:var(--in);border-top-left-radius:2px}
+.b.out{align-self:flex-end;background:var(--out);border-top-right-radius:2px}
+.b .t{float:right;margin:6px 0 0 10px;font-size:11px;color:var(--mu);white-space:nowrap;line-height:1.2}
+.b.out .t{color:var(--mu)}
+.tk{margin-left:3px;letter-spacing:-3px}
+.tk.rd{color:var(--tick)}
+.b::after{content:"";display:block;clear:both}
+.acts{align-self:flex-end}
+.acts.l{align-self:flex-start}
+.acts button{background:var(--card);color:var(--er);border:1px solid var(--er);border-radius:8px;padding:2px 10px;font:inherit;font-size:12px;cursor:pointer}
+.comp{flex:none;display:flex;gap:8px;align-items:flex-end;padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--bd)}
+.comp textarea{flex:1;font:inherit;font-size:15px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:20px;padding:9px 14px;resize:none;max-height:120px;height:42px;outline:none;line-height:1.4}
+.comp button{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--pr);color:#fff;font-size:18px;cursor:pointer}
+.comp button:disabled{opacity:.5}
+/* নতুন চ্যাট পিকার */
+#picker{position:absolute;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column}
+#picker .srch{padding:8px;background:var(--bg)}
+#picker input{width:100%;font:inherit;padding:10px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--card);color:var(--tx);outline:none}
+#plist{flex:1;overflow-y:auto}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar" id="bar">
+    <b>✉️ মেসেজ</b>
+    <a class="lk" href="index.html">হোম</a>
+  </div>
+
+  <div id="gate" class="gate hide"></div>
+
+  <!-- চ্যাট তালিকা -->
+  <div id="listView" class="hide">
+    <div id="chats"><div class="empty">লোড হচ্ছে...</div></div>
+    <button class="fab" onclick="openPicker()" aria-label="নতুন চ্যাট">✏️</button>
+  </div>
+
+  <!-- চ্যাট স্ক্রিন -->
+  <div id="chatView" class="hide">
+    <div id="thread"></div>
+    <div class="comp">
+      <textarea id="body" maxlength="1500" rows="1" placeholder="বার্তা লিখুন..."></textarea>
+      <button id="sendBtn" onclick="sendMsg()" aria-label="পাঠান">➤</button>
+    </div>
+  </div>
+
+  <!-- নতুন চ্যাটের জন্য শিক্ষক নির্বাচন -->
+  <div id="picker" class="hide">
+    <div class="bar"><button class="back" onclick="closePicker()">←</button><b>শিক্ষক নির্বাচন করুন</b></div>
+    <div class="srch"><input id="q" placeholder="নাম খুঁজুন..." oninput="renderPicker()"></div>
+    <div id="plist"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCDjI1t2EnJKmvAV3hbz-sjir8YW8IfOQg",
+  authDomain: "mmmmg-d02b8.firebaseapp.com",
+  projectId: "mmmmg-d02b8",
+  storageBucket: "mmmmg-d02b8.firebasestorage.app",
+  messagingSenderId: "1001193607775",
+  appId: "1:1001193607775:web:c4539574a49cddf59341ea"
+});
+const auth = firebase.auth(), db = firebase.firestore();
+try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) {}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const bn = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const jq = s => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+const ms = ts => ts && ts.toMillis ? ts.toMillis() : Date.now();
+const hm = t => new Date(t).toLocaleTimeString('bn-BD', { hour: 'numeric', minute: '2-digit' });
+function dayLbl(t){
+  const d = new Date(t), n = new Date(), y = new Date(); y.setDate(n.getDate() - 1);
+  if (d.toDateString() === n.toDateString()) return 'আজ';
+  if (d.toDateString() === y.toDateString()) return 'গতকাল';
+  return d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+function listTime(t){
+  const d = new Date(t);
+  return d.toDateString() === new Date().toDateString() ? hm(t) : dayLbl(t) === 'গতকাল' ? 'গতকাল' : d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' });
+}
+function avatar(t, name){
+  return '<div class="av">' + (t && t.photo ? '<img src="' + esc(t.photo) + '" alt="">' : esc((name || '?').trim().charAt(0))) + '</div>';
+}
+
+let teachers = [], me = null, inMsgs = [], outMsgs = [], openWith = null, selId = null;
+let unsubT = null, unsubIn = null, unsubOut = null;
+const tById = id => teachers.find(t => t.id === id);
+const normPhone = p => { let d = String(p || '').replace(/\D/g, ''); if (d.startsWith('880')) d = d.slice(3); if (d.length === 10 && d[0] === '1') d = '0' + d; return d; };
+function findMe(u){
+  const ph = normPhone((u.email || '').split('@')[0]);
+  return ph ? (teachers.find(t => normPhone(t.phone) === ph) || null) : null;
+}
+const nameOf = id => { const t = tById(id); return t && t.name ? t.name : ''; };
+
+function gate(msg){
+  ['listView','chatView','picker'].forEach(i => $(i).classList.add('hide'));
+  $('gate').classList.remove('hide'); $('gate').innerHTML = msg;
+  setBar(null);
+}
+
+function setBar(id){
+  const bar = $('bar');
+  if (!id) { bar.innerHTML = '<b>✉️ মেসেজ</b><a class="lk" href="index.html">হোম</a>'; return; }
+  const t = tById(id), nm = nameOf(id) || (convMsgs(id)[0] || {}).fromName || 'শিক্ষক';
+  bar.innerHTML = '<button class="back" onclick="goBack()">←</button>' + avatar(t, nm) + '<b>' + esc(nm) + '</b>';
+}
+
+auth.onAuthStateChanged(u => {
+  [unsubT, unsubIn, unsubOut].forEach(f => f && f()); unsubT = unsubIn = unsubOut = null;
+  me = null; inMsgs = []; outMsgs = []; openWith = null;
+  if (!u) { gate('বার্তা দেখতে ও পাঠাতে লগইন করুন। <a href="index.html" style="color:var(--pr);font-weight:700">লগইন পেজে যান</a>'); return; }
+  unsubT = db.collection('teachers').onSnapshot(s => {
+    teachers = s.docs.map(d => ({ id: d.id, ...d.data() }));
+    const first = !me;
+    me = findMe(u);
+    if (!me) { gate('আপনার অ্যাকাউন্ট শিক্ষক তালিকার সাথে মেলেনি, তাই বার্তা ব্যবহার করা যাচ্ছে না।'); return; }
+    $('gate').classList.add('hide');
+    if (first) {
+      unsubIn = db.collection('messages').where('toId', '==', me.id).onSnapshot(q => {
+        inMsgs = q.docs.map(d => ({ id: d.id, ...d.data() })); refresh();
+      }, () => { $('chats').innerHTML = '<div class="empty">বার্তা লোড করা যায়নি।</div>'; });
+      // পাঠানো বার্তা (চ্যাটে নিজের বার্তা দেখানোর জন্য)
+      unsubOut = db.collection('messages').where('fromId', '==', me.id).onSnapshot(q => {
+        outMsgs = q.docs.map(d => ({ id: d.id, ...d.data() })); refresh();
+      }, () => {});
+    }
+    showView(); refresh();
+  }, () => gate('শিক্ষক তালিকা লোড করা যায়নি।'));
+});
+
+function showView(){
+  $('listView').classList.toggle('hide', !!openWith);
+  $('chatView').classList.toggle('hide', !openWith);
+  setBar(openWith);
+}
+
+function allMsgs(){
+  const m = new Map();
+  inMsgs.forEach(x => m.set(x.id, x));
+  outMsgs.forEach(x => m.set(x.id, x));
+  return [...m.values()];
+}
+const otherOf = m => m.fromId === me.id ? m.toId : m.fromId;
+const convMsgs = id => allMsgs().filter(m => otherOf(m) === id).sort((a, b) => ms(a.ts) - ms(b.ts));
+
+function refresh(){
+  if (!me) return;
+  renderList();
+  if (openWith) renderThread();
+  if (!$('picker').classList.contains('hide')) renderPicker();
+}
+
+function renderList(){
+  const by = {};
+  allMsgs().forEach(m => { (by[otherOf(m)] = by[otherOf(m)] || []).push(m); });
+  const rows = Object.keys(by).map(id => {
+    const l = by[id].sort((a, b) => ms(a.ts) - ms(b.ts));
+    return { id, last: l[l.length - 1], un: l.filter(m => m.toId === me.id && !m.read).length };
+  }).sort((a, b) => ms(b.last.ts) - ms(a.last.ts));
+  if (!rows.length) { $('chats').innerHTML = '<div class="empty">কোনো কথোপকথন নেই।<br>নিচের ✏️ বাটনে চাপ দিয়ে নতুন চ্যাট শুরু করুন।</div>'; return; }
+  $('chats').innerHTML = rows.map(r => {
+    const t = tById(r.id), nm = nameOf(r.id) || r.last.fromName || 'শিক্ষক', mine = r.last.fromId === me.id;
+    return '<div class="row' + (r.un ? ' un' : '') + '" onclick="openChat(\'' + jq(r.id) + '\')">' + avatar(t, nm) +
+      '<div class="ri"><div class="rt"><b>' + esc(nm) + '</b><span>' + listTime(ms(r.last.ts)) + '</span></div>' +
+      '<div class="rb"><div class="pv">' + (mine ? 'আপনি: ' : '') + esc(r.last.body) + '</div>' + (r.un ? '<span class="cnt">' + bn(r.un) + '</span>' : '') + '</div></div></div>';
+  }).join('');
+}
+
+function renderThread(){
+  const th = $('thread');
+  const near = th.scrollHeight - th.scrollTop - th.clientHeight < 120;
+  const list = convMsgs(openWith);
+  let html = '', lastDay = '';
+  list.forEach(m => {
+    const t = ms(m.ts), dl = dayLbl(t), out = m.fromId === me.id;
+    if (dl !== lastDay) { html += '<div class="day">' + dl + '</div>'; lastDay = dl; }
+    html += '<div class="b ' + (out ? 'out' : 'in') + '" onclick="selMsg(\'' + jq(m.id) + '\')">' + esc(m.body) +
+      '<span class="t">' + hm(t) + (out ? '<span class="tk' + (m.read ? ' rd' : '') + '">' + (m.read ? '✓✓' : '✓') + '</span>' : '') + '</span></div>';
+    if (selId === m.id) html += '<div class="acts' + (out ? '' : ' l') + '"><button onclick="delMsg(\'' + jq(m.id) + '\')">🗑️ মুছুন</button></div>';
+  });
+  th.innerHTML = html || '<div class="day">বার্তা লিখে কথোপকথন শুরু করুন</div>';
+  if (near || th.dataset.fresh === '1') { th.scrollTop = th.scrollHeight; th.dataset.fresh = ''; }
+  // অপঠিত বার্তা পঠিত করা
+  list.filter(m => m.toId === me.id && !m.read).forEach(m => {
+    m.read = true; db.collection('messages').doc(m.id).update({ read: true }).catch(() => {});
+  });
+}
+
+function openChat(id){
+  openWith = id; selId = null;
+  history.pushState({ chat: id }, '');
+  showView();
+  $('thread').dataset.fresh = '1';
+  renderThread();
+  $('thread').scrollTop = $('thread').scrollHeight;
+  closePicker();
+}
+function goBack(){ if (history.state && history.state.chat) history.back(); else backToList(); }
+function backToList(){ openWith = null; selId = null; showView(); renderList(); }
+window.addEventListener('popstate', () => { if (openWith) backToList(); else if (!$('picker').classList.contains('hide')) closePicker(); });
+
+function selMsg(id){ selId = selId === id ? null : id; renderThread(); }
+function delMsg(id){
+  if (!confirm('বার্তাটি মুছে ফেলবেন?')) return;
+  selId = null;
+  db.collection('messages').doc(id).delete().catch(() => alert('মোছা যায়নি'));
+}
+
+// নতুন চ্যাট
+function openPicker(){ $('q').value = ''; $('picker').classList.remove('hide'); renderPicker(); history.pushState({ pick: 1 }, ''); }
+function closePicker(){ $('picker').classList.add('hide'); }
+function renderPicker(){
+  const q = $('q').value.trim().toLowerCase();
+  const list = teachers.filter(t => t.id !== me.id && (!q || String(t.name || '').toLowerCase().includes(q)))
+    .sort((a, b) => String(a.name).localeCompare(String(b.name), 'bn'));
+  $('plist').innerHTML = list.length ? list.map(t =>
+    '<div class="row" onclick="pick(\'' + jq(t.id) + '\')">' + avatar(t, t.name) + '<div class="ri"><b>' + esc(t.name) + '</b>' + (t.designation ? '<div class="mu">' + esc(t.designation) + '</div>' : '') + '</div></div>'
+  ).join('') : '<div class="empty">কাউকে পাওয়া যায়নি।</div>';
+}
+function pick(id){ closePicker(); if (history.state && history.state.pick) history.replaceState({ chat: id }, ''); openWith = id; selId = null; showView(); $('thread').dataset.fresh = '1'; renderThread(); if (!(history.state && history.state.chat)) history.pushState({ chat: id }, ''); }
+
+// বার্তা পাঠানো
+const ta = $('body');
+ta.addEventListener('input', () => { ta.style.height = '42px'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'; });
+ta.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && !matchMedia('(pointer:coarse)').matches) { e.preventDefault(); sendMsg(); }
+});
+function sendMsg(){
+  if (!me || !openWith) return;
+  const body = ta.value.trim();
+  if (!body) return;
+  const b = $('sendBtn'); b.disabled = true;
+  db.collection('messages').add({
+    fromId: me.id, fromName: me.name || '', toId: openWith, body, read: false,
+    ts: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    ta.value = ''; ta.style.height = '42px'; ta.focus();
+    $('thread').dataset.fresh = '1';
+  }).catch(() => alert('পাঠানো যায়নি, আবার চেষ্টা করুন')).finally(() => { b.disabled = false; });
+}
+</script>
+</body>
+</html>
