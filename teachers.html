@@ -324,32 +324,100 @@ function closeRC(){ rcId = null; $('rcm').classList.remove('show'); document.bod
 const rcLabel = () => rcMode === 'm' ? 'ক্লাস মিসের তালিকা' : rcMode === 'p' ? 'প্রক্সির তালিকা' : 'রিপোর্ট কার্ড';
 function printRC(){ document.body.classList.add('rcp'); doPrint(); }
 window.addEventListener('afterprint', () => document.body.classList.remove('rcp', 'rtp'));
-function downloadRC(){
-  const t = teachers.find(x => x.id === rcId); if (!t) return;
-  const c = $('rcc').cloneNode(true);
-  c.querySelectorAll('.rcno').forEach(e => e.remove());
-  const po = c.querySelector('.rcp-only'); if (po) po.style.cssText = 'text-align:center;font-weight:700;margin:8px 0';
-  const css = '@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html{background:#ddd}'
-    + 'body{font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;width:210mm;min-height:297mm;margin:0 auto;padding:12mm 10mm;background:#fff;color:#000;line-height:1.45;font-size:13px}'
-    + '.rch h3{margin:0 0 4px;font-size:18px}.mu{font-size:12px;color:#444}.rcs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.rcs div{border:1px solid #000;text-align:center;padding:6px;border-radius:8px;font-size:12px}.rcs b{display:block;font-size:20px}'
-    + '.sec{display:flex;justify-content:space-between;border-bottom:2px solid #000;margin:14px 0 8px;font-weight:700;font-size:14px}.sec span{font-weight:400;font-size:12px}'
-    + '.rt{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}.rt th,.rt td{border:1px solid #000;padding:5px 3px;text-align:center;word-break:break-word;overflow-wrap:anywhere}.rt th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-    + '.rt th:nth-child(1){width:20%}.rt th:nth-child(2){width:12%}.rt th:nth-child(3){width:20%}.rt thead{display:table-header-group}.rt tr{page-break-inside:avoid}.empty{text-align:center;padding:10px;font-size:12px}'
-    + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}'
-    + '@media print{html{-webkit-filter:grayscale(1);filter:grayscale(1)}*{color:#000!important}.rt small,.mu{color:#333!important}}';
-  const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=794"><title>' + rcLabel() + ' - ' + esc(t.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
-  const nm = String(t.name || 'শিক্ষক').replace(/[\\\/:*?"<>|]/g, '').trim();
-  const fname = rcLabel().replace(/ /g, '-') + '-' + nm + '-' + Y + '.html';
-  // অ্যান্ড্রয়েড অ্যাপ: সরাসরি Downloads ফোল্ডারে সেভ
-  if (window.AndroidPrint && typeof AndroidPrint.saveFile !== 'undefined') { AndroidPrint.saveFile(fname, html, 'text/html'); return; }
-  // অ্যাপের ভেতরে আছে কিন্তু অ্যাপে ডাউনলোড সুবিধা নেই (পুরনো অ্যাপ ভার্সন)
-  if (window.AndroidPrint) { alert('ডাউনলোডের জন্য অ্যাপটি নতুন ভার্সনে আপডেট করুন (MainActivity.java নতুন করে বিল্ড করুন)।'); return; }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
-  a.download = fname;
-  document.body.appendChild(a); a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+
+// ===== ছবি ডাউনলোড / ছবি শেয়ার =====
+const H2C_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+function loadH2C(){
+  if (window.html2canvas) return Promise.resolve();
+  return new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = H2C_URL; sc.onload = ok; sc.onerror = () => no(new Error('load')); document.head.appendChild(sc); });
 }
+const safeName = x => String(x || 'শিক্ষক').replace(/[\\\/:*?"<>|]/g, '').trim();
+function imgInfo(kind){
+  const id = kind === 'rt' ? rtId : rcId, t = teachers.find(x => x.id === id); if (!t) return null;
+  const nm = safeName(t.name);
+  return kind === 'rt'
+    ? {el: 'rtc', modal: 'rtm', fname: 'রুটিন-' + nm + '.png', title: 'রুটিন - ' + t.name}
+    : {el: 'rcc', modal: 'rcm', fname: rcLabel().replace(/ /g, '-') + '-' + nm + '-' + Y + '.png', title: rcLabel() + ' - ' + t.name};
+}
+async function makeImage(info){
+  await loadH2C();
+  const src = $(info.el);
+  const tw = src.querySelector('.rt.g');
+  const w = Math.max(src.offsetWidth, tw ? tw.scrollWidth + 30 : 0);
+  const cv = await html2canvas(src, {
+    scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false, windowWidth: w + 20, width: w,
+    onclone: d => {
+      const m = d.getElementById(info.modal);
+      m.style.cssText = 'display:block;position:static;overflow:visible;background:none;padding:0;inset:auto';
+      const e = d.getElementById(info.el);
+      e.style.cssText = 'width:' + w + 'px;max-width:none;margin:0;border-radius:0;border:0;padding:14px;background:#fff;color:#17241c;'
+        + '--card:#fff;--tx:#17241c;--mu:#62736a;--pr:#0f7a4a;--pr2:#0b5c37;--bd:#dbe7df';
+      e.querySelectorAll('.rcno').forEach(x => x.remove());
+      e.querySelectorAll('.rtw').forEach(x => x.style.overflow = 'visible');
+    }
+  });
+  const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+  if (!blob) throw new Error('blob');
+  return blob;
+}
+const blobB64 = blob => new Promise(r => { const f = new FileReader(); f.onload = () => r(String(f.result).split(',')[1]); f.readAsDataURL(blob); });
+function saveBlob(blob, fname){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = fname;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+async function withBusy(btn, fn){
+  const old = btn.textContent; btn.disabled = true; btn.textContent = '⏳ অপেক্ষা করুন…';
+  try { await fn(); } catch (e) { console.error(e); alert('ছবি তৈরি করা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।'); }
+  btn.disabled = false; btn.textContent = old;
+}
+function imgDownload(kind, btn){
+  const info = imgInfo(kind); if (!info) return;
+  return withBusy(btn, async () => {
+    const blob = await getImage(kind, info);
+    if (window.AndroidPrint && typeof AndroidPrint.saveImage === 'function') { AndroidPrint.saveImage(info.fname, await blobB64(blob)); return; }
+    saveBlob(blob, info.fname);
+  });
+}
+function imgShare(kind, btn){
+  const info = imgInfo(kind); if (!info) return;
+  return withBusy(btn, async () => {
+    const blob = await getImage(kind, info);
+    if (window.AndroidPrint && typeof AndroidPrint.shareImage === 'function') { AndroidPrint.shareImage(info.fname, await blobB64(blob)); return; }
+    const file = new File([blob], info.fname, {type: 'image/png'});
+    if (navigator.canShare && navigator.canShare({files: [file]})) {
+      try { await navigator.share({files: [file], title: info.title}); } catch (e) { if (e && e.name !== 'AbortError') throw e; }
+      return;
+    }
+    saveBlob(blob, info.fname);
+    alert('এই ডিভাইসে সরাসরি শেয়ার সম্ভব নয়, তাই ছবিটি ডাউনলোড করা হয়েছে। সেখান থেকে শেয়ার করুন।');
+  });
+}
+// ছবি আগে থেকেই তৈরি করে রাখা (ক্লিক করলেই সাথে সাথে পাওয়া যায়)
+var imgCache = {rc: null, rt: null}, preTimer = {};
+const imgKey = kind => kind === 'rt'
+  ? ['rt', rtId, rtRows.length, rtLoading].join('|')
+  : ['rc', rcId, rcMode, Y, ((missed[rcId] || {}).ml || []).length, ((missed[rcId] || {}).pl || []).length].join('|');
+function getImage(kind, info){
+  const k = imgKey(kind), c = imgCache[kind];
+  if (c && c.key === k) return c.p;
+  const p = makeImage(info); imgCache[kind] = {key: k, p};
+  p.catch(() => { if (imgCache[kind] && imgCache[kind].p === p) imgCache[kind] = null; });
+  return p;
+}
+function schedulePre(kind){
+  clearTimeout(preTimer[kind]);
+  preTimer[kind] = setTimeout(() => {
+    const m = $(kind === 'rt' ? 'rtm' : 'rcm');
+    if (!m || !m.classList.contains('show')) return;
+    if (kind === 'rt' && rtLoading) return;
+    const info = imgInfo(kind); if (info) getImage(kind, info).catch(() => {});
+  }, 350);
+}
+// পেজ খোলার পরেই লাইব্রেরি লোড হয়ে থাকবে
+window.addEventListener('load', () => setTimeout(() => loadH2C().catch(() => {}), 300));
+const imgBtns = kind => `<div class="rcno" style="display:flex;gap:6px"><button class="pbtn" style="font-size:13px;padding:10px 4px" onclick="imgDownload('${kind}',this)">🖼️ ছবি ডাউনলোড</button><button class="pbtn" style="font-size:13px;padding:10px 4px" onclick="imgShare('${kind}',this)">📤 ছবি শেয়ার</button><button class="pbtn" style="font-size:13px;padding:10px 4px" onclick="print${kind.toUpperCase()}()">🖨️ প্রিন্ট</button></div>`;
 function drawRC(){
   const t = teachers.find(x => x.id === rcId); if (!t) return;
   const a = missed[rcId] || {ml: [], pl: []};
@@ -368,7 +436,8 @@ function drawRC(){
     <div class="rcs"${rcMode === 'all' ? '' : ' style="grid-template-columns:1fr"'}>${showM ? `<div class="a"><b>${bn(ml.length)}</b>ক্লাস মিস</div>` : ''}${showP ? `<div class="b"><b>${bn(pl.length)}</b>প্রক্সি নিয়েছেন</div>` : ''}</div>
     ${showM ? `<div class="sec">❌ ক্লাস মিসের তালিকা <span>${bn(Y)} সাল</span></div>${tbl(ml, 'ক্লাস নিয়েছেন')}` : ''}
     ${showP ? `<div class="sec">✅ প্রক্সির তালিকা <span>${bn(Y)} সাল</span></div>${tbl(pl, 'যার ক্লাস নিয়েছেন')}` : ''}
-    <div class="rcno" style="display:flex;gap:8px"><button class="pbtn" onclick="downloadRC()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="printRC()">🖨️ প্রিন্ট</button></div>`;
+    ${imgBtns('rc')}`;
+  schedulePre('rc');
 }
 
 // ===== শিক্ষকের সাপ্তাহিক রুটিন (routines কালেকশন) =====
@@ -408,28 +477,8 @@ function drawRT(){
   $('rtc').innerHTML = `<div class="rch"><div><h3>📅 ${esc(t.name)} — সাপ্তাহিক রুটিন</h3><div class="mu">${esc(ds || '—')} • ইনডেক্স: ${ix !== '' ? bn(esc(ix)) : '–'}</div></div><button class="rcx rcno" onclick="closeRT()">✕</button></div>
     <div class="rcs"><div class="b"><b>${rtLoading ? '…' : bn(n)}</b>সাপ্তাহিক ক্লাস</div><div class="b"><b>${rtLoading ? '…' : bn(days)}</b>ক্লাসের দিন</div></div>
     <div class="rtbody">${rtLoading ? '<div class="empty">লোড হচ্ছে...</div>' : rtTable()}</div>
-    <div class="rcno" style="display:flex;gap:8px"><button class="pbtn" onclick="downloadRT()">⬇️ ডাউনলোড</button><button class="pbtn" onclick="printRT()">🖨️ প্রিন্ট</button></div>`;
-}
-function downloadRT(){
-  const t = teachers.find(x => x.id === rtId); if (!t) return;
-  const c = $('rtc').cloneNode(true);
-  c.querySelectorAll('.rcno').forEach(e => e.remove());
-  const css = '@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}html{background:#ddd}'
-    + 'body{font-family:"Noto Sans Bengali","Hind Siliguri",system-ui,sans-serif;width:297mm;min-height:210mm;margin:0 auto;padding:10mm;background:#fff;color:#000;line-height:1.45;font-size:13px}'
-    + '.rch h3{margin:0 0 4px;font-size:18px}.mu{font-size:12px;color:#444}.rcs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.rcs div{border:1px solid #000;text-align:center;padding:6px;border-radius:8px;font-size:12px}.rcs b{display:block;font-size:20px}'
-    + '.rt{width:100%;border-collapse:collapse;font-size:12px}.rt th,.rt td{border:1px solid #000;padding:5px 4px;text-align:center}.rt th{background:#e8e8e8;-webkit-print-color-adjust:exact;print-color-adjust:exact}.rt small{display:block;font-size:11px;font-weight:400;color:#333}.rt td.dn{font-weight:700;white-space:nowrap}.empty{text-align:center;padding:10px}'
-    + '@media print{html{background:#fff}body{width:auto;min-height:0;margin:0;padding:0}}'
-    + '@media print{html{-webkit-filter:grayscale(1);filter:grayscale(1)}*{color:#000!important}.rt small,.mu{color:#333!important}}';
-  const html = '<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=1123"><title>রুটিন - ' + esc(t.name) + '</title><style>' + css + '</style></head><body>' + c.innerHTML + '</body></html>';
-  const nm = String(t.name || 'শিক্ষক').replace(/[\\\/:*?"<>|]/g, '').trim();
-  const fname = 'রুটিন-' + nm + '.html';
-  if (window.AndroidPrint && typeof AndroidPrint.saveFile !== 'undefined') { AndroidPrint.saveFile(fname, html, 'text/html'); return; }
-  if (window.AndroidPrint) { alert('ডাউনলোডের জন্য অ্যাপটি নতুন ভার্সনে আপডেট করুন (MainActivity.java নতুন করে বিল্ড করুন)।'); return; }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html], {type: 'text/html;charset=utf-8'}));
-  a.download = fname;
-  document.body.appendChild(a); a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    ${imgBtns('rt')}`;
+  schedulePre('rt');
 }
 var unsubT = null;
 // শিক্ষক তালিকা: আগে ক্যাশ (localStorage) থেকে দ্রুত দেখানো, তারপর সার্ভার থেকে আপডেট
